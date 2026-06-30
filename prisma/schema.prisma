@@ -1,0 +1,664 @@
+// ============================================================
+// Smart Konstruksi — Prisma Schema v3.0 (Revised)
+// 21 Models | Audit Fields + Code Prefixes + Branch CRUD
+// ============================================================
+//
+// REVISI v3.0 (30 June 2026):
+// 1. Audit fields: createdBy, updatedBy, deletedBy (plain String?, no relation)
+//    → Lookup di application layer saat butuh nama user
+//    → Alasan: hindari 30+ bidirectional relations di User model
+// 2. Project code: format PJ000001 (global sequence)
+// 3. Invoice code: format INV20260629000001 (daily reset sequence)
+// 4. Branch: sudah siap CRUD (Super Admin + Owner)
+//
+// AUDIT FIELD RULES:
+// - Business Core (Project, Invoice, Payment, Material, ProgressReport, Task)
+//   → createdBy ✅, updatedBy ✅, deletedBy ✅, deletedAt ✅
+// - User Mgmt (User, Client, Branch)
+//   → createdBy ✅, updatedBy ✅, deletedBy ✅, deletedAt ✅
+// - Lookup (MaterialCategory, Vendor)
+//   → createdBy ✅, updatedBy ✅, deletedAt ✅, deletedBy ✅
+// - Join/Relasi (ProjectMember, Checklist)
+//   → createdBy ✅ only
+// - Communication (Comment, Message)
+//   → createdBy ✅ only
+// - Operational (Attendance, File)
+//   → createdBy ✅ only
+// - System Generated (AuditLog, ActivityLog, Notification)
+//   → No audit fields (they ARE the audit trail)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  SUPER_ADMIN
+  OWNER
+  BRANCH_MANAGER
+  PROJECT_MANAGER
+  ESTIMATOR
+  SITE_MANAGER
+  ADMIN_KANTOR
+  ARSITEK
+  QC_INSPECTOR
+  K3_OFFICER
+  INTERIOR_DESIGNER
+  KONSULTAN
+  FINANCE
+  CLIENT
+  VENDOR
+  HOME_OWNER
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum MaterialStatus {
+  ORDERED
+  SHIPPED
+  DELIVERED
+  INSTALLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+enum ApprovalType {
+  RAB
+  DESIGN
+  PROGRESS_REPORT
+  INVOICE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ==================== CORE MODELS ====================
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      Role
+  phone     String?
+  avatar    String?
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  branchId  String?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String? // userId yang create record ini
+  updatedBy String? // userId yang last update
+  deletedBy String? // userId yang soft delete
+
+  branch Branch? @relation(fields: [branchId], references: [id])
+
+  // Business relations
+  managedProjects    Project[]        @relation("ProjectManager")
+  supervisedProjects Project[]        @relation("SiteManager")
+  clientProfile      Client?
+  reportedReports    ProgressReport[]
+  attendances        Attendance[]
+  assignedTasks      Task[]           @relation("Assignee")
+  uploadedFiles      File[]
+  notifications      Notification[]
+  comments           Comment[]
+  sentMessages       Message[]        @relation("Sender")
+  receivedMessages   Message[]        @relation("Receiver")
+  projectMembers     ProjectMember[]
+  approvals          Approval[]       @relation("Approver")
+  confirmedPayments  Payment[]
+  auditLogs          AuditLog[]
+  activityLogs       ActivityLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([branchId])
+  @@map("users")
+}
+
+model Branch {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  address String?
+  phone   String?
+  email   String?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  users    User[]
+  projects Project[]
+
+  @@map("branches")
+}
+
+// ==================== PROJECT MODELS ====================
+
+model Project {
+  id          String        @id @default(cuid())
+  code        String        @unique // Format: PJ000001 (global sequence)
+  name        String
+  description String?
+  address     String
+  startDate   DateTime
+  endDate     DateTime?
+  budget      Decimal       @db.Decimal(15, 2)
+  actualCost  Decimal?      @db.Decimal(15, 2)
+  progress    Int           @default(0)
+  status      ProjectStatus @default(PLANNING)
+  branchId    String
+
+  // Stakeholders
+  projectManagerId String
+  siteManagerId    String?
+  clientId         String
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  branch         Branch @relation(fields: [branchId], references: [id])
+  projectManager User   @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  siteManager    User?  @relation("SiteManager", fields: [siteManagerId], references: [id])
+  client         Client @relation(fields: [clientId], references: [id])
+
+  // Business relations
+  materials       Material[]
+  progressReports ProgressReport[]
+  tasks           Task[]
+  files           File[]
+  invoices        Invoice[]
+  comments        Comment[]
+  members         ProjectMember[]
+  approvals       Approval[]
+  activityLogs    ActivityLog[]
+  attendances     Attendance[]
+
+  @@index([branchId])
+  @@index([status])
+  @@index([projectManagerId])
+  @@index([clientId])
+  @@index([code])
+  @@map("projects")
+}
+
+model Client {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  companyName String?
+  address     String?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  user     User      @relation(fields: [userId], references: [id])
+  projects Project[]
+
+  @@map("clients")
+}
+
+model ProjectMember {
+  id        String @id @default(cuid())
+  projectId String
+  userId    String
+  role      Role
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+// ==================== MATERIAL MODELS ====================
+
+model MaterialCategory {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  materials Material[]
+
+  @@map("material_categories")
+}
+
+model Vendor {
+  id         String  @id @default(cuid())
+  name       String
+  phone      String?
+  email      String?
+  address    String?
+  isVerified Boolean @default(false)
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  materials Material[]
+
+  @@map("vendors")
+}
+
+model Material {
+  id          String         @id @default(cuid())
+  projectId   String
+  name        String
+  quantity    Float
+  unit        String
+  unitPrice   Decimal        @db.Decimal(15, 2)
+  totalPrice  Decimal        @db.Decimal(15, 2)
+  status      MaterialStatus @default(ORDERED)
+  categoryId  String?
+  vendorId    String?
+  orderedAt   DateTime?
+  deliveredAt DateTime?
+  installedAt DateTime?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  project  Project           @relation(fields: [projectId], references: [id])
+  category MaterialCategory? @relation(fields: [categoryId], references: [id])
+  vendor   Vendor?           @relation(fields: [vendorId], references: [id])
+
+  @@index([projectId])
+  @@index([categoryId])
+  @@index([vendorId])
+  @@index([status])
+  @@map("materials")
+}
+
+// ==================== PROGRESS MODELS ====================
+
+model ProgressReport {
+  id          String   @id @default(cuid())
+  projectId   String
+  reporterId  String
+  reportDate  DateTime
+  percentage  Int
+  description String
+  weather     String?
+  latitude    Float?
+  longitude   Float?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  reporter User      @relation(fields: [reporterId], references: [id])
+  photos   File[]    @relation("ReportPhotos")
+  comments Comment[]
+
+  @@index([projectId])
+  @@index([reporterId])
+  @@index([reportDate])
+  @@map("progress_reports")
+}
+
+// ==================== TASK MODELS ====================
+
+model Task {
+  id          String       @id @default(cuid())
+  projectId   String
+  assigneeId  String?
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  startDate   DateTime
+  dueDate     DateTime
+  completedAt DateTime?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  project    Project     @relation(fields: [projectId], references: [id])
+  assignee   User?       @relation("Assignee", fields: [assigneeId], references: [id])
+  checklists Checklist[]
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("tasks")
+}
+
+model Checklist {
+  id     String  @id @default(cuid())
+  taskId String
+  title  String
+  isDone Boolean @default(false)
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+  @@map("checklists")
+}
+
+// ==================== ATTENDANCE ====================
+
+model Attendance {
+  id        String    @id @default(cuid())
+  userId    String
+  projectId String
+  checkIn   DateTime
+  checkOut  DateTime?
+  latitude  Float?
+  longitude Float?
+  photoUrl  String?
+  notes     String?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([checkIn])
+  @@map("attendances")
+}
+
+// ==================== FILE MANAGEMENT ====================
+
+model File {
+  id         String  @id @default(cuid())
+  filename   String
+  url        String
+  size       Int
+  mimeType   String
+  uploaderId String
+  projectId  String?
+  reportId   String?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  uploader User            @relation(fields: [uploaderId], references: [id])
+  project  Project?        @relation(fields: [projectId], references: [id])
+  report   ProgressReport? @relation("ReportPhotos", fields: [reportId], references: [id])
+
+  @@index([projectId])
+  @@index([uploaderId])
+  @@index([reportId])
+  @@map("files")
+}
+
+// ==================== FINANCIAL MODELS ====================
+
+model Invoice {
+  id        String        @id @default(cuid())
+  projectId String
+  invoiceNo String        @unique // Format: INV20260629000001 (daily reset)
+  amount    Decimal       @db.Decimal(15, 2)
+  status    InvoiceStatus @default(DRAFT)
+  issuedAt  DateTime
+  dueDate   DateTime
+  paidAt    DateTime?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  payments Payment[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([invoiceNo])
+  @@map("invoices")
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  invoiceId     String
+  amount        Decimal   @db.Decimal(15, 2)
+  method        String
+  proofUrl      String?
+  paidAt        DateTime
+  confirmedById String?
+  confirmedAt   DateTime?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  invoice     Invoice @relation(fields: [invoiceId], references: [id])
+  confirmedBy User?   @relation(fields: [confirmedById], references: [id])
+
+  @@index([invoiceId])
+  @@index([confirmedById])
+  @@map("payments")
+}
+
+// ==================== APPROVAL ====================
+
+model Approval {
+  id         String         @id @default(cuid())
+  type       ApprovalType
+  entityId   String
+  projectId  String
+  approverId String
+  status     ApprovalStatus @default(PENDING)
+  notes      String?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  project  Project @relation(fields: [projectId], references: [id])
+  approver User    @relation("Approver", fields: [approverId], references: [id])
+
+  @@index([type, entityId])
+  @@index([projectId])
+  @@index([approverId])
+  @@index([status])
+  @@map("approvals")
+}
+
+// ==================== NOTIFICATION ====================
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==================== COMMUNICATION ====================
+
+model Comment {
+  id        String  @id @default(cuid())
+  content   String
+  authorId  String
+  projectId String
+  reportId  String?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  author  User            @relation(fields: [authorId], references: [id])
+  project Project         @relation(fields: [projectId], references: [id])
+  report  ProgressReport? @relation(fields: [reportId], references: [id])
+
+  @@index([projectId])
+  @@index([authorId])
+  @@index([reportId])
+  @@map("comments")
+}
+
+model Message {
+  id         String  @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  read       Boolean @default(false)
+  projectId  String?
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  sender   User @relation("Sender", fields: [senderId], references: [id])
+  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([projectId])
+  @@map("messages")
+}
+
+// ==================== AUDIT & ACTIVITY ====================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  projectId String?
+  type      String
+  title     String
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("activity_logs")
+}

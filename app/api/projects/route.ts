@@ -1,0 +1,195 @@
+// ============================================================
+// Smart Konstruksi — Projects API (List + Create)
+// ============================================================
+
+import { prisma } from "@/lib/prisma";
+import {
+  withPermission,
+  parsePagination,
+  buildScopeFilter,
+  apiSuccess,
+  apiCreated,
+  apiPaginated,
+} from "@/lib/api/with-auth";
+import { apiError } from "@/lib/rbac/guard";
+
+// GET /api/projects — List projects (project:read)
+export const GET = withPermission(
+  "project:read",
+  async (request, { user }) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const { page, limit, skip } = parsePagination(searchParams);
+      const search = searchParams.get("search") || "";
+      const branchId = searchParams.get("branchId") || "";
+      const status = searchParams.get("status") || "";
+
+      const where: Record<string, unknown> = {
+        deletedAt: null,
+      };
+
+      // Scope filtering
+      if (user.role === "SUPER_ADMIN" || user.role === "OWNER") {
+        // Global: no filter
+      } else if (["BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE"].includes(user.role)) {
+        if (user.branchId) where.branchId = user.branchId;
+      } else if (["CLIENT", "HOME_OWNER"].includes(user.role)) {
+        // Client: find their Client record, then filter by clientId
+        const clientProfile = await prisma.client.findUnique({
+          where: { userId: user.id },
+          select: { id: true },
+        });
+        if (clientProfile) {
+          where.clientId = clientProfile.id;
+        } else {
+          where.clientId = "__no_client__"; // no results
+        }
+      } else if (["PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN"].includes(user.role)) {
+        where.members = { some: { userId: user.id } };
+      }
+
+      // Search filter
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+          { code: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { address: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      // Branch filter (only for global roles)
+      if (
+        branchId &&
+        (user.role === "SUPER_ADMIN" || user.role === "OWNER")
+      ) {
+        where.branchId = branchId;
+      }
+
+      // Status filter (supports comma-separated: PLANNING,IN_PROGRESS)
+      if (status) {
+        const statuses = status.split(",").map((s) => s.trim());
+        if (statuses.length === 1) {
+          where.status = statuses[0];
+        } else {
+          where.status = { in: statuses };
+        }
+      }
+
+      const [projects, total] = await Promise.all([
+        prisma.project.findMany({
+          where,
+          include: {
+            branch: { select: { id: true, name: true } },
+            projectManager: {
+              select: { id: true, name: true, email: true },
+            },
+            siteManager: {
+              select: { id: true, name: true, email: true },
+            },
+            _count: {
+              select: { members: true, tasks: true, materials: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limit,
+        }),
+        prisma.project.count({ where }),
+      ]);
+
+      return apiPaginated(projects, total, page, limit);
+    } catch (error) {
+      return apiError(error);
+    }
+  }
+);
+
+// POST /api/projects — Create project (project:create)
+export const POST = withPermission(
+  "project:create",
+  async (request, { user }) => {
+    try {
+      const body = await request.json();
+      const {
+        name,
+        description,
+        address,
+        startDate,
+        endDate,
+        budget,
+        status,
+        branchId,
+        projectManagerId,
+        siteManagerId,
+        clientId,
+      } = body;
+
+      // Validate required fields
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
+        return apiError(new Error("Project name is required"));
+      }
+      if (!address || typeof address !== "string" || address.trim().length === 0) {
+        return apiError(new Error("Project address is required"));
+      }
+      if (!startDate) {
+        return apiError(new Error("Start date is required"));
+      }
+      if (budget === undefined || budget === null || Number(budget) < 0) {
+        return apiError(new Error("Valid budget is required"));
+      }
+      if (!branchId) {
+        return apiError(new Error("Branch is required"));
+      }
+      if (!projectManagerId) {
+        return apiError(new Error("Project manager is required"));
+      }
+      if (!clientId) {
+        return apiError(new Error("Client is required"));
+      }
+
+      // Generate project code (PJ000001 format)
+      const lastProject = await prisma.project.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { code: true },
+      });
+
+      let nextCode = 1;
+      if (lastProject?.code) {
+        const lastNum = parseInt(lastProject.code.replace("PJ", ""), 10);
+        if (!isNaN(lastNum)) {
+          nextCode = lastNum + 1;
+        }
+      }
+      const code = `PJ${String(nextCode).padStart(6, "0")}`;
+
+      const project = await prisma.project.create({
+        data: {
+          code,
+          name: name.trim(),
+          description: description || null,
+          address: address.trim(),
+          startDate: new Date(startDate),
+          endDate: endDate ? new Date(endDate) : null,
+          budget: Number(budget),
+          status: status || "PLANNING",
+          branchId,
+          projectManagerId,
+          siteManagerId: siteManagerId || null,
+          clientId,
+          createdBy: user.id,
+        },
+        include: {
+          branch: { select: { id: true, name: true } },
+          projectManager: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      });
+
+      return apiCreated(project);
+    } catch (error) {
+      return apiError(error);
+    }
+  }
+);
