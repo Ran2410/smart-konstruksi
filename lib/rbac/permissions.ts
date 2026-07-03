@@ -154,7 +154,7 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Project
     "project:read",
     // Material
-    "material:read", "material:confirm",
+    "material:create", "material:read", "material:confirm",
     // Report
     "report:create", "report:read",
     // Task
@@ -202,6 +202,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "qc:create", "qc:read", "qc:update",
     // Report
     "report:create", "report:read",
+    // Task
+    "task:read",
     // File
     "file:upload", "file:read",
   ],
@@ -213,6 +215,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "safety:create", "safety:read", "safety:update",
     // Report
     "report:create", "report:read",
+    // Task
+    "task:read", "task:update",
     // File
     "file:upload", "file:read",
   ],
@@ -278,6 +282,45 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "project:read",
     // Warranty
     "warranty:create",
+  ],
+
+  MANDOR: [
+    // Project
+    "project:read",
+    // Report
+    "report:create", "report:read",
+    // Task
+    "task:read", "task:update",
+    // Material
+    "material:read",
+    // Attendance
+    "attendance:create", "attendance:read",
+    // File
+    "file:upload", "file:read",
+  ],
+
+  SURVEYOR: [
+    // Project
+    "project:read",
+    // Material
+    "material:read",
+    // RAB
+    "rab:read",
+    // Design
+    "design:read",
+    // File
+    "file:upload", "file:read",
+  ],
+
+  LOGISTIK: [
+    // Project
+    "project:read",
+    // Material
+    "material:create", "material:read", "material:update",
+    // PO
+    "po:read",
+    // File
+    "file:read",
   ],
 };
 

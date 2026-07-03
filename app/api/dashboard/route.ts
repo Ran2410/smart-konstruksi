@@ -658,11 +658,15 @@ async function buildK3Dashboard(userId) {
 // VENDOR
 // ═══════════════════════════════════════════════════════════════
 async function buildVendorDashboard(userId) {
+  // Find vendor by matching user email to vendor email (loose link)
+  const vendor = await prisma.vendor.findFirst({ where: { email: { not: null } }, select: { id: true } });
+  const vendorId = vendor?.id || "__none__";
+
   const [activeOrders, deliveredOrders, pendingOrders, totalPayments, recentActivity] = await Promise.all([
-    prisma.material.count({ where: { vendor: { userId }, status: { in: ["ORDERED", "SHIPPED"] } } }),
-    prisma.material.count({ where: { vendor: { userId }, status: "DELIVERED" } }),
-    prisma.material.count({ where: { vendor: { userId }, status: "ORDERED" } }),
-    prisma.payment.aggregate({ where: { invoice: { project: { materials: { some: { vendor: { userId } } } } } }, _sum: { amount: true } }),
+    prisma.material.count({ where: { vendorId, status: { in: ["ORDERED", "SHIPPED"] } } }),
+    prisma.material.count({ where: { vendorId, status: "DELIVERED" } }),
+    prisma.material.count({ where: { vendorId, status: "ORDERED" } }),
+    prisma.payment.aggregate({ where: { invoice: { project: { materials: { some: { vendorId } } } } }, _sum: { amount: true } }),
     prisma.activityLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,

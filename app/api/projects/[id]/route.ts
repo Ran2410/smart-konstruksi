@@ -52,6 +52,7 @@ export const GET = withPermission(
           },
           _count: {
             select: {
+              members: true,
               materials: true,
               tasks: true,
               files: true,

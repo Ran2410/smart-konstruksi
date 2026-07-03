@@ -23,6 +23,7 @@ export const GET = withPermission(
       const search = searchParams.get("search") || "";
       const branchId = searchParams.get("branchId") || "";
       const status = searchParams.get("status") || "";
+      const projectManagerId = searchParams.get("projectManagerId") || "";
 
       const where: Record<string, unknown> = {
         deletedAt: null,
@@ -44,7 +45,7 @@ export const GET = withPermission(
         } else {
           where.clientId = "__no_client__"; // no results
         }
-      } else if (["PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN"].includes(user.role)) {
+      } else if (["PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN", "MANDOR", "SURVEYOR", "LOGISTIK"].includes(user.role)) {
         where.members = { some: { userId: user.id } };
       }
 
@@ -74,6 +75,11 @@ export const GET = withPermission(
         } else {
           where.status = { in: statuses };
         }
+      }
+
+      // Project Manager filter
+      if (projectManagerId) {
+        where.projectManagerId = projectManagerId;
       }
 
       const [projects, total] = await Promise.all([

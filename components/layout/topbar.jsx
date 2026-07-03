@@ -213,52 +213,6 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
             {session.user.name}
           </span>
         )}
-
-        {/* Divider — only show if Create button will render */}
-        {canCreate && (
-          <div
-            className="sk-divider"
-            style={{
-              width: "1px",
-              height: "32px",
-              background: "#bec9c1",
-              margin: "0 4px",
-            }}
-          />
-        )}
-
-        {/* Create Project — role-gated */}
-        {canCreate && (
-          <button
-            className="sk-create-btn"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "8px 20px",
-              background: "#004f35",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "8px",
-              fontFamily: "'Geist', monospace",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: "pointer",
-              boxShadow: "0 1px 3px rgba(79,53,0.2)",
-              transition: "opacity 0.15s, transform 0.1s",
-              whiteSpace: "nowrap",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
-            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-              add
-            </span>
-            <span className="sk-create-text">Create Project</span>
-          </button>
-        )}
       </div>
 
       <style>{`

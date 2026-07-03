@@ -55,6 +55,9 @@ enum Role {
   CLIENT
   VENDOR
   HOME_OWNER
+  MANDOR
+  LOGISTIK
+  SURVEYOR
 }
 
 enum ProjectStatus {
