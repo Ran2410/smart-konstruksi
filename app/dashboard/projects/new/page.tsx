@@ -249,10 +249,10 @@ export default function NewProjectPage() {
       setLoadingDropdowns(true);
       try {
         const [bRes, pmRes, smRes, cRes] = await Promise.all([
-          fetch("/api/branches?limit=100"),
-          fetch("/api/users?role=PROJECT_MANAGER&limit=100"),
-          fetch("/api/users?role=SITE_MANAGER&limit=100"),
-          fetch("/api/clients?limit=100"),
+          fetch("/api/branches?limit=100", { credentials: "include" }),
+          fetch("/api/users?role=PROJECT_MANAGER&limit=100", { credentials: "include" }),
+          fetch("/api/users?role=SITE_MANAGER&limit=100", { credentials: "include" }),
+          fetch("/api/clients?limit=100", { credentials: "include" }),
         ]);
         if (bRes.ok) setBranches((await bRes.json()).data || []);
         if (pmRes.ok) setManagers((await pmRes.json()).data || []);
@@ -814,7 +814,7 @@ export default function NewProjectPage() {
                         <option value="">Select client…</option>
                         {clients.map((c: any) => (
                           <option key={c.id} value={c.id}>
-                            {c.companyName || c.user?.name || c.name}
+                            {c.companyName || c.user?.name || c.name || c.email}
                           </option>
                         ))}
                       </select>
