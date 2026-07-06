@@ -61,7 +61,7 @@ export const POST = withPermission(
   async (request, { user }) => {
     try {
       const body = await request.json();
-      const { name, address, phone, email } = body;
+      const { name, address, phone, email, isActive } = body;
 
       // Validate required fields
       if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -86,6 +86,7 @@ export const POST = withPermission(
           address: address || null,
           phone: phone || null,
           email: email || null,
+          isActive: isActive !== undefined ? isActive : true,
           createdBy: user.id,
         },
       });

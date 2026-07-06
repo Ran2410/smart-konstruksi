@@ -164,6 +164,7 @@ model Branch {
   address String?
   phone   String?
   email   String?
+  isActive Boolean @default(true)
 
   // Audit fields
   createdAt DateTime  @default(now())

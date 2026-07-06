@@ -82,7 +82,7 @@ export const PUT = withPermission(
       }
 
       const body = await request.json();
-      const { name, address, phone, email } = body;
+      const { name, address, phone, email, isActive } = body;
 
       // Check name uniqueness if changed
       if (name && name.trim() !== existing.name) {
@@ -105,6 +105,7 @@ export const PUT = withPermission(
           ...(address !== undefined && { address }),
           ...(phone !== undefined && { phone }),
           ...(email !== undefined && { email }),
+          ...(isActive !== undefined && { isActive }),
           updatedBy: user.id,
         },
       });
