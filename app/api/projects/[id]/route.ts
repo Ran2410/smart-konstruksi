@@ -8,6 +8,8 @@ import {
   apiSuccess,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { updateProjectSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -94,21 +96,10 @@ export const PUT = withPermission(
       }
 
       const body = await request.json();
-      const {
-        name,
-        description,
-        address,
-        startDate,
-        endDate,
-        budget,
-        actualCost,
-        progress,
-        status,
-        branchId,
-        projectManagerId,
-        siteManagerId,
-        clientId,
-      } = body;
+      const parsed = validateOrRespond(updateProjectSchema, body);
+      if (parsed instanceof Response) return parsed;
+
+      const { name, description, address, startDate, endDate, budget, actualCost, progress, status, branchId, projectManagerId, siteManagerId, clientId } = parsed;
 
       // Build update data — only include fields that are provided
       const updateData: Record<string, unknown> = {

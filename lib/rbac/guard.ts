@@ -231,24 +231,47 @@ export class UnauthorizedError extends Error {
 }
 
 /**
+ * Check if we're in development mode
+ */
+function isDev(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+/**
  * Standard error response for API routes
+ * - Development: shows real error messages (debug-friendly)
+ * - Production: sanitizes messages to prevent info leakage
  */
 export function apiError(error: unknown): Response {
   if (error instanceof ForbiddenError) {
     return Response.json(
-      { error: "Forbidden", message: error.message },
+      {
+        error: "Forbidden",
+        message: isDev() ? error.message : "You don't have permission to perform this action",
+      },
       { status: 403 }
     );
   }
   if (error instanceof UnauthorizedError) {
     return Response.json(
-      { error: "Unauthorized", message: error.message },
+      {
+        error: "Unauthorized",
+        message: isDev() ? error.message : "Authentication required",
+      },
       { status: 401 }
     );
   }
-  console.error("Unexpected error:", error);
+  // Log all unexpected errors for debugging (always)
+  console.error("[API Error]", error instanceof Error ? error.message : error);
+  if (!isDev() && error instanceof Error) {
+    // Log stack trace only in dev, but capture in prod logs
+    console.error("[API Error Stack]", error.stack);
+  }
   return Response.json(
-    { error: "Internal Server Error" },
+    {
+      error: "Internal Server Error",
+      message: isDev() && error instanceof Error ? error.message : "An unexpected error occurred",
+    },
     { status: 500 }
   );
 }

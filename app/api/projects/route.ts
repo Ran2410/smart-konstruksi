@@ -12,6 +12,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createProjectSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // GET /api/projects — List projects (project:read)
 export const GET = withPermission(
@@ -117,6 +119,9 @@ export const POST = withPermission(
   async (request, { user }) => {
     try {
       const body = await request.json();
+      const parsed = validateOrRespond(createProjectSchema, body);
+      if (parsed instanceof Response) return parsed;
+
       const {
         name,
         description,
@@ -129,30 +134,7 @@ export const POST = withPermission(
         projectManagerId,
         siteManagerId,
         clientId,
-      } = body;
-
-      // Validate required fields
-      if (!name || typeof name !== "string" || name.trim().length === 0) {
-        return apiError(new Error("Project name is required"));
-      }
-      if (!address || typeof address !== "string" || address.trim().length === 0) {
-        return apiError(new Error("Project address is required"));
-      }
-      if (!startDate) {
-        return apiError(new Error("Start date is required"));
-      }
-      if (budget === undefined || budget === null || Number(budget) < 0) {
-        return apiError(new Error("Valid budget is required"));
-      }
-      if (!branchId) {
-        return apiError(new Error("Branch is required"));
-      }
-      if (!projectManagerId) {
-        return apiError(new Error("Project manager is required"));
-      }
-      if (!clientId) {
-        return apiError(new Error("Client is required"));
-      }
+      } = parsed;
 
       // Generate project code (PJ000001 format)
       const lastProject = await prisma.project.findFirst({
@@ -178,7 +160,7 @@ export const POST = withPermission(
           startDate: new Date(startDate),
           endDate: endDate ? new Date(endDate) : null,
           budget: Number(budget),
-          status: status || "PLANNING",
+          status: (status || "PLANNING") as any,
           branchId,
           projectManagerId,
           siteManagerId: siteManagerId || null,

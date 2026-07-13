@@ -14,6 +14,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createPaymentSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // ==================== SCOPE FILTER ====================
 
@@ -124,20 +126,10 @@ export const POST = withPermission(
   async (request, { user }) => {
     try {
       const body = await request.json();
-      const { invoiceId, amount, method, proofUrl, paidAt, notes } = body;
+      const parsed = validateOrRespond(createPaymentSchema, body);
+      if (parsed instanceof Response) return parsed;
 
-      // Validate required fields
-      if (!invoiceId || !amount || !method) {
-        return apiError(
-          new Error("Missing required fields: invoiceId, amount, method")
-        );
-      }
-
-      // Validate amount is a positive number
-      const amountNum = parseFloat(amount);
-      if (isNaN(amountNum) || amountNum <= 0) {
-        return apiError(new Error("Amount must be a positive number"));
-      }
+      const { invoiceId, amount, method, proofUrl, paidAt, notes } = parsed;
 
       // Verify invoice exists and is not deleted
       const invoice = await prisma.invoice.findUnique({
@@ -192,7 +184,7 @@ export const POST = withPermission(
       const payment = await prisma.payment.create({
         data: {
           invoiceId,
-          amount: amountNum,
+          amount,
           method,
           proofUrl: proofUrl || null,
           paidAt: paidAt ? new Date(paidAt) : new Date(),
@@ -238,7 +230,7 @@ export const POST = withPermission(
           type: "PAYMENT_CREATED",
           title: "Payment Created",
           message: `Payment of ${amount} created for invoice ${invoice.project.name}`,
-          metadata: { paymentId: payment.id, invoiceId, amount: amountNum },
+          metadata: { paymentId: payment.id, invoiceId, amount },
         },
       });
 

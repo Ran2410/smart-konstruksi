@@ -63,7 +63,7 @@ async function cleanup() {
 // Only: branches + owner + admin
 // ══════════════════════════════════════════════════════════════════════════════
 async function seedMinimal() {
-  const password = await bcrypt.hash("password123", 10);
+  const password = await bcrypt.hash("Password123", 10);
 
   // Branches
   const branch = await prisma.branch.upsert({
@@ -112,7 +112,7 @@ async function seedMinimal() {
   console.log("  ✅ MINIMAL SEED COMPLETED");
   console.log("═══════════════════════════════════════════════════════════════");
   console.log(`
-  🔑 Login Credentials (password: password123):
+  🔑 Login Credentials (password: Password123):
   ├── owner@ksi.co.id   → OWNER
   └── admin@ksi.co.id   → SUPER_ADMIN
 
@@ -126,7 +126,7 @@ async function seedMinimal() {
 // Everything: users, projects, materials, tasks, invoices, payments, etc.
 // ══════════════════════════════════════════════════════════════════════════════
 async function seedFull() {
-  const password = await bcrypt.hash("password123", 10);
+  const password = await bcrypt.hash("Password123", 10);
 
   // ── 1. BRANCHES ──────────────────────────────────────────────────────────
   const branch1 = await prisma.branch.upsert({
@@ -396,7 +396,7 @@ async function seedFull() {
   ├── ${notifData.length} notifications
   └── ${activityData.length} activity logs
 
-  🔑 Login Credentials (all password: password123):
+  🔑 Login Credentials (all password: Password123):
   ├── admin@ksi.co.id       → SUPER_ADMIN
   ├── owner@ksi.co.id       → OWNER
   ├── bm@ksi.co.id          → BRANCH_MANAGER

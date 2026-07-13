@@ -13,6 +13,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createBranchSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // GET /api/branches — List branches (branch:read)
 // SUPER_ADMIN/OWNER see all, BRANCH_MANAGER sees own branch only
@@ -61,12 +63,11 @@ export const POST = withPermission(
   async (request, { user }) => {
     try {
       const body = await request.json();
-      const { name, address, phone, email, isActive } = body;
+      const parsed = validateOrRespond(createBranchSchema, body);
+      if (parsed instanceof Response) return parsed;
 
-      // Validate required fields
-      if (!name || typeof name !== "string" || name.trim().length === 0) {
-        return apiError(new Error("Branch name is required"));
-      }
+      const { name, address, phone, email } = parsed;
+      const isActive = body.isActive;
 
       // Check uniqueness
       const existing = await prisma.branch.findFirst({
