@@ -110,6 +110,15 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  NEGOTIATION
+  WON
+  LOST
+}
+
 // ==================== CORE MODELS ====================
 
 model User {
@@ -152,6 +161,10 @@ model User {
   auditLogs          AuditLog[]
   activityLogs       ActivityLog[]
 
+  // Lead relations
+  assignedLeads  Lead[] @relation("LeadAssignee")
+  createdLeads   Lead[] @relation("LeadCreator")
+
   @@index([email])
   @@index([role])
   @@index([branchId])
@@ -164,6 +177,7 @@ model Branch {
   address String?
   phone   String?
   email   String?
+  isActive Boolean @default(true)
 
   // Audit fields
   createdAt DateTime  @default(now())
@@ -175,6 +189,7 @@ model Branch {
 
   users    User[]
   projects Project[]
+  leads    Lead[]
 
   @@map("branches")
 }
@@ -478,6 +493,44 @@ model File {
   @@index([uploaderId])
   @@index([reportId])
   @@map("files")
+}
+
+// ==================== LEADS ====================
+
+model Lead {
+  id        String     @id @default(cuid())
+  name      String
+  company   String?
+  phone     String?
+  email     String?
+  source    String?
+  status    LeadStatus @default(NEW)
+  type      String?
+  budgetMin Decimal?   @db.Decimal(15, 2)
+  budgetMax Decimal?   @db.Decimal(15, 2)
+  location  String?
+  notes     String?
+  assignedTo String?
+  branchId   String?
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  // Relations
+  assignedUser User?  @relation("LeadAssignee", fields: [assignedTo], references: [id])
+  branch       Branch? @relation(fields: [branchId], references: [id])
+  creator      User?   @relation("LeadCreator", fields: [createdBy], references: [id])
+
+  @@index([status])
+  @@index([assignedTo])
+  @@index([branchId])
+  @@index([createdAt])
+  @@map("leads")
 }
 
 // ==================== FINANCIAL MODELS ====================

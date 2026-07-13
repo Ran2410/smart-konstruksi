@@ -58,6 +58,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "user:create", "user:read", "user:update",
     // Branch
     "branch:create", "branch:read", "branch:update",
+    // Lead
+    "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project
     "project:create", "project:read", "project:update",
     // Material
@@ -90,6 +92,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   BRANCH_MANAGER: [
     // User (di branch sendiri)
     "user:create", "user:read", "user:update",
+    // Lead
+    "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project
     "project:create", "project:read", "project:update",
     // Material
@@ -117,6 +121,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   // ========== TIER 3: PROJECT ==========
 
   PROJECT_MANAGER: [
+    // Lead
+    "lead:create", "lead:read", "lead:update",
     // Project
     "project:create", "project:read", "project:update",
     // Material
@@ -168,6 +174,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   ],
 
   ADMIN_KANTOR: [
+    // Lead
+    "lead:create", "lead:read", "lead:update",
     // Project
     "project:read",
     // Material

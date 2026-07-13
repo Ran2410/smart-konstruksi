@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { UserPicker } from "@/components/projects/user-picker";
 import { TasksBoard } from "@/components/projects/tasks-board";
+import { PhotoUpload } from "@/components/projects/photo-upload";
+import { ProgressChart } from "@/components/projects/progress-chart";
+import { ReportDetail } from "@/components/projects/report-detail";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -484,6 +487,11 @@ export default function ProjectDetailPage() {
     weather: "",
     reportDate: new Date().toISOString().split("T")[0],
   });
+  const [editingReport, setEditingReport] = useState<any | null>(null);
+  const [reportToDelete, setReportToDelete] = useState<any | null>(null);
+  const [selectedReport, setSelectedReport] = useState<any | null>(null);
+  const [photoIds, setPhotoIds] = useState<string[]>([]);
+  const [reportDeleting, setReportDeleting] = useState(false);
 
   const MEMBER_ROLES = [
     { value: "PROJECT_MANAGER", label: "Project Manager" },
@@ -725,22 +733,44 @@ export default function ProjectDetailPage() {
     setReportSubmitting(true);
     setReportError(null);
     try {
-      const res = await fetch(`/api/projects/${projectId}/progress-reports`, {
-        method: "POST",
+      const isEdit = !!editingReport;
+      const url = isEdit
+        ? `/api/projects/${projectId}/progress-reports/${editingReport.id}`
+        : `/api/projects/${projectId}/progress-reports`;
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reportForm),
+        body: JSON.stringify({ ...reportForm, photoIds }),
       });
       if (!res.ok) {
         const d = await res.json();
         throw new Error(d.error || "Gagal menyimpan laporan");
       }
       setShowReportForm(false);
+      setEditingReport(null);
+      setPhotoIds([]);
       fetchReports();
       fetchProject();
     } catch (err: any) {
       setReportError(err.message);
     }
     setReportSubmitting(false);
+  };
+
+  const deleteReport = async (reportId: string) => {
+    setReportDeleting(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/progress-reports/${reportId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Gagal menghapus laporan");
+      setReportToDelete(null);
+      fetchReports();
+      fetchProject();
+    } catch (err: any) {
+      setReportError(err.message);
+    }
+    setReportDeleting(false);
   };
 
   const ef = (key: string) => (
@@ -1539,12 +1569,18 @@ export default function ProjectDetailPage() {
 
       {/* ═══ REPORTS TAB ═══ */}
       {!editMode && activeTab === "reports" && (
-        <div style={cardStyle} className="animate-fade-in">
+        <>
+          <div className="animate-fade-in" style={{ marginBottom: "20px" }}>
+            <ProgressChart reports={reports} />
+          </div>
+          <div style={cardStyle} className="animate-fade-in">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
             <SectionHeader icon="monitoring" title="Progress Reports" subtitle={`${reports.length} report${reports.length !== 1 ? "s" : ""}`} />
             {canReport && (
               <button
                 onClick={() => {
+                  setEditingReport(null);
+                  setPhotoIds([]);
                   setReportForm({ percentage: project.progress || 0, description: "", weather: "", reportDate: new Date().toISOString().split("T")[0] });
                   setReportError(null);
                   setShowReportForm(true);
@@ -1603,6 +1639,8 @@ export default function ProjectDetailPage() {
               {canReport && (
                 <button
                   onClick={() => {
+                    setEditingReport(null);
+                    setPhotoIds([]);
                     setReportForm({ percentage: project.progress || 0, description: "", weather: "", reportDate: new Date().toISOString().split("T")[0] });
                     setShowReportForm(true);
                   }}
@@ -1628,7 +1666,9 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {reports.map((r: any, index: number) => (
+              {reports.map((r: any, index: number) => {
+                const photoCount = r.photos?.length || r._count?.photos || 0;
+                return (
                 <div
                   key={r.id}
                   style={{
@@ -1639,8 +1679,17 @@ export default function ProjectDetailPage() {
                     background: T.surfaceContainerLow,
                     borderRadius: "14px",
                     border: `1px solid ${T.outlineSoft}20`,
+                    cursor: "pointer",
                     transition: "all 0.2s",
                     animation: `fadeInUp 0.3s ease forwards ${index * 0.05}s`,
+                    position: "relative",
+                  }}
+                  onClick={() => setSelectedReport(r)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = T.surfaceContainerHigh;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = T.surfaceContainerLow;
                   }}
                 >
                   <div
@@ -1689,13 +1738,41 @@ export default function ProjectDetailPage() {
                       <span style={{ fontFamily: T.fontBody, fontSize: "11px", color: T.onSurfaceMuted }}>
                         oleh {r.reporter?.name || "—"}
                       </span>
-                      {(r._count?.photos || 0) > 0 && (
+                      {photoCount > 0 && (
                         <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.primary, display: "flex", alignItems: "center", gap: "4px" }}>
                           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>photo_camera</span>
-                          {r._count.photos} foto
+                          {photoCount} foto
                         </span>
                       )}
                     </div>
+                    {/* Photo thumbnails */}
+                    {r.photos && r.photos.length > 0 && (
+                      <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+                        {r.photos.slice(0, 4).map((p: any) => (
+                          <div key={p.id} style={{
+                            width: "44px", height: "44px", borderRadius: "8px",
+                            overflow: "hidden", border: `1px solid ${T.outlineSoft}33`,
+                            flexShrink: 0,
+                          }}>
+                            <img src={p.url || `/api/files/${p.id}`} alt=""
+                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                        ))}
+                        {r.photos.length > 4 && (
+                          <div style={{
+                            width: "44px", height: "44px", borderRadius: "8px",
+                            background: T.surfaceContainerHigh, display: "flex",
+                            alignItems: "center", justifyContent: "center",
+                            fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+                            color: T.outline, flexShrink: 0,
+                          }}>
+                            +{r.photos.length - 4}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ width: "80px", flexShrink: 0 }}>
@@ -1711,12 +1788,81 @@ export default function ProjectDetailPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Action buttons */}
+                  {canReport && (
+                    <div style={{ display: "flex", gap: "4px", flexShrink: 0, marginLeft: "4px" }}
+                      onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => {
+                          setEditingReport(r);
+                          setPhotoIds(r.photos?.map((p: any) => p.id) || []);
+                          setReportForm({
+                            percentage: r.percentage,
+                            description: r.description,
+                            weather: r.weather || "",
+                            reportDate: new Date(r.reportDate).toISOString().split("T")[0],
+                          });
+                          setReportError(null);
+                          setShowReportForm(true);
+                        }}
+                        title="Edit"
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          width: "32px", height: "32px", borderRadius: "8px",
+                          background: "transparent", border: "none", cursor: "pointer",
+                          color: T.outline, transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = T.primaryLight; e.currentTarget.style.color = T.primary; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.outline; }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>edit</span>
+                      </button>
+                      <button
+                        onClick={() => setReportToDelete(r)}
+                        title="Delete"
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          width: "32px", height: "32px", borderRadius: "8px",
+                          background: "transparent", border: "none", cursor: "pointer",
+                          color: T.outline, transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = T.errorLight; e.currentTarget.style.color = T.error; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.outline; }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>delete</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
-      )}
+        <ReportDetail
+          report={selectedReport}
+          onClose={() => setSelectedReport(null)}
+          onEdit={canReport ? (r) => {
+            setSelectedReport(null);
+            setEditingReport(r);
+            setPhotoIds(r.photos?.map((p: any) => p.id) || []);
+            setReportForm({
+              percentage: r.percentage,
+              description: r.description,
+              weather: r.weather || "",
+              reportDate: new Date(r.reportDate).toISOString().split("T")[0],
+            });
+            setReportError(null);
+            setShowReportForm(true);
+          } : undefined}
+          onDelete={canReport ? (id) => {
+            setSelectedReport(null);
+            const r = reports.find((x: any) => x.id === id);
+            if (r) setReportToDelete(r);
+          } : undefined}
+        />
+      </>)}
 
       {/* ═══ EDIT MODE ═══ */}
       {editMode && (
@@ -1900,8 +2046,8 @@ export default function ProjectDetailPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px", color: T.primary }}>monitoring</span>
               </div>
               <div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Lapor Progress</h3>
-                <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>Laporkan progress pekerjaan hari ini</p>
+                <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{editingReport ? "Edit Laporan" : "Lapor Progress"}</h3>
+                <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{editingReport ? "Perbarui laporan progress pekerjaan" : "Laporkan progress pekerjaan hari ini"}</p>
               </div>
             </div>
 
@@ -1948,6 +2094,13 @@ export default function ProjectDetailPage() {
 
               <div>
                 <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                  Foto
+                </label>
+                <PhotoUpload value={photoIds} onChange={setPhotoIds} disabled={reportSubmitting} />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Deskripsi Pekerjaan *
                 </label>
                 <textarea value={reportForm.description} onChange={(e) => setReportForm((f: any) => ({ ...f, description: e.target.value }))} onFocus={focusInput} onBlur={blurInput} placeholder="Jelaskan progress pekerjaan yang sudah dilakukan hari ini…" rows={4} style={{ ...editFieldStyle, resize: "vertical" }} />
@@ -1965,14 +2118,39 @@ export default function ProjectDetailPage() {
               >
                 {reportSubmitting ? (
                   <><span className="material-symbols-outlined" style={{ fontSize: "16px", animation: "spin 1s linear infinite" }}>progress_activity</span>Menyimpan…</>
-                ) : (
-                  <><span className="material-symbols-outlined" style={{ fontSize: "18px" }}>save</span>Simpan Laporan</>
+                  ) : (
+                  <><span className="material-symbols-outlined" style={{ fontSize: "18px" }}>save</span>{editingReport ? "Simpan Perubahan" : "Simpan Laporan"}</>
                 )}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Delete Report Alert Dialog */}
+      <AlertDialog open={!!reportToDelete} onOpenChange={(open) => !open && !reportDeleting && setReportToDelete(null)}>
+        <AlertDialogContent className="">
+          <AlertDialogHeader className="">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+              <AlertDialogMedia className="">
+                <span className="material-symbols-outlined" style={{ fontSize: "28px", color: T.error }}>delete_forever</span>
+              </AlertDialogMedia>
+              <div style={{ flex: 1 }}>
+                <AlertDialogTitle className="">Hapus Laporan Progress?</AlertDialogTitle>
+                <AlertDialogDescription className="">
+                  Laporan progress tanggal <strong>{reportToDelete ? new Date(reportToDelete.reportDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : ""}</strong> akan dihapus dari sistem. Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="">
+            <AlertDialogCancel disabled={reportDeleting} className="">Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (reportToDelete) deleteReport(reportToDelete.id); }} loading={reportDeleting} className="">
+              {reportDeleting ? "Menghapus…" : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Remove Member Alert Dialog */}
       <AlertDialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>

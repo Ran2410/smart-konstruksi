@@ -45,6 +45,11 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
     "QC_INSPECTOR", "K3_OFFICER", "FINANCE", "CLIENT",
   ],
 
+  // ==================== LEADS ====================
+  "/dashboard/leads": [
+    "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR",
+  ],
+
   // ==================== MATERIALS ====================
   "/dashboard/materials": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",

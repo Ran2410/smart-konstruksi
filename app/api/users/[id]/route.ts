@@ -9,6 +9,8 @@ import {
   apiSuccess,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { updateUserSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -87,16 +89,10 @@ export const PUT = withPermission(
       }
 
       const body = await request.json();
-      const {
-        name,
-        email,
-        password,
-        role,
-        branchId,
-        phone,
-        avatar,
-        isActive,
-      } = body;
+      const parsed = validateOrRespond(updateUserSchema, body);
+      if (parsed instanceof Response) return parsed;
+
+      const { name, email, password, role, branchId, phone, avatar, isActive } = parsed;
 
       // Check email uniqueness if changed
       if (email && email.trim().toLowerCase() !== existing.email) {
@@ -126,7 +122,7 @@ export const PUT = withPermission(
       if (isActive !== undefined) updateData.isActive = isActive;
 
       // Hash password if provided
-      if (password && typeof password === "string" && password.length >= 6) {
+      if (password && typeof password === "string" && password.length >= 8) {
         updateData.password = await bcrypt.hash(password, 12);
       }
 

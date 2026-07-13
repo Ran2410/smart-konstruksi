@@ -17,6 +17,8 @@ import {
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
 import { ForbiddenError } from "@/lib/rbac/guard";
+import { createTaskSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // ==================== CONSTANTS ====================
 
@@ -180,14 +182,10 @@ export const POST = withAuth(
     try {
       const { user } = ctx;
       const body = await request.json();
-      const { title, description, projectId, assigneeId, startDate, dueDate, priority } = body;
+      const parsed = validateOrRespond(createTaskSchema, body);
+      if (parsed instanceof Response) return parsed;
 
-      // Validate required fields
-      if (!title || !projectId || !startDate || !dueDate) {
-        return apiError(
-          new Error("Missing required fields: title, projectId, startDate, dueDate")
-        );
-      }
+      const { title, description, projectId, assigneeId, startDate, dueDate, priority } = parsed;
 
       // Authorize task creation
       await authorizeTaskCreation(user, projectId);
@@ -213,12 +211,6 @@ export const POST = withAuth(
         }
       }
 
-      // Validate priority
-      const validPriorities = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-      const taskPriority = priority && validPriorities.includes(priority)
-        ? priority
-        : "MEDIUM";
-
       // Create task
       const task = await prisma.task.create({
         data: {
@@ -228,7 +220,7 @@ export const POST = withAuth(
           assigneeId: assigneeId || null,
           startDate: new Date(startDate),
           dueDate: new Date(dueDate),
-          priority: taskPriority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
+          priority,
           createdBy: user.id,
         },
         include: {

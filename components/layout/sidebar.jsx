@@ -94,29 +94,18 @@ export function Sidebar({ onClose }) {
       {/* Brand */}
       <div style={{ padding: "32px 24px 24px", position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
+          <img
+            src="/smartkonstrunksi.jpeg"
+            alt="Smart Konstruksi"
             style={{
               width: "40px",
               height: "40px",
-              background: "#004f35",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               borderRadius: "8px",
+              objectFit: "cover",
               flexShrink: 0,
+              border: "1px solid #1a1c1e",
             }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                color: "#fff",
-                fontSize: "22px",
-                fontVariationSettings: "'FILL' 1",
-              }}
-            >
-              architecture
-            </span>
-          </div>
+          />
           <div>
             <h1
               style={{

@@ -14,6 +14,8 @@ import {
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
 import { ForbiddenError } from "@/lib/rbac/guard";
+import { updateTaskSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // ==================== CONSTANTS ====================
 
@@ -230,15 +232,10 @@ export const PUT = withAuth(
       }
 
       const body = await request.json();
-      const {
-        title,
-        description,
-        assigneeId,
-        status,
-        priority,
-        startDate,
-        dueDate,
-      } = body;
+      const parsed = validateOrRespond(updateTaskSchema, body);
+      if (parsed instanceof Response) return parsed;
+
+      const { title, description, assigneeId, status, priority, startDate, dueDate } = parsed;
 
       // Build update data
       const updateData: Record<string, unknown> = {

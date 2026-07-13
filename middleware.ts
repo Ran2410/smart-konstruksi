@@ -1,17 +1,25 @@
 // ============================================================
-// Smart Konstruksi — Next.js Middleware (RBAC Integrated)
-// Layer 1: Route-level protection
+// Smart Konstruksi — Next.js Middleware (RBAC + Rate Limit)
+// Layer 1: Route-level protection + Rate limiting + Security headers
 // ============================================================
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import {
+  checkRateLimit,
+  getClientIP,
+  rateLimitResponse,
+  addSecurityHeaders,
+  LOGIN_CONFIG,
+  API_CONFIG,
+} from "@/lib/rate-limiter";
 
 // ==================== ROUTE ACCESS CONFIG ====================
 
 const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
 
-const SKIP_PATTERNS = ["/_next", "/api/", "/favicon.ico", "/public"];
+const SKIP_PATTERNS = ["/_next", "/api", "/favicon.ico", "/public"];
 
 const ROLE_ACCESS: Record<string, string[]> = {
   "/login": ["*"],
@@ -30,6 +38,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK",
     "QC_INSPECTOR", "K3_OFFICER", "FINANCE", "CLIENT",
   ],
+  "/dashboard/leads": ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR"],
   "/dashboard/invoices": ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE"],
   "/dashboard/payments": ["SUPER_ADMIN", "OWNER", "FINANCE"],
   "/dashboard/rab": ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "KONSULTAN"],
@@ -55,12 +64,10 @@ const ROLE_ACCESS: Record<string, string[]> = {
 // ==================== HELPERS ====================
 
 function canAccessRoute(role: string, pathname: string): boolean {
-  // Exact match
   if (ROLE_ACCESS[pathname]) {
     const allowed = ROLE_ACCESS[pathname];
     return allowed.includes("*") || allowed.includes(role);
   }
-  // Prefix match (longest first)
   const segments = pathname.split("/").filter(Boolean);
   for (let i = segments.length; i > 0; i--) {
     const prefix = "/" + segments.slice(0, i).join("/");
@@ -69,7 +76,6 @@ function canAccessRoute(role: string, pathname: string): boolean {
       return allowed.includes("*") || allowed.includes(role);
     }
   }
-  // Default: dashboard sub-routes
   if (pathname.startsWith("/dashboard")) {
     const dashboardAccess = ROLE_ACCESS["/dashboard"];
     if (!dashboardAccess) return false;
@@ -83,13 +89,32 @@ function canAccessRoute(role: string, pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip patterns
+  // === RATE LIMITING ===
+  const clientIP = getClientIP(request);
+
+  // Stricter rate limit for login (credentials callback only)
+  if (pathname === "/api/auth/callback/credentials") {
+    const result = checkRateLimit(`login:${clientIP}`, LOGIN_CONFIG);
+    if (!result.allowed) {
+      return rateLimitResponse(result.retryAfter!);
+    }
+  }
+
+  // General API rate limiting
+  if (pathname.startsWith("/api/")) {
+    const result = checkRateLimit(`api:${clientIP}`, API_CONFIG);
+    if (!result.allowed) {
+      return rateLimitResponse(result.retryAfter!);
+    }
+  }
+
+  // === SKIP PATTERNS ===
   for (const pattern of SKIP_PATTERNS) {
     if (pathname.startsWith(pattern)) return NextResponse.next();
   }
   if (pathname.includes(".")) return NextResponse.next();
 
-  // Use getToken() from next-auth/jwt — handles JWE encrypted tokens
+  // === AUTH CHECK ===
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
@@ -122,9 +147,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return NextResponse.next();
+  // Add security headers to all responses
+  return addSecurityHeaders(NextResponse.next());
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\\\..*).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

@@ -43,6 +43,9 @@ export const GET = withPermission(
             reporter: {
               select: { id: true, name: true, email: true, avatar: true },
             },
+            photos: {
+              select: { id: true, url: true, filename: true, mimeType: true, size: true },
+            },
             _count: {
               select: { photos: true },
             },
@@ -96,6 +99,7 @@ export const POST = withPermission(
         weather,
         latitude,
         longitude,
+        photoIds,
       } = body;
 
       // Validate required fields
@@ -126,8 +130,19 @@ export const POST = withPermission(
           reporter: {
             select: { id: true, name: true, email: true, avatar: true },
           },
+          photos: {
+            select: { id: true, url: true, filename: true, mimeType: true, size: true },
+          },
         },
       });
+
+      // Connect photos if provided
+      if (photoIds && Array.isArray(photoIds) && photoIds.length > 0) {
+        await prisma.file.updateMany({
+          where: { id: { in: photoIds } },
+          data: { reportId: report.id },
+        });
+      }
 
       // Auto-update project progress with latest report percentage
       await prisma.project.update({

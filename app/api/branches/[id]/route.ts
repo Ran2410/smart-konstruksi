@@ -8,6 +8,8 @@ import {
   apiSuccess,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createBranchSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -82,7 +84,10 @@ export const PUT = withPermission(
       }
 
       const body = await request.json();
-      const { name, address, phone, email } = body;
+      const parsed = validateOrRespond(createBranchSchema, body);
+      if (parsed instanceof Response) return parsed;
+
+      const { name, address, phone, email, isActive } = parsed;
 
       // Check name uniqueness if changed
       if (name && name.trim() !== existing.name) {
@@ -105,6 +110,7 @@ export const PUT = withPermission(
           ...(address !== undefined && { address }),
           ...(phone !== undefined && { phone }),
           ...(email !== undefined && { email }),
+          ...(isActive !== undefined && { isActive }),
           updatedBy: user.id,
         },
       });

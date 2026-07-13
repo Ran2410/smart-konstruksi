@@ -14,6 +14,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createMaterialSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // ==================== GET /api/materials ====================
 export const GET = withPermission("material:read", async (request, { user }) => {
@@ -83,30 +85,24 @@ export const GET = withPermission("material:read", async (request, { user }) => 
 export const POST = withPermission("material:create", async (request, { user }) => {
   try {
     const body = await request.json();
-
-    // Validate required fields
-    const requiredFields = ["name", "quantity", "unit", "unitPrice", "projectId"];
-    for (const field of requiredFields) {
-      if (!body[field] && body[field] !== 0) {
-        return apiError(new Error(`Field '${field}' is required`));
-      }
-    }
+    const parsed = validateOrRespond(createMaterialSchema, body);
+    if (parsed instanceof Response) return parsed;
 
     // Calculate totalPrice
-    const totalPrice = body.quantity * body.unitPrice;
+    const totalPrice = parsed.quantity * parsed.unitPrice;
 
     const material = await prisma.material.create({
       data: {
-        projectId: body.projectId,
-        name: body.name,
-        quantity: body.quantity,
-        unit: body.unit,
-        unitPrice: body.unitPrice,
+        projectId: parsed.projectId,
+        name: parsed.name,
+        quantity: parsed.quantity,
+        unit: parsed.unit,
+        unitPrice: parsed.unitPrice,
         totalPrice,
-        status: body.status || "ORDERED",
-        categoryId: body.categoryId || null,
-        vendorId: body.vendorId || null,
-        orderedAt: body.orderedAt ? new Date(body.orderedAt) : null,
+        status: (parsed.status || "ORDERED") as any,
+        categoryId: parsed.categoryId || null,
+        vendorId: parsed.vendorId || null,
+        orderedAt: parsed.orderedAt ? new Date(parsed.orderedAt) : null,
         createdBy: user.id,
       },
       include: {

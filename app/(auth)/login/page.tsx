@@ -788,9 +788,18 @@ export default function LoginPage() {
             <div className="sk-glow-btm" />
 
             <div className="sk-logo-wrap">
-              <div className="sk-logo-icon">
-                <span className="material-symbols-outlined">architecture</span>
-              </div>
+              <img
+                src="/smartkonstrunksi.jpeg"
+                alt="Smart Konstruksi"
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "10px",
+                  objectFit: "cover",
+                  border: "1px solid #1a1c1e",
+                  boxShadow: "0 4px 16px rgba(0,105,72,0.3)",
+                }}
+              />
               <h1 className="sk-logo-text">Smart Konstruksi</h1>
             </div>
 
@@ -853,9 +862,17 @@ export default function LoginPage() {
           {/* ── RIGHT: Auth ── */}
           <section className="sk-auth">
             <div className="sk-mobile-logo">
-              <div className="sk-mob-icon">
-                <span className="material-symbols-outlined">architecture</span>
-              </div>
+              <img
+                src="/smartkonstrunksi.jpeg"
+                alt="Smart Konstruksi"
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "8px",
+                  objectFit: "cover",
+                  border: "1px solid #1a1c1e",
+                }}
+              />
               <h1 className="sk-mob-text">Smart Konstruksi</h1>
             </div>
 

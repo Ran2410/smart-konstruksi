@@ -13,6 +13,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createUserSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 // GET /api/users — List users (user:read)
 // SUPER_ADMIN/OWNER/BRANCH_MANAGER can list
@@ -96,21 +98,10 @@ export const POST = withPermission(
   async (request, { user }) => {
     try {
       const body = await request.json();
-      const { email, name, password, role, branchId, phone, avatar } = body;
+      const parsed = validateOrRespond(createUserSchema, body);
+      if (parsed instanceof Response) return parsed;
 
-      // Validate required fields
-      if (!email || typeof email !== "string" || email.trim().length === 0) {
-        return apiError(new Error("Email is required"));
-      }
-      if (!name || typeof name !== "string" || name.trim().length === 0) {
-        return apiError(new Error("Name is required"));
-      }
-      if (!password || typeof password !== "string" || password.length < 6) {
-        return apiError(new Error("Password must be at least 6 characters"));
-      }
-      if (!role) {
-        return apiError(new Error("Role is required"));
-      }
+      const { email, name, password, role, branchId, phone, avatar } = parsed;
 
       // Check email uniqueness
       const existingUser = await prisma.user.findFirst({
@@ -132,7 +123,7 @@ export const POST = withPermission(
           email: email.trim().toLowerCase(),
           name: name.trim(),
           password: hashedPassword,
-          role,
+          role: role as any,
           branchId: branchId || null,
           phone: phone || null,
           avatar: avatar || null,

@@ -14,6 +14,8 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { createInvoiceSchema } from "@/lib/validation/schemas";
+import { validateOrRespond } from "@/lib/validation/index";
 
 /**
  * Auto-generate invoice number: INV + YYYYMMDD + 6-digit daily sequence
@@ -123,18 +125,12 @@ export const GET = withPermission("invoice:read", async (request, { user }) => {
 export const POST = withPermission("invoice:create", async (request, { user }) => {
   try {
     const body = await request.json();
-
-    // Validate required fields
-    const requiredFields = ["projectId", "amount", "issuedAt", "dueDate"];
-    for (const field of requiredFields) {
-      if (!body[field] && body[field] !== 0) {
-        return apiError(new Error(`Field '${field}' is required`));
-      }
-    }
+    const parsed = validateOrRespond(createInvoiceSchema, body);
+    if (parsed instanceof Response) return parsed;
 
     // Verify project exists
     const project = await prisma.project.findFirst({
-      where: { id: body.projectId, deletedAt: null },
+      where: { id: parsed.projectId, deletedAt: null },
     });
 
     if (!project) {
@@ -146,12 +142,12 @@ export const POST = withPermission("invoice:create", async (request, { user }) =
 
     const invoice = await prisma.invoice.create({
       data: {
-        projectId: body.projectId,
+        projectId: parsed.projectId,
         invoiceNo,
-        amount: body.amount,
-        status: body.status || "DRAFT",
-        issuedAt: new Date(body.issuedAt),
-        dueDate: new Date(body.dueDate),
+        amount: parsed.amount,
+        status: (parsed.status || "DRAFT") as any,
+        issuedAt: new Date(parsed.issuedAt),
+        dueDate: new Date(parsed.dueDate),
         createdBy: user.id,
       },
       include: {
