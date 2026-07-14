@@ -257,7 +257,7 @@ export default function NewProjectPage() {
         if (bRes.ok) setBranches((await bRes.json()).data || []);
         if (pmRes.ok) setManagers((await pmRes.json()).data || []);
         if (smRes.ok) setSiteManagers((await smRes.json()).data || []);
-        if (cRes.ok) setClients(await cRes.json() || []);
+        if (cRes.ok) setClients((await cRes.json()).data || []);
       } catch {}
       setLoadingDropdowns(false);
     }
