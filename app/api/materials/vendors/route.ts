@@ -1,5 +1,7 @@
 // ============================================================
-// Smart Konstruksi — Materials Inventory API (List + Create)
+// Smart Konstruksi — Vendors API (List + Create)
+// GET /api/materials/vendors — List vendors
+// POST /api/materials/vendors — Create vendor
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
@@ -11,74 +13,60 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
-import { createMaterialSchema } from "@/lib/validation/schemas";
+import { createVendorSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
-// GET /api/materials
 export const GET = withPermission("material:read", async (request) => {
   try {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = parsePagination(searchParams);
     const search = searchParams.get("search") || "";
-    const categoryId = searchParams.get("categoryId");
-    const vendorId = searchParams.get("vendorId");
 
     const where: Record<string, unknown> = { deletedAt: null };
 
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
       ];
     }
 
-    if (categoryId) where.categoryId = categoryId;
-    if (vendorId) where.vendorId = vendorId;
-
-    const [materials, total] = await Promise.all([
-      prisma.material.findMany({
+    const [vendors, total] = await Promise.all([
+      prisma.vendor.findMany({
         where,
-        include: {
-          category: { select: { id: true, name: true } },
-          vendor: { select: { id: true, name: true } },
-        },
+        include: { _count: { select: { materials: true } } },
         orderBy: { name: "asc" },
         skip,
         take: limit,
       }),
-      prisma.material.count({ where }),
+      prisma.vendor.count({ where }),
     ]);
 
-    return apiPaginated(materials, total, page, limit);
+    return apiPaginated(vendors, total, page, limit);
   } catch (error) {
     return apiError(error);
   }
 });
 
-// POST /api/materials
 export const POST = withPermission("material:create", async (request, { user }) => {
   try {
     const body = await request.json();
-    const parsed = validateOrRespond(createMaterialSchema, body);
+    const parsed = validateOrRespond(createVendorSchema, body);
     if (parsed instanceof Response) return parsed;
 
-    const material = await prisma.material.create({
+    const vendor = await prisma.vendor.create({
       data: {
         name: parsed.name.trim(),
-        unit: parsed.unit,
-        stock: parsed.stock,
-        avgPrice: parsed.avgPrice,
-        notes: parsed.notes || null,
-        categoryId: parsed.categoryId || null,
-        vendorId: parsed.vendorId || null,
+        phone: parsed.phone || null,
+        email: parsed.email || null,
+        address: parsed.address || null,
+        isVerified: parsed.isVerified ?? false,
         createdBy: user.id,
-      },
-      include: {
-        category: { select: { id: true, name: true } },
-        vendor: { select: { id: true, name: true } },
       },
     });
 
-    return apiCreated({ data: material });
+    return apiCreated(vendor);
   } catch (error) {
     return apiError(error);
   }

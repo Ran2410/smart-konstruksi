@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -117,15 +118,15 @@ function Field({ label, required, hint, children }: { label: string; required?: 
   );
 }
 
-function Skeleton() {
+function FormSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px", maxWidth: "800px", margin: "0 auto", padding: "0 16px" }}>
       <div style={{ ...card, height: "80px" }}>
         <div style={{ display: "flex", gap: "16px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#e5e7eb" }} />
+          <Skeleton className="h-10 w-10 rounded-[10px]" />
           <div style={{ flex: 1 }}>
-            <div style={{ width: "200px", height: "24px", background: "#e5e7eb", borderRadius: "6px", marginBottom: "8px" }} />
-            <div style={{ width: "150px", height: "16px", background: "#e5e7eb", borderRadius: "4px" }} />
+            <Skeleton className="h-6 w-[200px] mb-2" />
+            <Skeleton className="h-4 w-[150px]" />
           </div>
         </div>
       </div>
@@ -133,8 +134,8 @@ function Skeleton() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
           {[1, 2, 3, 4].map((i) => (
             <div key={i}>
-              <div style={{ width: "80px", height: "14px", background: "#e5e7eb", borderRadius: "4px", marginBottom: "10px" }} />
-              <div style={{ width: "100%", height: "44px", background: "#e5e7eb", borderRadius: "12px" }} />
+              <Skeleton className="h-3 w-20 mb-[10px]" />
+              <Skeleton className="h-[44px] w-full rounded-[12px]" />
             </div>
           ))}
         </div>
@@ -331,7 +332,7 @@ export default function EditUserPage() {
     paddingRight: "40px",
   });
 
-  if (loading) return <Skeleton />;
+  if (loading) return <FormSkeleton />;
   if (error || !user) return <NotFound />;
 
   return (

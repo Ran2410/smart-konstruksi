@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -175,37 +176,49 @@ function ActionMenu({
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────
-function Pagination({ page, totalPages, onPageChange }: {
-  page: number; totalPages: number; onPageChange: (p: number) => void;
+function Pagination({ page, totalPages, total, onPageChange, limit = 10 }: {
+  page: number; totalPages: number; total: number; onPageChange: (p: number) => void; limit?: number;
 }) {
-  if (totalPages <= 1) return null;
-  const pages: number[] = [];
-  const start = Math.max(1, page - 1);
-  const end = Math.min(totalPages, page + 1);
-  for (let i = start; i <= end; i++) pages.push(i);
+  if (totalPages <= 0 || total <= 0) return null;
 
-  const btn: React.CSSProperties = {
-    padding: "8px 14px", border: `1px solid ${T.outlineSoft}`,
-    borderRadius: "10px", background: T.surfaceCard, cursor: "pointer",
+  const defaultBtn: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    minWidth: "34px", height: "34px", padding: "0 8px",
+    border: `1px solid rgba(190,201,193,0.5)`, borderRadius: "8px",
+    background: "#fff", color: T.onSurfaceVariant,
     fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
-    color: T.onSurfaceMuted, transition: "all 0.15s",
+    cursor: "pointer", transition: "all 0.15s", lineHeight: 1,
+  };
+
+  const navBtn: React.CSSProperties = {
+    ...defaultBtn, minWidth: "auto", padding: "0 12px",
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "24px" }}>
-      <button style={btn} disabled={page <= 1} onClick={() => onPageChange(page - 1)}
-        onMouseEnter={(e) => { if (page > 1) { e.currentTarget.style.background = T.surfaceContainerLow; e.currentTarget.style.borderColor = T.outline; }}}
-        onMouseLeave={(e) => { e.currentTarget.style.background = T.surfaceCard; e.currentTarget.style.borderColor = T.outlineSoft; }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "16px", display: "block" }}>chevron_left</span>
-      </button>
-      {pages.map(p => (
-        <button key={p} style={{ ...btn, background: p === page ? T.primary : T.surfaceCard, color: p === page ? "#fff" : T.onSurfaceMuted, borderColor: p === page ? T.primary : T.outlineSoft }} onClick={() => onPageChange(p)}>{p}</button>
-      ))}
-      <button style={btn} disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}
-        onMouseEnter={(e) => { if (page < totalPages) { e.currentTarget.style.background = T.surfaceContainerLow; e.currentTarget.style.borderColor = T.outline; }}}
-        onMouseLeave={(e) => { e.currentTarget.style.background = T.surfaceCard; e.currentTarget.style.borderColor = T.outlineSoft; }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "16px", display: "block" }}>chevron_right</span>
-      </button>
+    <div style={{ padding: "16px 0 0", borderTop: `1px solid rgba(190,201,193,0.2)`, marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+      <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
+        Showing {Math.min((page - 1) * limit + 1, total)} to {Math.min(page * limit, total)} of {total} clients
+      </p>
+      <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+        <button style={navBtn} disabled={page <= 1} onClick={() => onPageChange(page - 1)}
+          onMouseEnter={(e) => { if (page > 1) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
+          onMouseLeave={(e) => { if (page > 1) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
+        >← Prev</button>
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          let n = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
+          return (
+            <button key={n} style={{ ...defaultBtn, border: `1px solid ${page === n ? T.primary : "rgba(190,201,193,0.5)"}`, background: page === n ? T.primary : "#fff", color: page === n ? "#fff" : T.onSurfaceVariant }} onClick={() => onPageChange(n)}
+              onMouseEnter={(e) => { if (page !== n) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
+              onMouseLeave={(e) => { if (page !== n) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
+            >{n}</button>
+          );
+        })}
+        {totalPages > 5 && <span style={{ padding: "0 4px", color: T.outline }}>…</span>}
+        <button style={navBtn} disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}
+          onMouseEnter={(e) => { if (page < totalPages) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
+          onMouseLeave={(e) => { if (page < totalPages) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
+        >Next →</button>
+      </div>
     </div>
   );
 }
@@ -334,9 +347,29 @@ export default function ClientsPage() {
 
         {/* Table / Loading / Empty */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px 20px", color: T.onSurfaceMuted }}>
-            <span className="material-symbols-outlined" style={{ fontSize: "40px", display: "block", marginBottom: "12px", animation: "spin 1s linear infinite" }}>sync</span>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", margin: 0 }}>Loading clients...</p>
+          <div>
+            {/* Table header skeleton pills */}
+            <div style={{ display: "flex", gap: "24px", marginBottom: "16px", paddingBottom: "12px", borderBottom: `1px solid ${T.outlineSoft}44` }}>
+              <Skeleton className="h-3 w-[100px]" />
+              <Skeleton className="h-3 w-[80px]" />
+              <Skeleton className="h-3 w-[140px]" />
+              <Skeleton className="h-3 w-[60px]" />
+              <Skeleton className="h-3 w-[70px]" />
+              <Skeleton className="h-3 w-[90px]" />
+            </div>
+            {/* Table rows skeleton */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                  <Skeleton className="h-5 w-[180px]" />
+                  <Skeleton className="h-5 w-[120px]" />
+                  <Skeleton className="h-5 w-[160px]" />
+                  <Skeleton className="h-5 w-[60px]" />
+                  <Skeleton className="h-5 w-[70px]" />
+                  <Skeleton className="h-5 w-[90px]" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : clients.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
@@ -364,7 +397,7 @@ export default function ClientsPage() {
               </thead>
               <tbody>
                 {clients.map((client) => (
-                  <tr key={client.id} style={{ borderBottom: `1px solid ${T.outlineSoft}22`, transition: "background 0.15s", cursor: "pointer" }}
+                  <tr key={client.id} style={{ transition: "background 0.15s", cursor: "pointer" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     onClick={() => router.push(`/dashboard/clients/${client.id}`)}
@@ -433,9 +466,8 @@ export default function ClientsPage() {
           </div>
         )}
 
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} />
       </div>
-
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>

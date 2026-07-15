@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -175,10 +176,60 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   };
 
   if (loading) return (
-    <div style={{ padding: "28px 32px", textAlign: "center", color: T.onSurfaceMuted, paddingTop: "80px" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "40px", display: "block", marginBottom: "12px", animation: "spin 1s linear infinite" }}>sync</span>
-      <p style={{ fontFamily: T.fontBody, fontSize: "14px", margin: 0 }}>Loading client details...</p>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    <div style={{ padding: "28px 32px", maxWidth: "1100px", margin: "0 auto" }}>
+      {/* Breadcrumb skeleton */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
+        <Skeleton className="h-3 w-12 rounded" />
+        <Skeleton className="h-3 w-3 rounded" />
+        <Skeleton className="h-3 w-20 rounded" />
+      </div>
+
+      {/* Profile Card skeleton */}
+      <div style={card}>
+        {/* Header with avatar skeleton */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <Skeleton className="h-[52px] w-[52px] rounded-[14px]" />
+            <div>
+              <Skeleton className="h-6 w-[200px] mb-2" />
+              <Skeleton className="h-4 w-[150px]" />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Skeleton className="h-[34px] w-[70px] rounded-[10px]" />
+            <Skeleton className="h-[34px] w-[100px] rounded-[10px]" />
+          </div>
+        </div>
+        {/* Fields skeleton */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px" }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-3 w-24 mb-2" />
+              <Skeleton className="h-5 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Projects section skeleton */}
+      <div style={{ ...card, marginTop: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+          <Skeleton className="h-[22px] w-[22px] rounded" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "14px 18px", borderRadius: "12px", background: T.surfaceContainerLow }}>
+              <div style={{ flex: 1 }}>
+                <Skeleton className="h-3 w-20 mb-1" />
+                <Skeleton className="h-4 w-[180px]" />
+              </div>
+              <Skeleton className="h-[6px] w-[100px] rounded-full" />
+              <Skeleton className="h-5 w-[60px] rounded-[20px]" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
@@ -401,8 +452,6 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         Registered: {fmtDate(client.createdAt)}
         {client.updatedAt && ` · Updated: ${fmtDate(client.updatedAt)}`}
       </div>
-
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

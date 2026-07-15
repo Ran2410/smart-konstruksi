@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -119,8 +121,62 @@ function SectionHeader({ icon, title, subtitle }: { icon: string; title: string;
   );
 }
 
+// ── Form Skeleton ──────────────────────────────────────────────────────────
+function FormSkeleton() {
+  return (
+    <div style={{ maxWidth: "720px", margin: "0 auto", padding: "0 16px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", marginBottom: "32px", marginTop: "20px" }}>
+        <Skeleton className="h-11 w-11 rounded-[14px]" />
+        <div style={{ flex: 1 }}>
+          <Skeleton className="h-8 w-[220px] mb-1" />
+          <Skeleton className="h-4 w-[220px]" />
+        </div>
+      </div>
+      {/* Form Card */}
+      <div style={card}>
+        {/* Section header */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid rgba(190,201,193,0.25)` }}>
+          <Skeleton className="h-12 w-12 rounded-[14px]" />
+          <div>
+            <Skeleton className="h-5 w-[160px] mb-1" />
+            <Skeleton className="h-4 w-[240px]" />
+          </div>
+        </div>
+        {/* Name field */}
+        <div style={{ marginBottom: "24px" }}>
+          <Skeleton className="h-3 w-24 mb-2" />
+          <Skeleton className="h-[44px] w-full rounded-[12px]" />
+        </div>
+        {/* Address field */}
+        <div style={{ marginBottom: "24px" }}>
+          <Skeleton className="h-3 w-16 mb-2" />
+          <Skeleton className="h-[100px] w-full rounded-[12px]" />
+        </div>
+        {/* Contact Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "24px" }}>
+          <div>
+            <Skeleton className="h-3 w-14 mb-2" />
+            <Skeleton className="h-[44px] w-full rounded-[12px]" />
+          </div>
+          <div>
+            <Skeleton className="h-3 w-14 mb-2" />
+            <Skeleton className="h-[44px] w-full rounded-[12px]" />
+          </div>
+        </div>
+      </div>
+      {/* Actions */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
+        <Skeleton className="h-[44px] w-[100px] rounded-[12px]" />
+        <Skeleton className="h-[44px] w-[140px] rounded-[12px]" />
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────
 export default function NewBranchPage() {
+  const { status } = useSession();
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -200,6 +256,8 @@ export default function NewBranchPage() {
     borderColor: errors[field] && touched[field] ? T.error : T.outlineSoft,
     background: errors[field] && touched[field] ? "rgba(255,218,214,0.15)" : T.surfaceContainerLow,
   });
+
+  if (status === "loading") return <FormSkeleton />;
 
   return (
     <div style={{ maxWidth: "720px", margin: "0 auto", padding: "0 16px" }}>

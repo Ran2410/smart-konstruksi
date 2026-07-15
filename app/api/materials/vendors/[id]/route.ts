@@ -1,5 +1,8 @@
 // ============================================================
-// Smart Konstruksi — Material Detail API (Get + Update + Delete)
+// Smart Konstruksi — Vendor Detail API
+// GET /api/materials/vendors/[id] — Get vendor
+// PUT /api/materials/vendors/[id] — Update vendor
+// DELETE /api/materials/vendors/[id] — Soft delete vendor
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
@@ -9,7 +12,7 @@ import {
   apiNoContent,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
-import { updateMaterialSchema } from "@/lib/validation/schemas";
+import { updateVendorSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
 function extractIdFromPath(url: string): string {
@@ -20,15 +23,12 @@ function extractIdFromPath(url: string): string {
 export const GET = withPermission("material:read", async (request) => {
   try {
     const id = extractIdFromPath(request.url);
-    const material = await prisma.material.findFirst({
+    const vendor = await prisma.vendor.findFirst({
       where: { id, deletedAt: null },
-      include: {
-        category: { select: { id: true, name: true } },
-        vendor: { select: { id: true, name: true, phone: true } },
-      },
+      include: { _count: { select: { materials: true } } },
     });
-    if (!material) return apiError(new Error("Material not found"));
-    return apiSuccess(material);
+    if (!vendor) return apiError(new Error("Vendor not found"));
+    return apiSuccess(vendor);
   } catch (error) {
     return apiError(error);
   }
@@ -37,34 +37,28 @@ export const GET = withPermission("material:read", async (request) => {
 export const PUT = withPermission("material:update", async (request, { user }) => {
   try {
     const id = extractIdFromPath(request.url);
-    const existing = await prisma.material.findFirst({
+    const existing = await prisma.vendor.findFirst({
       where: { id, deletedAt: null },
     });
-    if (!existing) return apiError(new Error("Material not found"));
+    if (!existing) return apiError(new Error("Vendor not found"));
 
     const body = await request.json();
-    const parsed = validateOrRespond(updateMaterialSchema, body);
+    const parsed = validateOrRespond(updateVendorSchema, body);
     if (parsed instanceof Response) return parsed;
 
     const updateData: Record<string, unknown> = { updatedBy: user.id };
     if (parsed.name !== undefined) updateData.name = parsed.name.trim();
-    if (parsed.unit !== undefined) updateData.unit = parsed.unit;
-    if (parsed.stock !== undefined) updateData.stock = parsed.stock;
-    if (parsed.avgPrice !== undefined) updateData.avgPrice = parsed.avgPrice;
-    if (parsed.notes !== undefined) updateData.notes = parsed.notes || null;
-    if (parsed.categoryId !== undefined) updateData.categoryId = parsed.categoryId || null;
-    if (parsed.vendorId !== undefined) updateData.vendorId = parsed.vendorId || null;
+    if (parsed.phone !== undefined) updateData.phone = parsed.phone || null;
+    if (parsed.email !== undefined) updateData.email = parsed.email || null;
+    if (parsed.address !== undefined) updateData.address = parsed.address || null;
+    if (parsed.isVerified !== undefined) updateData.isVerified = parsed.isVerified;
 
-    const material = await prisma.material.update({
+    const vendor = await prisma.vendor.update({
       where: { id },
       data: updateData,
-      include: {
-        category: { select: { id: true, name: true } },
-        vendor: { select: { id: true, name: true } },
-      },
     });
 
-    return apiSuccess(material);
+    return apiSuccess(vendor);
   } catch (error) {
     return apiError(error);
   }
@@ -73,12 +67,20 @@ export const PUT = withPermission("material:update", async (request, { user }) =
 export const DELETE = withPermission("material:delete", async (request, { user }) => {
   try {
     const id = extractIdFromPath(request.url);
-    const existing = await prisma.material.findFirst({
+    const existing = await prisma.vendor.findFirst({
       where: { id, deletedAt: null },
     });
-    if (!existing) return apiError(new Error("Material not found"));
+    if (!existing) return apiError(new Error("Vendor not found"));
 
-    await prisma.material.update({
+    // Check if vendor has materials
+    const materialCount = await prisma.material.count({
+      where: { vendorId: id, deletedAt: null },
+    });
+    if (materialCount > 0) {
+      return apiError(new Error("Cannot delete vendor with existing materials. Remove them first."));
+    }
+
+    await prisma.vendor.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy: user.id },
     });

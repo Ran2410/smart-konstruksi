@@ -68,13 +68,6 @@ enum ProjectStatus {
   CANCELLED
 }
 
-enum MaterialStatus {
-  ORDERED
-  SHIPPED
-  DELIVERED
-  INSTALLED
-}
-
 enum TaskStatus {
   TODO
   IN_PROGRESS
@@ -229,7 +222,6 @@ model Project {
   client         Client @relation(fields: [clientId], references: [id])
 
   // Business relations
-  materials       Material[]
   progressReports ProgressReport[]
   tasks           Task[]
   files           File[]
@@ -239,6 +231,7 @@ model Project {
   approvals       Approval[]
   activityLogs    ActivityLog[]
   attendances     Attendance[]
+  transactions    Transaction[]
 
   @@index([branchId])
   @@index([status])
@@ -329,19 +322,15 @@ model Vendor {
 }
 
 model Material {
-  id          String         @id @default(cuid())
-  projectId   String
-  name        String
-  quantity    Float
-  unit        String
-  unitPrice   Decimal        @db.Decimal(15, 2)
-  totalPrice  Decimal        @db.Decimal(15, 2)
-  status      MaterialStatus @default(ORDERED)
-  categoryId  String?
-  vendorId    String?
-  orderedAt   DateTime?
-  deliveredAt DateTime?
-  installedAt DateTime?
+  id       String  @id @default(cuid())
+  name     String
+  unit     String
+  stock    Float   @default(0)
+  avgPrice Decimal @default(0) @db.Decimal(15, 2)
+  notes    String?
+
+  categoryId String?
+  vendorId   String?
 
   // Audit fields
   createdAt DateTime  @default(now())
@@ -351,15 +340,41 @@ model Material {
   updatedBy String?
   deletedBy String?
 
-  project  Project           @relation(fields: [projectId], references: [id])
   category MaterialCategory? @relation(fields: [categoryId], references: [id])
   vendor   Vendor?           @relation(fields: [vendorId], references: [id])
 
-  @@index([projectId])
+  transactions Transaction[]
+
   @@index([categoryId])
   @@index([vendorId])
-  @@index([status])
+  @@index([name])
   @@map("materials")
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  type       String   // "IN" | "OUT"
+  materialId String
+  qty        Float
+  price      Decimal? @db.Decimal(15, 2) // Harga/satuan untuk IN, avg price untuk OUT
+  totalCost  Decimal  @db.Decimal(15, 2) // qty * price
+  projectId  String?  // Untuk OUT: project yg pakai
+  date       DateTime @default(now())
+  notes      String?
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  material Material @relation(fields: [materialId], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+
+  @@index([materialId])
+  @@index([projectId])
+  @@index([type])
+  @@index([date])
+  @@map("transactions")
 }
 
 // ==================== PROGRESS MODELS ====================

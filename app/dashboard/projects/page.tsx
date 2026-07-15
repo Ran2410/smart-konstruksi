@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -615,7 +616,30 @@ export default function ProjectsPage() {
         {activeView === "table" && (
           <>
             {loading ? (
-              <div style={{ padding: "48px", textAlign: "center", color: T.outline, fontFamily: T.fontLabel, fontSize: "14px" }}>Loading projects…</div>
+              <div style={{ padding: "24px" }}>
+                {/* Header skeleton pills */}
+                <div style={{ display: "flex", gap: "24px", marginBottom: "16px", borderBottom: `1px solid ${T.outlineSoft}44`, paddingBottom: "12px" }}>
+                  <Skeleton className="h-3 w-[80px]" />
+                  <Skeleton className="h-3 w-[160px]" />
+                  <Skeleton className="h-3 w-[110px]" />
+                  <Skeleton className="h-3 w-[100px]" />
+                  <Skeleton className="h-3 w-[100px]" />
+                  <Skeleton className="h-3 w-[90px]" />
+                </div>
+                {/* Table rows skeleton */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                      <Skeleton className="h-5 w-[80px]" />
+                      <Skeleton className="h-5 w-[200px]" />
+                      <Skeleton className="h-5 w-[120px]" />
+                      <Skeleton className="h-5 w-[100px]" />
+                      <Skeleton className="h-5 w-[80px]" />
+                      <Skeleton className="h-5 w-[90px]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : error ? (
               <div style={{ padding: "48px", textAlign: "center" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.error, display: "block", marginBottom: "8px" }}>error</span>

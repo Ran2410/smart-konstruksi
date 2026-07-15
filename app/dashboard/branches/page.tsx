@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 const T = {
   primary: "#004f35",
   primaryLight: "rgba(0,79,53,0.08)",
@@ -229,7 +230,6 @@ export default function BranchesPage() {
         .sk-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryLight}; }
         .sk-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .sk-page-btn.active { background: ${T.primary}; color: #fff; border-color: ${T.primary}; }
-        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {/* Header */}
@@ -277,9 +277,37 @@ export default function BranchesPage() {
 
         {/* Table */}
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center" }}>
-            <div style={{ display: "inline-block", width: "28px", height: "28px", border: `3px solid ${T.outlineSoft}44`, borderTopColor: T.primary, borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "12px 0 0" }}>Loading branches…</p>
+          <div style={{ padding: "4px 0" }}>
+            {/* Skeleton header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "24px", padding: "12px 20px", background: T.surfaceContainerLow, borderBottom: `1px solid ${T.outlineSoft}33` }}>
+              <Skeleton className="h-3 w-[100px]" />
+              <Skeleton className="h-3 w-[140px]" />
+              <Skeleton className="h-3 w-[120px]" />
+              <Skeleton className="h-3 w-12 ml-auto" />
+              <Skeleton className="h-3 w-14 ml-auto" />
+              <Skeleton className="h-3 w-16 ml-auto" />
+              <Skeleton className="h-3 w-20 ml-auto" />
+              <Skeleton className="h-3 w-6 ml-auto" />
+            </div>
+            {/* Skeleton rows */}
+            {[1,2,3,4,5].map(i => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "24px", padding: "14px 20px", borderBottom: `1px solid ${T.outlineSoft}22` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "180px" }}>
+                  <Skeleton className="h-9 w-9 rounded-[10px]" />
+                  <Skeleton className="h-4 w-[120px]" />
+                </div>
+                <Skeleton className="h-4 w-[140px]" />
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "160px" }}>
+                  <Skeleton className="h-3 w-[120px]" />
+                  <Skeleton className="h-3 w-[140px]" />
+                </div>
+                <Skeleton className="h-7 w-7 rounded-full ml-auto" />
+                <Skeleton className="h-7 w-7 rounded-full ml-auto" />
+                <Skeleton className="h-6 w-[68px] rounded-full ml-auto" />
+                <Skeleton className="h-4 w-[90px] ml-auto" />
+                <Skeleton className="h-5 w-5 rounded-md ml-auto" />
+              </div>
+            ))}
           </div>
         ) : branches.length === 0 ? (
           <div style={{ padding: "64px", textAlign: "center" }}>

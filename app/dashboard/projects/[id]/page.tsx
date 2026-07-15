@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -407,23 +408,25 @@ function SectionHeader({ icon, title, subtitle, badge }: {
 function DetailSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px", maxWidth: "1200px", margin: "0 auto", padding: "0 16px" }}>
-      <div style={{ ...cardStyle, height: "80px" }}>
+      {/* Header card skeleton */}
+      <div style={{ ...cardStyle }}>
         <div style={{ display: "flex", gap: "16px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#e5e7eb" }} />
+          <Skeleton className="h-10 w-10 rounded-[10px]" />
           <div style={{ flex: 1 }}>
-            <div style={{ width: "200px", height: "24px", background: "#e5e7eb", borderRadius: "6px", marginBottom: "8px" }} />
-            <div style={{ width: "150px", height: "16px", background: "#e5e7eb", borderRadius: "4px" }} />
+            <Skeleton className="h-6 w-[200px] mb-2" />
+            <Skeleton className="h-4 w-[150px]" />
           </div>
         </div>
       </div>
+      {/* Stat cards skeleton */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px" }}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} style={{ ...cardStyle, height: "100px" }}>
+          <div key={i} style={{ ...cardStyle }}>
             <div style={{ display: "flex", gap: "12px" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "#e5e7eb" }} />
+              <Skeleton className="h-12 w-12 rounded-[14px]" />
               <div style={{ flex: 1 }}>
-                <div style={{ width: "40px", height: "28px", background: "#e5e7eb", borderRadius: "6px", marginBottom: "8px" }} />
-                <div style={{ width: "80px", height: "14px", background: "#e5e7eb", borderRadius: "4px" }} />
+                <Skeleton className="h-7 w-10 mb-2" />
+                <Skeleton className="h-3 w-20" />
               </div>
             </div>
           </div>
@@ -1290,7 +1293,7 @@ export default function ProjectDetailPage() {
         <div className="sk-stat-grid" style={{ marginBottom: "24px" }}>
           <StatCard icon="group" label="Team Members" value={project._count?.members || 0} color={T.primary} />
           <StatCard icon="task_alt" label="Tasks" value={project._count?.tasks || 0} color={T.info} onClick={() => setActiveTab("tasks")} />
-          <StatCard icon="inventory_2" label="Materials" value={project._count?.materials || 0} color={T.warning} />
+          <StatCard icon="inventory_2" label="Materials Used" value={project._count?.transactions || 0} color={T.warning} />
           <StatCard icon="description" label="Files" value={project._count?.files || 0} color={T.secondary} />
           <StatCard icon="receipt_long" label="Invoices" value={project._count?.invoices || 0} color={T.success} />
           <StatCard icon="monitoring" label="Reports" value={reports.length} color="#7c3aed" onClick={() => setActiveTab("reports")} />

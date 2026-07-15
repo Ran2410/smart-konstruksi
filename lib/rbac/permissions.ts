@@ -301,6 +301,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "task:read", "task:update",
     // Material
     "material:read",
+    // Transaction
+    "transaction:read",
     // Attendance
     "attendance:create", "attendance:read",
     // File
@@ -325,6 +327,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "project:read",
     // Material
     "material:create", "material:read", "material:update",
+    // Transaction
+    "transaction:read",
     // PO
     "po:read",
     // File

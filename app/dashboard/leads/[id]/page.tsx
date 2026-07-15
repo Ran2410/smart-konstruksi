@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -124,13 +125,32 @@ function Field({ label, required, hint, children }: {
 function DetailSkeleton() {
   return (
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "0 16px" }}>
-      <div style={{ ...cardStyle, height: "80px", marginBottom: "24px" }}>
+      {/* Header skeleton */}
+      <div style={{ ...cardStyle, marginBottom: "24px" }}>
         <div style={{ display: "flex", gap: "16px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#e5e7eb" }} />
+          <Skeleton className="h-10 w-10 rounded-[10px]" />
           <div style={{ flex: 1 }}>
-            <div style={{ width: "200px", height: "24px", background: "#e5e7eb", borderRadius: "6px", marginBottom: "8px" }} />
-            <div style={{ width: "150px", height: "16px", background: "#e5e7eb", borderRadius: "4px" }} />
+            <Skeleton className="h-6 w-[200px] mb-2" />
+            <Skeleton className="h-4 w-[150px]" />
           </div>
+        </div>
+      </div>
+      {/* Form skeleton */}
+      <div style={cardStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "28px", paddingBottom: "20px", borderBottom: "1px solid rgba(190,201,193,0.25)" }}>
+          <Skeleton className="h-12 w-12 rounded-[14px]" />
+          <div>
+            <Skeleton className="h-5 w-32 mb-1" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-3 w-20 mb-2" />
+              <Skeleton className="h-10 w-full rounded-[12px]" />
+            </div>
+          ))}
         </div>
       </div>
     </div>

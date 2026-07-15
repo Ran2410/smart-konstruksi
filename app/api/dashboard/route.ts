@@ -333,10 +333,9 @@ async function buildProjectManagerDashboard(userId) {
 // SITE_MANAGER / MANDOR
 // ═══════════════════════════════════════════════════════════════
 async function buildSiteManagerDashboard(userId) {
-  const [todayTasks, workersPresent, materialsNeeded, recentActivity, projectProgress] = await Promise.all([
+  const [todayTasks, workersPresent, recentActivity, projectProgress] = await Promise.all([
     prisma.task.count({ where: { assigneeId: userId, startDate: { lte: new Date() }, dueDate: { gte: startOfDay() } } }),
     prisma.attendance.count({ where: { userId, checkIn: { gte: startOfDay() } } }),
-    prisma.material.count({ where: { status: "ORDERED", project: { siteManagerId: userId } } }),
     prisma.activityLog.findMany({
       where: { project: { siteManagerId: userId } },
       orderBy: { createdAt: "desc" },
@@ -357,7 +356,7 @@ async function buildSiteManagerDashboard(userId) {
     stats: [
       { icon: "task_alt", value: String(todayTasks), label: "Today's Tasks", change: "hari ini", up: true },
       { icon: "groups", value: String(workersPresent), label: "Workers Present", change: "hadir", up: true },
-      { icon: "inventory_2", value: String(materialsNeeded), label: "Materials Needed", change: materialsNeeded > 0 ? "pending order" : "all set", up: materialsNeeded === 0 },
+      { icon: "inventory_2", value: "—", label: "Materials", change: "via inventory", up: true },
       { icon: "description", value: "1", label: "Report Due", change: "daily report", up: true },
     ],
     quickStats: [],
@@ -662,11 +661,8 @@ async function buildVendorDashboard(userId) {
   const vendor = await prisma.vendor.findFirst({ where: { email: { not: null } }, select: { id: true } });
   const vendorId = vendor?.id || "__none__";
 
-  const [activeOrders, deliveredOrders, pendingOrders, totalPayments, recentActivity] = await Promise.all([
-    prisma.material.count({ where: { vendorId, status: { in: ["ORDERED", "SHIPPED"] } } }),
-    prisma.material.count({ where: { vendorId, status: "DELIVERED" } }),
-    prisma.material.count({ where: { vendorId, status: "ORDERED" } }),
-    prisma.payment.aggregate({ where: { invoice: { project: { materials: { some: { vendorId } } } } }, _sum: { amount: true } }),
+  const [materialsCount, recentActivity] = await Promise.all([
+    prisma.material.count({ where: { vendorId, deletedAt: null } }),
     prisma.activityLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -678,9 +674,9 @@ async function buildVendorDashboard(userId) {
     greeting: "My Orders",
     subtitle: `Overview pesanan Anda.`,
     stats: [
-      { icon: "shopping_cart", value: String(activeOrders), label: "Active Orders", change: `${pendingOrders} pending`, up: true },
-      { icon: "check_circle", value: String(deliveredOrders), label: "Delivered", change: "this month", up: true },
-      { icon: "payments", value: formatRupiah(totalPayments._sum.amount || 0), label: "Total Payments", change: "received", up: true },
+      { icon: "inventory_2", value: String(materialsCount), label: "Materials Supplied", change: "total items", up: true },
+      { icon: "check_circle", value: "—", label: "Status", change: "via inventory", up: true },
+      { icon: "payments", value: "—", label: "Payments", change: "see invoices", up: true },
     ],
     quickStats: [],
     activity: recentActivity.map((a) => ({

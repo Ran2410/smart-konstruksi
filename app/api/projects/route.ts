@@ -96,7 +96,7 @@ export const GET = withPermission(
               select: { id: true, name: true, email: true },
             },
             _count: {
-              select: { members: true, tasks: true, materials: true },
+              select: { members: true, tasks: true, transactions: true },
             },
           },
           orderBy: { createdAt: "desc" },

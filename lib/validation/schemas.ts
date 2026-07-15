@@ -137,18 +137,51 @@ export const createPaymentSchema = z.object({
   notes: z.string().nullable().optional(),
 });
 
+// ==================== MATERIAL CATEGORY ====================
+
+export const createMaterialCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required").max(100),
+  description: z.string().nullable().optional(),
+});
+
+export const updateMaterialCategorySchema = createMaterialCategorySchema.partial();
+
+// ==================== VENDOR ====================
+
+export const createVendorSchema = z.object({
+  name: z.string().min(1, "Vendor name is required").max(200),
+  phone: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional().or(z.literal("")),
+  address: z.string().nullable().optional(),
+  isVerified: z.boolean().optional(),
+});
+
+export const updateVendorSchema = createVendorSchema.partial();
+
 // ==================== MATERIAL ====================
 
 export const createMaterialSchema = z.object({
-  projectId: z.string().min(1, "Project is required"),
-  name: z.string().min(1, "Material name is required"),
-  quantity: z.number().positive("Quantity must be positive"),
+  name: z.string().min(1, "Material name is required").max(200),
   unit: z.string().min(1, "Unit is required"),
-  unitPrice: z.number().min(0, "Unit price must be >= 0"),
-  status: z.string().optional(),
+  stock: z.number().min(0, "Stock must be >= 0").default(0),
+  avgPrice: z.number().min(0, "Price must be >= 0").default(0),
+  notes: z.string().nullable().optional(),
   categoryId: z.string().nullable().optional(),
   vendorId: z.string().nullable().optional(),
-  orderedAt: dateString.nullable().optional(),
+});
+
+export const updateMaterialSchema = createMaterialSchema.partial();
+
+// ==================== TRANSACTION ====================
+
+export const createTransactionSchema = z.object({
+  type: z.enum(["IN", "OUT"]),
+  materialId: z.string().min(1, "Material is required"),
+  qty: z.number().positive("Quantity must be positive"),
+  price: z.number().min(0, "Price must be >= 0").optional(),
+  projectId: z.string().nullable().optional(),
+  date: dateString.optional(),
+  notes: z.string().nullable().optional(),
 });
 
 // ==================== TASK ====================
