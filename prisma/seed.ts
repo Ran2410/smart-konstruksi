@@ -224,24 +224,24 @@ async function seedFull() {
   const matCatElektrikal = cats.find(c => c.name === "Elektrikal")!.id;
 
   const materialData = [
-    { name: "Semen Portland Komposit 50kg", unit: "sak", stock: 2000, avgPrice: 62000, categoryId: matCatStruktur, vendorId: "v-1" },
-    { name: "Besi Beton Ulir 12mm", unit: "batang", stock: 800, avgPrice: 135000, categoryId: matCatStruktur, vendorId: "v-2" },
-    { name: "Besi Beton Ulir 16mm", unit: "batang", stock: 500, avgPrice: 245000, categoryId: matCatStruktur, vendorId: "v-2" },
-    { name: "Hollow Block 20cm", unit: "pcs", stock: 5000, avgPrice: 4500, categoryId: matCatStruktur, vendorId: "v-1" },
-    { name: "Kabel NYM 3x2.5mm", unit: "meter", stock: 500, avgPrice: 18000, categoryId: matCatElektrikal, vendorId: "v-4" },
-    { name: "Semen Portland 50kg", unit: "sak", stock: 400, avgPrice: 62000, categoryId: matCatStruktur, vendorId: "v-1" },
-    { name: "Keramik Granit 60x60cm", unit: "meter", stock: 280, avgPrice: 185000, categoryId: matCatFinishing, vendorId: "v-1" },
-    { name: "Cat Propan Interior", unit: "gallon", stock: 50, avgPrice: 850000, categoryId: matCatFinishing, vendorId: "v-3" },
-    { name: "Pompa Air Grundfos", unit: "unit", stock: 3, avgPrice: 12500000, categoryId: matCatMekanikal, vendorId: "v-4" },
-    { name: "Partisi Gypsum 12mm", unit: "lembar", stock: 200, avgPrice: 95000, categoryId: matCatFinishing, vendorId: "v-1" },
-    { name: "Panel Listrik 3 Phase", unit: "unit", stock: 5, avgPrice: 8500000, categoryId: matCatElektrikal, vendorId: "v-4" },
-    { name: "Beton Ready Mix K-300", unit: "m3", stock: 300, avgPrice: 850000, categoryId: matCatStruktur, vendorId: "v-1" },
-    { name: "Besi Beton 12mm Ulir", unit: "batang", stock: 1200, avgPrice: 135000, categoryId: matCatStruktur, vendorId: "v-2" },
-    { name: "AC Split Daikin 1.5PK", unit: "unit", stock: 320, avgPrice: 5200000, categoryId: matCatMekanikal, vendorId: "v-4" },
+    { projectId: projects[0].id, name: "Semen Portland Komposit 50kg", quantity: 2000, unit: "sak", unitPrice: 62000, status: "INSTALLED" as const, categoryId: matCatStruktur, vendorId: "v-1" },
+    { projectId: projects[0].id, name: "Besi Beton Ulir 12mm", quantity: 800, unit: "batang", unitPrice: 135000, status: "INSTALLED" as const, categoryId: matCatStruktur, vendorId: "v-2" },
+    { projectId: projects[0].id, name: "Besi Beton Ulir 16mm", quantity: 500, unit: "batang", unitPrice: 245000, status: "DELIVERED" as const, categoryId: matCatStruktur, vendorId: "v-2" },
+    { projectId: projects[0].id, name: "Hollow Block 20cm", quantity: 5000, unit: "pcs", unitPrice: 4500, status: "DELIVERED" as const, categoryId: matCatStruktur, vendorId: "v-1" },
+    { projectId: projects[0].id, name: "Kabel NYM 3x2.5mm", quantity: 500, unit: "meter", unitPrice: 18000, status: "ORDERED" as const, categoryId: matCatElektrikal, vendorId: "v-4" },
+    { projectId: projects[1].id, name: "Semen Portland 50kg", quantity: 400, unit: "sak", unitPrice: 62000, status: "INSTALLED" as const, categoryId: matCatStruktur, vendorId: "v-1" },
+    { projectId: projects[1].id, name: "Keramik Granit 60x60cm", quantity: 280, unit: "meter", unitPrice: 185000, status: "DELIVERED" as const, categoryId: matCatFinishing, vendorId: "v-1" },
+    { projectId: projects[1].id, name: "Cat Propan Interior", quantity: 50, unit: "gallon", unitPrice: 850000, status: "ORDERED" as const, categoryId: matCatFinishing, vendorId: "v-3" },
+    { projectId: projects[1].id, name: "Pompa Air Grundfos", quantity: 3, unit: "unit", unitPrice: 12500000, status: "SHIPPED" as const, categoryId: matCatMekanikal, vendorId: "v-4" },
+    { projectId: projects[4].id, name: "Partisi Gypsum 12mm", quantity: 200, unit: "lembar", unitPrice: 95000, status: "INSTALLED" as const, categoryId: matCatFinishing, vendorId: "v-1" },
+    { projectId: projects[4].id, name: "Panel Listrik 3 Phase", quantity: 5, unit: "unit", unitPrice: 8500000, status: "DELIVERED" as const, categoryId: matCatElektrikal, vendorId: "v-4" },
+    { projectId: projects[5].id, name: "Beton Ready Mix K-300", quantity: 300, unit: "m3", unitPrice: 850000, status: "INSTALLED" as const, categoryId: matCatStruktur, vendorId: "v-1" },
+    { projectId: projects[5].id, name: "Besi Beton 12mm Ulir", quantity: 1200, unit: "batang", unitPrice: 135000, status: "DELIVERED" as const, categoryId: matCatStruktur, vendorId: "v-2" },
+    { projectId: projects[5].id, name: "AC Split Daikin 1.5PK", quantity: 320, unit: "unit", unitPrice: 5200000, status: "ORDERED" as const, categoryId: matCatMekanikal, vendorId: "v-4" },
   ];
 
   for (const m of materialData) {
-    await prisma.material.create({ data: m });
+    await prisma.material.create({ data: { ...m, totalPrice: m.quantity * m.unitPrice } });
   }
   console.log(`✅ Materials: ${materialData.length} materials`);
 
