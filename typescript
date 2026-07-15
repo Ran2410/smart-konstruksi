@@ -1,0 +1,18 @@
+Script started on 2026-07-15 09:09:32+07:00 [COMMAND="npx prisma migrate dev --name init 2>&1" <not executed on terminal>]
+⠙[1G[0K[2mLoaded Prisma config from prisma.config.ts.
+[22m
+[2mPrisma schema loaded from prisma/schema.prisma.[22m
+[2mDatasource "db": PostgreSQL database "smart_konstruksi", schema "public" at "localhost:5432"[22m
+
+Applying migration `20260715020935_init`
+
+The following migration(s) have been created and applied from new schema changes:
+
+prisma/migrations/
+  └─ 20260715020935_[36m[1minit[22m[39m/
+    └─ migration.sql
+
+[32mYour database is now in sync with your schema.[39m
+
+⠙[1G[0K
+Script done on 2026-07-15 09:09:36+07:00 [COMMAND_EXIT_CODE="0"]

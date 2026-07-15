@@ -1,6 +1,6 @@
 // ============================================================
 // Smart Konstruksi — Prisma Schema v3.0 (Revised)
-// 21 Models | Audit Fields + Code Prefixes + Branch CRUD
+// 24 Models | Audit Fields + Code Prefixes + Branch CRUD
 // ============================================================
 //
 // REVISI v3.0 (30 June 2026):
@@ -99,6 +99,13 @@ enum ApprovalType {
 
 enum ApprovalStatus {
   PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RABStatus {
+  DRAFT
+  PENDING_APPROVAL
   APPROVED
   REJECTED
 }
@@ -540,12 +547,66 @@ model Lead {
   assignedUser User?  @relation("LeadAssignee", fields: [assignedTo], references: [id])
   branch       Branch? @relation(fields: [branchId], references: [id])
   creator      User?   @relation("LeadCreator", fields: [createdBy], references: [id])
+  rabs         RAB[]
+  approvals    Approval[]
 
   @@index([status])
   @@index([assignedTo])
   @@index([branchId])
   @@index([createdAt])
   @@map("leads")
+}
+
+// ==================== RAB (Rencana Anggaran Biaya) ====================
+
+model RAB {
+  id     String    @id @default(cuid())
+  code   String    @unique // Format: RAB000001 (global sequence)
+  leadId String
+  title  String    // Nama pekerjaan, auto dari lead name
+  total  Decimal   @default(0) @db.Decimal(15, 2) // Auto-calc dari items
+  status RABStatus @default(DRAFT)
+  notes  String?
+  version Int      @default(1) // Untuk tracking revisi
+
+  // Audit fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  // Relations
+  lead  Lead      @relation(fields: [leadId], references: [id])
+  items RABItem[]
+
+  @@index([leadId])
+  @@index([status])
+  @@index([code])
+  @@map("rabs")
+}
+
+model RABItem {
+  id        String   @id @default(cuid())
+  rabId     String
+  section   String   // Kelompok pekerjaan: "Persiapan", "Pondasi", "Dinding", dll
+  name      String   // Nama item pekerjaan
+  unit      String   // m², m³, unit, ls, titik, dll
+  qty       Decimal  @db.Decimal(15, 2)
+  unitPrice Decimal  @db.Decimal(15, 2)
+  total     Decimal  @db.Decimal(15, 2) // qty × unitPrice
+
+  // Audit fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  // Relations
+  rab RAB @relation(fields: [rabId], references: [id])
+
+  @@index([rabId])
+  @@map("rab_items")
 }
 
 // ==================== FINANCIAL MODELS ====================
@@ -607,7 +668,8 @@ model Approval {
   id         String         @id @default(cuid())
   type       ApprovalType
   entityId   String
-  projectId  String
+  projectId  String?
+  leadId     String?
   approverId String
   status     ApprovalStatus @default(PENDING)
   notes      String?
@@ -618,11 +680,13 @@ model Approval {
   createdBy String?
   updatedBy String?
 
-  project  Project @relation(fields: [projectId], references: [id])
-  approver User    @relation("Approver", fields: [approverId], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+  lead     Lead?    @relation(fields: [leadId], references: [id])
+  approver User     @relation("Approver", fields: [approverId], references: [id])
 
   @@index([type, entityId])
   @@index([projectId])
+  @@index([leadId])
   @@index([approverId])
   @@index([status])
   @@map("approvals")
