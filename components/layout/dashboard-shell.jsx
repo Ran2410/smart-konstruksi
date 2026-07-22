@@ -57,7 +57,7 @@ export function DashboardShell({ children }) {
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "256px" }}>
         <Topbar onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
         <main
           className="sk-main"
