@@ -29,7 +29,7 @@ export const GET = withPermission("material:read", async (request) => {
         type,
         COALESCE(SUM("totalCost"), 0) AS total,
         COUNT(*) AS count
-      FROM "Transaction"
+      FROM "transactions"
       WHERE 1=1 ${from ? `AND date >= '${from}'` : ""} ${to ? `AND date <= '${to}T23:59:59.999Z'` : ""}
       GROUP BY month, type
       ORDER BY month ASC
