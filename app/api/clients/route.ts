@@ -12,6 +12,7 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 // GET /api/clients — List clients
 export const GET = withPermission("project:read", async (request) => {
@@ -148,6 +149,9 @@ export const POST = withPermission(
           },
         });
       });
+
+      // Audit log
+      await logAudit(user.id, "CREATE", "Client", client.id, null, pickAuditFields(client as Record<string, unknown>, ['companyName', 'contactPerson', 'phone', 'email']));
 
       return apiCreated(client);
     } catch (error) {

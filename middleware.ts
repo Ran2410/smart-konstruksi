@@ -65,6 +65,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     "BRANCH_MANAGER",
     "ADMIN_KANTOR",
     "FINANCE",
+    "CLIENT",
   ],
   "/dashboard/payments": ["SUPER_ADMIN", "OWNER", "FINANCE"],
   "/dashboard/rab": [

@@ -37,27 +37,30 @@ export function DashboardShell({ children }) {
   return (
     <div className="sk-shell" style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
       {/* Backdrop — mobile only */}
-      {sidebarOpen && (
-        <div
-          className="sk-sidebar-backdrop"
-          onClick={closeSidebar}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            zIndex: 55,
-            display: "none", /* shown via CSS media query */
-          }}
-        />
-      )}
+      <div
+        className="sk-backdrop"
+        onClick={closeSidebar}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.4)",
+          zIndex: 55,
+          opacity: sidebarOpen ? 1 : 0,
+          pointerEvents: sidebarOpen ? "auto" : "none",
+          transition: "opacity 0.25s ease",
+        }}
+      />
 
-      {/* Sidebar */}
-      <div className={`sk-sidebar-wrapper ${sidebarOpen ? "open" : ""}`}>
+      {/* Sidebar — open class toggled via React state directly */}
+      <div
+        className={"sk-sidebar-wrapper" + (sidebarOpen ? " sk-open" : "")}
+        style={{ width: "256px", flexShrink: 0, zIndex: 60 }}
+      >
         <Sidebar onClose={closeSidebar} />
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "256px" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
         <main
           className="sk-main"
@@ -75,7 +78,7 @@ export function DashboardShell({ children }) {
       </div>
 
       <style>{`
-        /* Tablet: sidebar still visible but narrower padding */
+        /* Tablet: narrower padding */
         @media (max-width: 1024px) {
           .sk-main {
             padding: 24px 24px !important;
@@ -85,21 +88,16 @@ export function DashboardShell({ children }) {
         /* Mobile: sidebar becomes overlay drawer */
         @media (max-width: 768px) {
           .sk-sidebar-wrapper {
-            position: fixed;
+            position: fixed !important;
             top: 0;
             left: 0;
             height: 100vh;
-            z-index: 60;
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
-          .sk-sidebar-wrapper.open {
-            transform: translateX(0);
-          }
-
-          .sk-sidebar-backdrop {
-            display: block !important;
+          .sk-sidebar-wrapper.sk-open {
+            transform: translateX(0) !important;
           }
 
           .sk-main {

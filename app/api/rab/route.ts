@@ -14,6 +14,7 @@ import { apiError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createRABSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 // GET /api/rab — List RABs (rab:read)
 export const GET = withPermission(
@@ -103,7 +104,7 @@ export const POST = withPermission(
       const parsed = validateOrRespond(createRABSchema, body);
       if (parsed instanceof Response) return parsed;
 
-      const { leadId, title, notes } = parsed;
+      const { leadId, title, notes, marginPercent } = parsed;
 
       // Verify lead exists
       const lead = await prisma.lead.findUnique({ where: { id: leadId } });
@@ -135,6 +136,7 @@ export const POST = withPermission(
           leadId,
           title: title || lead.name,
           notes: notes || null,
+          marginPercent: marginPercent || 0,
           createdBy: user.id,
         },
         include: {
@@ -143,6 +145,8 @@ export const POST = withPermission(
           },
         },
       });
+
+      await logAudit(user.id, "CREATE", "RAB", rab.id, null, pickAuditFields(rab, ['code', 'title', 'status', 'total', 'marginPercent']));
 
       return apiCreated(rab);
     } catch (error) {

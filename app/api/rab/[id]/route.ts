@@ -7,6 +7,7 @@ import { withPermission, apiSuccess } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
 import { updateRABSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -83,6 +84,7 @@ export const PUT = withPermission(
       if (parsed.title !== undefined) updateData.title = parsed.title;
       if (parsed.notes !== undefined) updateData.notes = parsed.notes;
       if (parsed.leadId !== undefined) updateData.leadId = parsed.leadId;
+      if (parsed.marginPercent !== undefined) updateData.marginPercent = parsed.marginPercent;
       if (parsed.status !== undefined) {
         updateData.status = parsed.status;
         if (parsed.status === "PENDING_APPROVAL") {
@@ -103,6 +105,8 @@ export const PUT = withPermission(
           },
         },
       });
+
+      await logAudit(user.id, "UPDATE", "RAB", rab.id, pickAuditFields(existing, ['code', 'title', 'status', 'total', 'marginPercent']), pickAuditFields(rab, ['code', 'title', 'status', 'total', 'marginPercent']));
 
       return apiSuccess(rab);
     } catch (error) {
@@ -145,6 +149,8 @@ export const DELETE = withPermission(
           deletedBy: user.id,
         },
       });
+
+      await logAudit(user.id, "DELETE", "RAB", id, pickAuditFields(existing, ['code', 'title', 'status', 'total', 'marginPercent']), null);
 
       return apiSuccess({ message: "RAB deleted successfully" });
     } catch (error) {

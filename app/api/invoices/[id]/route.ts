@@ -8,8 +8,10 @@ import { prisma } from "@/lib/prisma";
 import {
   withPermission,
   apiSuccess,
+  apiNoContent,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 /**
  * Valid status transitions for invoices:
@@ -154,7 +156,43 @@ export const PUT = withPermission("invoice:update", async (request, { user }) =>
       },
     });
 
+    await logAudit(user.id, "UPDATE", "Invoice", invoice.id, pickAuditFields(existing, ['invoiceNo', 'amount', 'status', 'projectId']), pickAuditFields(invoice, ['invoiceNo', 'amount', 'status', 'projectId']));
+
     return apiSuccess(invoice);
+  } catch (error) {
+    return apiError(error);
+  }
+});
+
+// ==================== DELETE /api/invoices/[id] ====================
+export const DELETE = withPermission("invoice:update", async (request, { user }) => {
+  try {
+    const id = extractIdFromPath(request.url);
+
+    if (!id) {
+      return apiError(new Error("Invoice ID is required"));
+    }
+
+    const existing = await prisma.invoice.findFirst({
+      where: { id, deletedAt: null },
+    });
+
+    if (!existing) {
+      return apiError(new Error("Invoice not found"));
+    }
+
+    // Soft delete
+    await prisma.invoice.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedBy: user.id,
+      },
+    });
+
+    await logAudit(user.id, "DELETE", "Invoice", id, pickAuditFields(existing, ['invoiceNo', 'amount', 'status', 'projectId']), null);
+
+    return apiNoContent();
   } catch (error) {
     return apiError(error);
   }

@@ -460,6 +460,26 @@ export default function RABDetailPage() {
             </button>
           </>
         )}
+        {/* Export Excel — all roles can download */}
+        {rab.id && (
+          <a
+            href={`/api/rab/${rab.id}/export`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: "auto",
+              padding: "8px 20px", borderRadius: "10px",
+              background: "#fff", color: T.primary,
+              border: `1px solid ${T.primary}`,
+              fontFamily: T.fontBody, fontSize: "13px", fontWeight: 600,
+              cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px",
+              textDecoration: "none",
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>download</span>
+            Export Excel
+          </a>
+        )}
       </div>
 
       {/* RAB Items Table */}
@@ -521,9 +541,21 @@ export default function RABDetailPage() {
               ))}
               <div style={{ textAlign: "right", borderLeft: `1px solid ${T.outlineSoft}44`, paddingLeft: "16px" }}>
                 <span style={{ fontFamily: T.fontLabel, fontSize: "10px", textTransform: "uppercase", color: T.onSurfaceMuted }}>Grand Total</span>
-                <p style={{ margin: "2px 0", fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.primary }}>{fmtCurrency(grandTotal)}</p>
+                <p style={{ margin: "2px 0", fontFamily: T.fontDisplay, fontSize: "16px", fontWeight: 700, color: T.primary }}>{fmtCurrency(grandTotal)}</p>
               </div>
             </div>
+            {Number(rab.marginPercent) > 0 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "32px", flexWrap: "wrap", marginTop: "12px", paddingTop: "12px", borderTop: `1px dashed ${T.outlineSoft}44` }}>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontFamily: T.fontLabel, fontSize: "10px", textTransform: "uppercase", color: T.onSurfaceMuted }}>Margin ({Number(rab.marginPercent)}%)</span>
+                  <p style={{ margin: "2px 0", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.warning }}>{fmtCurrency(grandTotal * Number(rab.marginPercent) / 100)}</p>
+                </div>
+                <div style={{ textAlign: "right", borderLeft: `1px solid ${T.outlineSoft}44`, paddingLeft: "16px" }}>
+                  <span style={{ fontFamily: T.fontLabel, fontSize: "10px", textTransform: "uppercase", color: T.onSurfaceMuted }}>Total + Margin</span>
+                  <p style={{ margin: "2px 0", fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 800, color: T.primary }}>{fmtCurrency(grandTotal + (grandTotal * Number(rab.marginPercent) / 100))}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

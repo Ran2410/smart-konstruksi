@@ -3,6 +3,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   parsePagination,
@@ -174,6 +175,9 @@ export const POST = withPermission(
           },
         },
       });
+
+      // Audit log
+      await logAudit(user.id, "CREATE", "Project", project.id, null, pickAuditFields(project, ['name', 'code', 'status', 'budget', 'startDate', 'endDate']));
 
       return apiCreated(project);
     } catch (error) {

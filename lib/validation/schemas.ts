@@ -164,6 +164,7 @@ export const createMaterialSchema = z.object({
   name: z.string().min(1, "Material name is required").max(200),
   unit: z.string().min(1, "Unit is required"),
   stock: z.number().min(0, "Stock must be >= 0").default(0),
+  minStock: z.number().min(0, "Min stock must be >= 0").default(0),
   avgPrice: z.number().min(0, "Price must be >= 0").default(0),
   notes: z.string().nullable().optional(),
   categoryId: z.string().nullable().optional(),
@@ -182,6 +183,7 @@ export const createTransactionSchema = z.object({
   projectId: z.string().nullable().optional(),
   date: dateString.optional(),
   notes: z.string().nullable().optional(),
+  purpose: z.enum(["MATERIAL_PURCHASE", "OPERATIONAL", "PROJECT_USAGE", "WASTE", "RETURN", "ADJUSTMENT"]).optional().default("OPERATIONAL"),
 });
 
 // ==================== TASK ====================
@@ -232,6 +234,7 @@ export const createRABSchema = z.object({
   leadId: z.string().min(1, "Lead is required"),
   title: z.string().min(1, "Title is required").max(300),
   notes: z.string().nullable().optional(),
+  marginPercent: z.number().min(0).max(100).default(0).optional(),
 });
 
 export const updateRABSchema = createRABSchema.partial().extend({

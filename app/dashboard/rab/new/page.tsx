@@ -40,6 +40,7 @@ export default function CreateRABPage() {
   const [leadId, setLeadId] = useState("");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [marginPercent, setMarginPercent] = useState(10);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [loadingLeads, setLoadingLeads] = useState(true);
@@ -65,7 +66,7 @@ export default function CreateRABPage() {
       const res = await fetch("/api/rab", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId, title, notes: notes || null }),
+        body: JSON.stringify({ leadId, title, notes: notes || null, marginPercent }),
         credentials: "include",
       });
 
@@ -185,6 +186,31 @@ export default function CreateRABPage() {
                 boxSizing: "border-box",
               }}
             />
+          </div>
+
+          {/* Markup / Margin */}
+          <div style={{ marginBottom: "24px" }}>
+            <label style={{ fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: T.onSurfaceMuted, display: "block", marginBottom: "6px" }}>
+              Overhead & Profit Margin (%)
+            </label>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={marginPercent}
+                onChange={(e) => setMarginPercent(Number(e.target.value))}
+                style={{
+                  width: "100px", padding: "10px 14px", borderRadius: "10px",
+                  border: `1px solid ${T.outlineSoft}55`, fontFamily: T.fontLabel, fontSize: "13px",
+                  color: T.onSurface, background: T.surfaceCard, outline: "none",
+                  textAlign: "center", boxSizing: "border-box",
+                }}
+              />
+              <span style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted }}>
+                Standard construction margin typically 10–20%
+              </span>
+            </div>
           </div>
 
           {/* Actions */}

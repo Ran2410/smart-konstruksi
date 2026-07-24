@@ -5,6 +5,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   apiSuccess,
@@ -77,6 +78,9 @@ export const DELETE = withPermission("material:delete", async (request, { user }
     if (tx.type === "OUT" && tx.projectId) {
       await recalcProjectActualCost(tx.projectId);
     }
+
+    // Audit log
+    await logAudit(user.id, "DELETE", "Transaction", tx.id, pickAuditFields(tx, ['type', 'totalCost', 'notes', 'date', 'purpose']), null);
 
     return apiNoContent();
   } catch (error) {

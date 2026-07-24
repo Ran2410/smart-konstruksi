@@ -9,6 +9,7 @@ import {
   apiSuccess,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { logAudit, stripAuditData, pickAuditFields } from "@/lib/audit-log";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -92,7 +93,7 @@ export const PUT = withPermission(
 
       const existing = await prisma.client.findFirst({
         where: { id: clientId, deletedAt: null },
-        include: { user: { select: { id: true, email: true } } },
+        include: { user: { select: { id: true, name: true, email: true, phone: true } } },
       });
 
       if (!existing) {
@@ -177,6 +178,9 @@ export const PUT = withPermission(
         },
       });
 
+      // Audit log
+      await logAudit(user.id, "UPDATE", "Client", clientId, stripAuditData(existing), pickAuditFields(result as Record<string, unknown>, ['companyName', 'contactPerson', 'phone', 'email']));
+
       return apiSuccess(result);
     } catch (error) {
       return apiError(error);
@@ -232,6 +236,9 @@ export const DELETE = withPermission(
           },
         }),
       ]);
+
+      // Audit log
+      await logAudit(user.id, "DELETE", "Client", clientId, stripAuditData(existing), null);
 
       return apiSuccess({ message: "Client deleted successfully" });
     } catch (error) {

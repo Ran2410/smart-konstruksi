@@ -79,6 +79,7 @@ type Tx = {
   totalCost: number;
   date: string;
   notes: string | null;
+  purpose: string;
   material: { id: string; name: string; unit: string };
   project: { id: string; name: string; code: string } | null;
 };
@@ -199,6 +200,7 @@ export default function TransactionsPage() {
                   <th style={{ ...thCell, textAlign: "right" }}>Price</th>
                   <th style={{ ...thCell, textAlign: "right" }}>Total</th>
                   <th style={thCell}>Project</th>
+                  <th style={thCell}>Purpose</th>
                   <th style={thCell}>Notes</th>
                   {canDelete && <th style={{ ...thCell, textAlign: "right" }}>Actions</th>}
                 </tr>
@@ -236,6 +238,13 @@ export default function TransactionsPage() {
                         ? <span style={{ fontFamily: "'Geist', monospace", fontSize: "12px", color: T.primary }}>{tx.project.code}</span>
                         : <span style={{ color: T.onSurfaceMuted, fontSize: "12px" }}>—</span>
                       }
+                    </td>
+                    <td style={tdCell}>
+                      <span style={{
+                        padding: "2px 8px", borderRadius: "12px", fontSize: "10px", fontFamily: T.fontLabel, fontWeight: 600, display: "inline-block",
+                        background: tx.purpose === "PURCHASE" ? T.primaryLight : tx.purpose === "OPERATIONAL" ? "#f0f0ff" : tx.purpose === "PROJECT_USAGE" ? T.warningBg : T.surfaceContainerLow,
+                        color: tx.purpose === "PURCHASE" ? T.primary : tx.purpose === "OPERATIONAL" ? "#5555cc" : tx.purpose === "PROJECT_USAGE" ? T.warning : T.onSurfaceVariant,
+                      }}>{tx.purpose?.replace(/_/g, ' ') || "—"}</span>
                     </td>
                     <td style={tdCell}>
                       <span style={{ color: tx.notes ? T.onSurface : T.onSurfaceMuted, fontSize: "12px" }}>{tx.notes || "—"}</span>

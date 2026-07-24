@@ -5,6 +5,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   parsePagination,
@@ -110,6 +111,7 @@ export const POST = withPermission("material:create", async (request, { user }) 
         projectId: parsed.projectId || null,
         date: parsed.date ? new Date(parsed.date) : new Date(),
         notes: parsed.notes || null,
+        purpose: parsed.purpose,
         createdBy: user.id,
       },
       include: {
@@ -135,6 +137,9 @@ export const POST = withPermission("material:create", async (request, { user }) 
     if (parsed.type === "OUT" && parsed.projectId) {
       await recalcProjectActualCost(parsed.projectId);
     }
+
+    // Audit log
+    await logAudit(user.id, "CREATE", "Transaction", transaction.id, null, pickAuditFields(transaction, ['type', 'totalCost', 'notes', 'date', 'purpose']));
 
     return apiCreated({ data: transaction });
   } catch (error) {

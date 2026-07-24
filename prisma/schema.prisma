@@ -284,6 +284,7 @@ model Material {
   name     String
   unit     String
   stock    Float   @default(0)
+  minStock Float   @default(0)
   avgPrice Decimal @default(0) @db.Decimal(15, 2)
   notes    String?
 
@@ -310,7 +311,8 @@ model Material {
 
 model Transaction {
   id         String   @id @default(cuid())
-  type       String
+  type       String   // IN / OUT
+  purpose    String   @default("OPERATIONAL") // MATERIAL_PURCHASE, OPERATIONAL, PROJECT_USAGE, WASTE, RETURN, ADJUSTMENT
   materialId String
   qty        Float
   price      Decimal? @db.Decimal(15, 2)
@@ -495,6 +497,7 @@ model RAB {
   leadId  String
   title   String
   total   Decimal   @default(0) @db.Decimal(15, 2)
+  marginPercent Decimal @default(0) @db.Decimal(5, 2)
   status  RABStatus @default(DRAFT)
   notes   String?
   version Int       @default(1)

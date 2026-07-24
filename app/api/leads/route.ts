@@ -14,6 +14,7 @@ import { apiError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createLeadSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 // GET /api/leads — List leads (lead:read)
 export const GET = withPermission(
@@ -165,6 +166,9 @@ export const POST = withPermission(
           },
         },
       });
+
+      // Audit log
+      await logAudit(user.id, "CREATE", "Lead", lead.id, null, pickAuditFields(lead, ['name', 'company', 'status', 'type', 'phone', 'email']));
 
       return apiCreated(lead);
     } catch (error) {

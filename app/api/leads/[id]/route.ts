@@ -11,6 +11,7 @@ import { apiError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createLeadSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { logAudit, stripAuditData, pickAuditFields } from "@/lib/audit-log";
 
 // Helper: extract [id] from URL path
 function extractIdFromPath(url: string): string {
@@ -112,6 +113,9 @@ export const PUT = withPermission(
         },
       });
 
+      // Audit log
+      await logAudit(user.id, "UPDATE", "Lead", leadId, stripAuditData(existing), pickAuditFields(lead, ['name', 'company', 'status', 'type', 'phone', 'email']));
+
       return apiSuccess(lead);
     } catch (error) {
       return apiError(error);
@@ -145,6 +149,9 @@ export const DELETE = withPermission(
           deletedBy: user.id,
         },
       });
+
+      // Audit log
+      await logAudit(user.id, "DELETE", "Lead", leadId, stripAuditData(existing), null);
 
       return apiSuccess({ message: "Lead deleted successfully" });
     } catch (error) {

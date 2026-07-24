@@ -16,6 +16,7 @@ import {
 import { apiError } from "@/lib/rbac/guard";
 import { createInvoiceSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 /**
  * Auto-generate invoice number: INV + YYYYMMDD + 6-digit daily sequence
@@ -71,8 +72,20 @@ export const GET = withPermission("invoice:read", async (request, { user }) => {
       deletedAt: null,
     };
 
-    // Apply scope filter through project relation if needed
-    if (Object.keys(scopeFilter).length > 0) {
+    // Client scope: filter by project.clientId
+    if (user.role === "CLIENT" || user.role === "HOME_OWNER") {
+      const clientProfile = await prisma.client.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      if (clientProfile) {
+        where.project = { clientId: clientProfile.id };
+      } else {
+        where.project = { clientId: "__none__" }; // no results
+      }
+    }
+    // Apply branch/project scope filter for other roles
+    else if (Object.keys(scopeFilter).length > 0) {
       where.project = scopeFilter;
     }
 
@@ -156,6 +169,8 @@ export const POST = withPermission("invoice:create", async (request, { user }) =
         },
       },
     });
+
+    await logAudit(user.id, "CREATE", "Invoice", invoice.id, null, pickAuditFields(invoice, ['invoiceNo', 'amount', 'status', 'projectId']));
 
     return apiCreated({ data: invoice });
   } catch (error) {
