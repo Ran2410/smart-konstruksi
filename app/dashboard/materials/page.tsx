@@ -263,6 +263,34 @@ export default function InventoryPage() {
           <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, display: "block" }}>TOTAL STOCK VALUE</span>
           <span style={{ fontFamily: "'Hanken Grotesk', sans-serif", fontSize: "20px", fontWeight: 700, color: T.primary }}>{formatCurrency(totalValue)}</span>
         </div>
+        {(() => {
+          const lowStockCount = items.filter((m) => m.stock > 0 && m.stock <= m.minStock).length;
+          const outOfStockCount = items.filter((m) => m.stock <= 0).length;
+          const totalAlerts = lowStockCount + outOfStockCount;
+          if (totalAlerts === 0) return null;
+          return (
+            <>
+              <div style={{ padding: "8px 16px", background: outOfStockCount > 0 ? "#fef2f2" : T.warningBg, borderRadius: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: outOfStockCount > 0 ? T.error : T.warning }}>warning</span>
+                <div>
+                  {lowStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.warning }}>
+                      {lowStockCount} low stock
+                    </span>
+                  )}
+                  {lowStockCount > 0 && outOfStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "0 6px" }}>•</span>
+                  )}
+                  {outOfStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.error }}>
+                      {outOfStockCount} out of stock
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          );
+        })()}
         <input placeholder="Search materials..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...input, maxWidth: "280px" }} />
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ ...input, maxWidth: "200px" }}>
           <option value="">All Categories</option>
