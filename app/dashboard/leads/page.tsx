@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -45,13 +45,13 @@ const cardStyle: React.CSSProperties = {
 // ── Status Config ─────────────────────────────────────────────────────────
 const PIPELINE_STAGES = ["NEW", "CONTACTED", "QUOTED", "NEGOTIATION", "WON", "LOST"];
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  NEW:          { label: "New",         color: "#2563eb", bg: "rgba(37,99,235,0.08)",   dot: "#2563eb" },
-  CONTACTED:    { label: "Contacted",   color: "#b45309", bg: "rgba(180,83,9,0.08)",    dot: "#b45309" },
-  QUOTED:       { label: "Quoted",      color: "#7c3aed", bg: "rgba(124,58,237,0.08)",  dot: "#7c3aed" },
-  NEGOTIATION:  { label: "Negotiation", color: "#ca8a04", bg: "rgba(202,138,4,0.1)",    dot: "#ca8a04" },
-  WON:          { label: "Won",         color: "#15803d", bg: "rgba(21,128,61,0.08)",   dot: "#15803d" },
-  LOST:         { label: "Lost",        color: "#dc2626", bg: "rgba(220,38,38,0.08)",   dot: "#dc2626" },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; icon: string }> = {
+  NEW:          { label: "New",         color: "#2563eb", bg: "rgba(37,99,235,0.08)",   dot: "#2563eb",   icon: "fiber_new" },
+  CONTACTED:    { label: "Contacted",   color: "#b45309", bg: "rgba(180,83,9,0.08)",    dot: "#b45309",   icon: "call_made" },
+  QUOTED:       { label: "Quoted",      color: "#7c3aed", bg: "rgba(124,58,237,0.08)",  dot: "#7c3aed",   icon: "request_quote" },
+  NEGOTIATION:  { label: "Negotiation", color: "#ca8a04", bg: "rgba(202,138,4,0.1)",    dot: "#ca8a04",   icon: "handshake" },
+  WON:          { label: "Won",         color: "#15803d", bg: "rgba(21,128,61,0.08)",   dot: "#15803d",   icon: "emoji_events" },
+  LOST:         { label: "Lost",        color: "#dc2626", bg: "rgba(220,38,38,0.08)",   dot: "#dc2626",   icon: "cancel" },
 };
 
 const STATUS_OPTIONS = [
@@ -213,120 +213,154 @@ function PipelineMetrics({ leads }: { leads: any[] }) {
 }
 
 // ── Lead Card (Kanban) ────────────────────────────────────────────────────
-function LeadCard({ lead, onDragStart }: { lead: any; onDragStart: (e: React.DragEvent, lead: any) => void }) {
+function LeadCard({ lead, canEdit, onDragStart }: {
+  lead: any;
+  canEdit: boolean;
+  onDragStart: (leadId: string) => void;
+}) {
   const cfg = STATUS_CONFIG[lead.status] || { label: lead.status, color: T.outline, bg: T.surfaceContainerLow, dot: T.outline };
+  const sourceLabel = lead.source?.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (!canEdit) return;
+    e.dataTransfer.setData("text/plain", lead.id);
+    e.dataTransfer.effectAllowed = "move";
+    const el = e.currentTarget as HTMLElement;
+    el.style.opacity = "0.5";
+    onDragStart(lead.id);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    el.style.opacity = "1";
+    el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
+    el.style.borderColor = "rgba(190,201,193,0.25)";
+    el.style.transform = "translateY(0)";
+  };
+
   return (
     <div
-      draggable
-      onDragStart={(e) => onDragStart(e, lead)}
+      draggable={canEdit}
       onClick={() => window.location.href = `/dashboard/leads/${lead.id}`}
       style={{
-        background: T.surfaceCard, borderRadius: "12px",
-        border: `1px solid rgba(190,201,193,0.2)`,
-        padding: "14px", cursor: "grab", userSelect: "none",
+        background: T.surfaceCard,
+        borderRadius: "12px",
+        border: `1px solid rgba(190,201,193,0.25)`,
+        padding: "14px 14px 12px",
+        cursor: canEdit ? "grab" : "pointer",
+        transition: "all 0.15s ease",
         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        transition: "box-shadow 0.15s, transform 0.1s",
+        position: "relative",
+        overflow: "hidden",
+        userSelect: "none",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "none"; }}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+        e.currentTarget.style.borderColor = T.primary;
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
+        e.currentTarget.style.borderColor = "rgba(190,201,193,0.25)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <p style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.3 }}>{lead.name}</p>
+      {/* Top accent bar */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0,
+        height: "3px", background: cfg.color,
+        borderRadius: "12px 12px 0 0",
+      }} />
+
+      {/* Status badge + Source */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", marginBottom: "10px" }}>
+        <span style={{
+          fontFamily: T.fontLabel, fontSize: "9px", fontWeight: 700,
+          color: cfg.color, background: `${cfg.color}12`,
+          padding: "2px 8px", borderRadius: "4px",
+          textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: "16px",
+        }}>
+          {cfg.label}
+        </span>
         {lead.source && (
           <span style={{
             fontFamily: T.fontLabel, fontSize: "9px", fontWeight: 600,
             color: T.onSurfaceMuted, background: T.surfaceContainerLow,
-            padding: "2px 6px", borderRadius: "4px", whiteSpace: "nowrap", flexShrink: 0,
+            padding: "2px 6px", borderRadius: "4px", whiteSpace: "nowrap",
           }}>
-            {lead.source.replace(/_/g, " ")}
+            {sourceLabel}
           </span>
         )}
       </div>
+
+      {/* Name */}
+      <div style={{
+        fontFamily: T.fontDisplay, fontSize: "13px", fontWeight: 600,
+        color: T.onSurface, marginBottom: "4px", lineHeight: 1.4,
+      }}>
+        {lead.name}
+      </div>
+
+      {/* Company */}
       {lead.company && (
-        <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceVariant, margin: "0 0 6px" }}>{lead.company}</p>
+        <div style={{
+          fontFamily: T.fontBody, fontSize: "11px", color: T.onSurfaceVariant,
+          marginBottom: "10px",
+        }}>
+          {lead.company}
+        </div>
       )}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+
+      {/* Divider */}
+      <div style={{ height: "1px", background: "rgba(190,201,193,0.2)", marginBottom: "8px" }} />
+
+      {/* Bottom row: budget + days ago */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
         {lead.budgetMax != null ? (
-          <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 600, color: T.primary }}>
+          <span style={{
+            fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.primary,
+            display: "flex", alignItems: "center", gap: "4px",
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>payments</span>
             {formatCurrency(Number(lead.budgetMax))}
           </span>
         ) : (
-          <span />
+          <span style={{ fontFamily: T.fontBody, fontSize: "11px", color: T.outlineSoft, fontStyle: "italic" }}>
+            No budget
+          </span>
         )}
-        <span style={{ fontFamily: T.fontLabel, fontSize: "10px", color: T.outline }}>
+        <span style={{
+          fontFamily: T.fontLabel, fontSize: "10px", fontWeight: 600, color: T.outline,
+          display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>schedule</span>
           {daysAgo(lead.createdAt)}
         </span>
       </div>
+
+      {/* Assignee row */}
       {lead.assignedUser && (
-        <p style={{ fontFamily: T.fontBody, fontSize: "11px", color: T.onSurfaceMuted, margin: "6px 0 0", borderTop: `1px solid rgba(190,201,193,0.15)`, paddingTop: "6px" }}>
-          👤 {lead.assignedUser.name}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ── Kanban Column ─────────────────────────────────────────────────────────
-function KanbanColumn({ stage, leads, onDrop, onDragStart, isDragOver }: {
-  stage: string;
-  leads: any[];
-  onDrop: (stage: string) => void;
-  onDragStart: (e: React.DragEvent, lead: any) => void;
-  isDragOver: boolean;
-}) {
-  const cfg = STATUS_CONFIG[stage] || { label: stage, color: T.outline, bg: T.surfaceContainerLow, dot: T.outline };
-
-  return (
-    <div
-      onDragOver={(e) => { e.preventDefault(); }}
-      onDrop={() => onDrop(stage)}
-      style={{
-        flex: "1 1 200px", minWidth: "200px", maxWidth: "320px",
-        display: "flex", flexDirection: "column",
-        background: isDragOver ? "rgba(0,79,53,0.04)" : T.surfaceContainerLow,
-        borderRadius: "16px", border: isDragOver ? `2px dashed ${T.primary}` : `1px solid rgba(190,201,193,0.2)`,
-        transition: "all 0.15s",
-        padding: "12px", maxHeight: "calc(100vh - 320px)", overflow: "hidden",
-      }}
-    >
-      {/* Column Header */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: "12px", padding: "0 4px", flexShrink: 0,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: cfg.dot, flexShrink: 0 }} />
-          <span style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface }}>{cfg.label}</span>
-        </div>
-        <span style={{
-          fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
-          color: T.onSurfaceMuted, background: T.surfaceCard,
-          borderRadius: "9999px", padding: "2px 10px",
-          border: `1px solid rgba(190,201,193,0.2)`,
+        <div style={{
+          display: "flex", alignItems: "center", gap: "6px", marginTop: "8px",
+          paddingTop: "8px", borderTop: `1px solid rgba(190,201,193,0.15)`,
         }}>
-          {leads.length}
-        </span>
-      </div>
-
-      {/* Column Body */}
-      <div style={{
-        flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px",
-        paddingRight: "2px", minHeight: "60px",
-      }}>
-        {leads.length === 0 ? (
           <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "24px 8px", textAlign: "center",
-            fontFamily: T.fontBody, fontSize: "12px", color: T.outline, fontStyle: "italic",
+            width: "20px", height: "20px", borderRadius: "9999px",
+            background: T.primaryLight, display: "flex", alignItems: "center",
+            justifyContent: "center", flexShrink: 0,
           }}>
-            Drop leads here
+            <span className="material-symbols-outlined" style={{ fontSize: "12px", color: T.primary }}>person</span>
           </div>
-        ) : (
-          leads.map((lead) => (
-            <LeadCard key={lead.id} lead={lead} onDragStart={onDragStart} />
-          ))
-        )}
-      </div>
+          <span style={{
+            fontFamily: T.fontBody, fontSize: "11px", fontWeight: 500,
+            color: T.onSurfaceVariant, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {lead.assignedUser.name}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -337,12 +371,13 @@ function KanbanColumn({ stage, leads, onDrop, onDragStart, isDragOver }: {
 export default function LeadsPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const role = session?.user?.role as string;
+  const canEdit = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR"].includes(role);
 
   // Data states
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Filter states
   const [searchInput, setSearchInput] = useState("");
@@ -358,10 +393,10 @@ export default function LeadsPage() {
   const [view, setView] = useState<"table" | "pipeline">("pipeline");
 
   // Drag state
-  const [draggedLead, setDraggedLead] = useState<any>(null);
-  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
 
-  // ── Fetch Leads ────────────────────────────────────────────────────────
+  // ── Fetch Leads (paginated for table) ───────────────────────────────
   const fetchLeads = useCallback(async () => {
     setLoading(true); setError(null);
     try {
@@ -379,7 +414,7 @@ export default function LeadsPage() {
     finally { setLoading(false); }
   }, [page, search, statusFilter, sourceFilter]);
 
-  // ── Fetch ALL leads for pipeline view ──────────────────────────────────
+  // ── Fetch ALL leads for pipeline view ──────────────────────────────
   const [allLeads, setAllLeads] = useState<any[]>([]);
   const [pipelineLoading, setPipelineLoading] = useState(true);
 
@@ -397,7 +432,6 @@ export default function LeadsPage() {
     finally { setPipelineLoading(false); }
   }, [search, sourceFilter]);
 
-  // Refresh data on mount and filter change
   useEffect(() => { if (session) { fetchLeads(); fetchAllLeads(); } }, [session, fetchLeads, fetchAllLeads]);
 
   // Debounced search
@@ -406,64 +440,34 @@ export default function LeadsPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // ── Drag & Drop Handlers ───────────────────────────────────────────────
-  const handleDragStart = (e: React.DragEvent, lead: any) => {
-    setDraggedLead(lead);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", lead.id);
-  };
-
-  const handleDrop = async (newStatus: string) => {
-    setDragOverColumn(null);
-    if (!draggedLead || draggedLead.status === newStatus) {
-      setDraggedLead(null);
-      return;
-    }
-
-    const leadId = draggedLead.id;
-    const oldStatus = draggedLead.status;
-
-    // Optimistic update
-    setAllLeads((prev) =>
-      prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l))
-    );
-    setDraggedLead(null);
-
+  // ── Quick Status Change ────────────────────────────────────────────
+  const quickStatusChange = async (leadId: string, newStatus: string) => {
     try {
-      setUpdatingId(leadId);
       const res = await fetch(`/api/leads/${leadId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) {
-        // Revert on error
-        setAllLeads((prev) =>
-          prev.map((l) => (l.id === leadId ? { ...l, status: oldStatus } : l))
-        );
-        throw new Error("Failed to update status");
+      if (res.ok) {
+        fetchAllLeads();
       }
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setUpdatingId(null);
-    }
+    } catch {}
   };
 
-  // ── Reset Filters ──────────────────────────────────────────────────────
+  // ── Reset Filters ──────────────────────────────────────────────────
   const resetFilters = () => {
     setSearchInput(""); setSearch(""); setStatusFilter(""); setSourceFilter(""); setPage(1);
   };
 
   const hasActiveFilters = !!(statusFilter || sourceFilter || search);
 
-  // Group leads by status for pipeline view
-  const groupedLeads = allLeads.reduce((acc: Record<string, any[]>, lead: any) => {
-    if (!acc[lead.status]) acc[lead.status] = [];
-    acc[lead.status].push(lead);
-    return acc;
-  }, {} as Record<string, any[]>);
+  // Group leads by status
+  const grouped = PIPELINE_STAGES.map((stage) => ({
+    value: stage,
+    ...STATUS_CONFIG[stage],
+    leads: allLeads.filter((l) => l.status === stage),
+  }));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -495,31 +499,33 @@ export default function LeadsPage() {
         .sk-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryLight}; }
         .sk-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .sk-page-btn.active { background: ${T.primary}; color: #fff; border-color: ${T.primary}; }
-        .kanban-scroll::-webkit-scrollbar { height: 6px; }
-        .kanban-scroll::-webkit-scrollbar-track { background: transparent; }
-        .kanban-scroll::-webkit-scrollbar-thumb { background: rgba(190,201,193,0.4); border-radius: 99px; }
-        .kanban-columns::-webkit-scrollbar { height: 6px; }
-        .kanban-columns::-webkit-scrollbar-track { background: transparent; }
-        .kanban-columns::-webkit-scrollbar-thumb { background: rgba(190,201,193,0.4); border-radius: 99px; }
       `}</style>
 
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
-        <div>
-          <h2 style={{ fontFamily: T.fontDisplay, fontSize: "32px", fontWeight: 600, letterSpacing: "-0.01em", color: T.onSurface, margin: 0 }}>
-            {view === "pipeline" ? "Pipeline" : "Leads"}
-          </h2>
-          <p style={{ fontFamily: T.fontBody, fontSize: "16px", color: T.onSurfaceMuted, margin: "4px 0 0", maxWidth: "480px" }}>
-            {view === "pipeline"
-              ? "Drag & drop leads between stages to update their status."
-              : "Track and manage potential customer leads."}
-          </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <div style={{
+            width: "48px", height: "48px", borderRadius: "12px",
+            background: T.primaryLight, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "26px", color: T.primary }}>
+              {view === "pipeline" ? "account_tree" : "analytics"}
+            </span>
+          </div>
+          <div>
+            <h2 style={{ fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.01em", color: T.onSurface, margin: 0 }}>
+              {view === "pipeline" ? "Pipeline" : "Leads"}
+            </h2>
+            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>
+              {view === "pipeline" ? `${allLeads.length} leads · Drag & drop to update status` : "Track and manage potential customer leads."}
+            </p>
+          </div>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {/* View Toggle */}
           <div style={{
             display: "flex", background: T.surfaceContainerLow,
-            borderRadius: "10px", padding: "3px",
+            borderRadius: "10px", padding: "3px", gap: "2px",
             border: `1px solid rgba(190,201,193,0.25)`,
           }}>
             <button
@@ -577,13 +583,16 @@ export default function LeadsPage() {
         <PipelineMetrics leads={allLeads} />
       )}
 
-      {/* ── Pipeline View ───────────────────────────────────────────────── */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
+      {/* PIPELINE VIEW */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
       {view === "pipeline" ? (
-        <div style={cardStyle}>
+        <div style={{ ...cardStyle, padding: "24px" }}>
           {/* Filters */}
           <div style={{
-            padding: "0 0 16px", borderBottom: `1px solid rgba(190,201,193,0.2)`,
             display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
+            marginBottom: "20px", paddingBottom: "16px",
+            borderBottom: `1px solid rgba(190,201,193,0.2)`,
           }}>
             <div style={{ position: "relative", flex: 1, maxWidth: "280px" }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "20px", color: T.outline, pointerEvents: "none" }}>search</span>
@@ -600,11 +609,7 @@ export default function LeadsPage() {
                 }}
               />
             </div>
-            <FilterChip
-              label="Source" value={sourceFilter}
-              onChange={(v) => { setSourceFilter(v); }}
-              options={SOURCE_OPTIONS}
-            />
+            <FilterChip label="Source" value={sourceFilter} onChange={(v) => { setSourceFilter(v); }} options={SOURCE_OPTIONS} />
             {hasActiveFilters && (
               <button onClick={resetFilters} style={{
                 fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
@@ -615,31 +620,169 @@ export default function LeadsPage() {
             )}
           </div>
 
-          {/* Kanban Columns */}
+          {/* Loading */}
           {pipelineLoading ? (
-            <div style={{ padding: "48px", textAlign: "center" }}>
-              <p style={{ fontFamily: T.fontBody, color: T.onSurfaceMuted }}>Loading pipeline...</p>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              padding: "32px", justifyContent: "center", color: T.outline,
+              fontFamily: T.fontLabel, fontSize: "14px",
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>progress_activity</span>
+              Loading pipeline…
             </div>
           ) : (
-            <div className="kanban-columns" style={{
-              display: "flex", gap: "12px", overflowX: "auto",
-              paddingTop: "16px", paddingBottom: "4px",
-            }}>
-              {PIPELINE_STAGES.map((stage) => (
-                <KanbanColumn
-                  key={stage}
-                  stage={stage}
-                  leads={groupedLeads[stage] || []}
-                  onDrop={handleDrop}
-                  onDragStart={handleDragStart}
-                  isDragOver={dragOverColumn === stage}
-                />
-              ))}
-            </div>
+            <>
+              {/* Board Columns — grid like tasks-board */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+                gap: "12px",
+                overflowX: "auto",
+              }}>
+                {grouped.map((col) => (
+                  <div
+                    key={col.value}
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "14px",
+                      border: `1px solid ${dropTarget === col.value ? "rgba(0,79,53,0.4)" : "rgba(190,201,193,0.15)"}`,
+                      boxShadow: dropTarget === col.value ? "0 0 0 2px rgba(0,79,53,0.08)" : "0 1px 4px rgba(0,0,0,0.03)",
+                      padding: "16px 12px 12px",
+                      minHeight: "200px",
+                      display: "flex", flexDirection: "column",
+                      transition: "all 0.15s ease",
+                      position: "relative",
+                    }}
+                    onDragOver={(e) => {
+                      if (!canEdit || !draggedLeadId) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      setDropTarget(col.value);
+                    }}
+                    onDragLeave={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX;
+                      const y = e.clientY;
+                      if (x <= rect.left || x >= rect.right || y <= rect.top || y >= rect.bottom) {
+                        setDropTarget((prev) => prev === col.value ? null : prev);
+                      }
+                    }}
+                    onDrop={(e) => {
+                      if (!canEdit) return;
+                      e.preventDefault();
+                      const leadId = e.dataTransfer.getData("text/plain");
+                      setDropTarget(null);
+                      setDraggedLeadId(null);
+                      if (leadId) {
+                        const currentLead = allLeads.find((l) => l.id === leadId);
+                        if (currentLead && currentLead.status !== col.value) {
+                          quickStatusChange(leadId, col.value);
+                        }
+                      }
+                    }}
+                  >
+                    {/* Column Header */}
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      marginBottom: "14px", paddingBottom: "10px",
+                      borderBottom: `2px solid ${col.color}15`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: "18px", color: col.color }}>
+                          {col.icon}
+                        </span>
+                        <span style={{
+                          fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
+                          color: T.onSurface, textTransform: "uppercase", letterSpacing: "0.04em",
+                        }}>
+                          {col.label}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+                        color: T.outline, background: "rgba(111,122,114,0.08)",
+                        padding: "2px 9px", borderRadius: "6px",
+                        minWidth: "20px", textAlign: "center",
+                      }}>
+                        {col.leads.length}
+                      </span>
+                    </div>
+
+                    {/* Lead Cards */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+                      {col.leads.length === 0 ? (
+                        <div style={{
+                          textAlign: "center", padding: "24px 8px",
+                          color: dropTarget === col.value ? T.primary : T.outlineSoft,
+                          fontFamily: T.fontBody, fontSize: "12px",
+                          borderRadius: "8px",
+                          background: dropTarget === col.value ? "rgba(0,79,53,0.04)" : "transparent",
+                          border: dropTarget === col.value ? `2px dashed ${T.primary}40` : "2px dashed transparent",
+                          transition: "all 0.15s ease",
+                          flex: 1, display: "flex", flexDirection: "column",
+                          alignItems: "center", justifyContent: "center",
+                        }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: "28px", display: "block", marginBottom: "4px" }}>
+                            {dropTarget === col.value ? "add_location" : col.value === "WON" ? "celebration" : col.value === "LOST" ? "sentiment_dissatisfied" : "drag_indicator"}
+                          </span>
+                          {dropTarget === col.value && draggedLeadId
+                            ? "Drop here"
+                            : col.value === "NEW"
+                              ? "No new leads"
+                              : col.value === "WON"
+                                ? "No won deals"
+                                : col.value === "LOST"
+                                  ? "No lost deals"
+                                  : "Move leads here"}
+                        </div>
+                      ) : (
+                        col.leads.map((lead) => (
+                          <LeadCard
+                            key={lead.id}
+                            lead={lead}
+                            canEdit={canEdit}
+                            onDragStart={setDraggedLeadId}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Drag & Drop Hint */}
+              {canEdit && (
+                <div style={{
+                  marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap",
+                  padding: "14px 16px", background: "rgba(0,79,53,0.04)",
+                  border: "1px dashed rgba(0,79,53,0.2)", borderRadius: "10px",
+                  alignItems: "center",
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "16px", color: T.primary }}>touch_app</span>
+                  <span style={{ fontFamily: T.fontBody, fontSize: "12px", fontWeight: 500, color: T.onSurface }}>
+                    <strong>Drag & drop</strong> lead cards between columns to update status
+                  </span>
+                  <div style={{ display: "flex", gap: "6px", marginLeft: "auto" }}>
+                    {PIPELINE_STAGES.map((s) => (
+                      <span key={s} style={{
+                        fontFamily: T.fontLabel, fontSize: "10px",
+                        color: STATUS_CONFIG[s]?.color || T.outline,
+                        background: `${(STATUS_CONFIG[s]?.color || T.outline)}10`,
+                        padding: "2px 6px", borderRadius: "4px",
+                      }}>
+                        {STATUS_CONFIG[s]?.label || s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : (
-        /* ── TABLE VIEW ──────────────────────────────────────────────── */
+        /* ════════════════════════════════════════════════════════════════════ */
+        /* TABLE VIEW */
+        /* ════════════════════════════════════════════════════════════════════ */
         <div style={cardStyle}>
           {/* Toolbar */}
           <div style={{
@@ -669,7 +812,7 @@ export default function LeadsPage() {
             </div>
           </div>
 
-          {/* Table */}
+          {/* Table content — same as before with pagination */}
           {loading ? (
             <div style={{ padding: "24px" }}>
               <div style={{ display: "flex", gap: "24px", marginBottom: "16px", borderBottom: `1px solid ${T.outlineSoft}44`, paddingBottom: "12px" }}>
@@ -732,19 +875,15 @@ export default function LeadsPage() {
                     <tr key={lead.id} onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <td>
                         <p style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{lead.name}</p>
-                        {lead.email && (
-                          <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{lead.email}</p>
-                        )}
+                        {lead.email && <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{lead.email}</p>}
                       </td>
                       <td style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceVariant }}>{lead.company || "—"}</td>
                       <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted }}>{lead.phone || "—"}</td>
-                      <td>
-                        {lead.source ? (
-                          <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceVariant, background: T.surfaceContainerLow, padding: "2px 8px", borderRadius: "4px" }}>
-                            {lead.source.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                          </span>
-                        ) : "—"}
-                      </td>
+                      <td>{lead.source ? (
+                        <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceVariant, background: T.surfaceContainerLow, padding: "2px 8px", borderRadius: "4px" }}>
+                          {lead.source.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                        </span>
+                      ) : "—"}</td>
                       <td><StatusBadge status={lead.status} /></td>
                       <td style={{ fontFamily: T.fontBody, fontSize: "14px" }}>{lead.assignedUser?.name || "—"}</td>
                       <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted }}>
@@ -770,9 +909,7 @@ export default function LeadsPage() {
                 <button className="sk-page-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} style={{ minWidth: "auto", padding: "0 12px" }}>← Prev</button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let n = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
-                  return (
-                    <button key={n} className={`sk-page-btn ${page === n ? "active" : ""}`} onClick={() => setPage(n)}>{n}</button>
-                  );
+                  return <button key={n} className={`sk-page-btn ${page === n ? "active" : ""}`} onClick={() => setPage(n)}>{n}</button>;
                 })}
                 {totalPages > 5 && <span style={{ padding: "0 4px", color: T.outline }}>…</span>}
                 <button className="sk-page-btn" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} style={{ minWidth: "auto", padding: "0 12px" }}>Next →</button>
