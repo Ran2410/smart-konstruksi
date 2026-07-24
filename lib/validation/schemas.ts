@@ -164,6 +164,7 @@ export const createMaterialSchema = z.object({
   name: z.string().min(1, "Material name is required").max(200),
   unit: z.string().min(1, "Unit is required"),
   stock: z.number().min(0, "Stock must be >= 0").default(0),
+  minStock: z.number().min(0, "Min stock must be >= 0").default(0),
   avgPrice: z.number().min(0, "Price must be >= 0").default(0),
   notes: z.string().nullable().optional(),
   categoryId: z.string().nullable().optional(),
@@ -182,6 +183,7 @@ export const createTransactionSchema = z.object({
   projectId: z.string().nullable().optional(),
   date: dateString.optional(),
   notes: z.string().nullable().optional(),
+  purpose: z.enum(["MATERIAL_PURCHASE", "OPERATIONAL", "PROJECT_USAGE", "WASTE", "RETURN", "ADJUSTMENT"]).optional().default("OPERATIONAL"),
 });
 
 // ==================== TASK ====================
@@ -225,6 +227,33 @@ export function validateFile(file: { size: number; type: string }): string | nul
   }
   return null;
 }
+
+// ==================== RAB ====================
+
+export const createRABSchema = z.object({
+  leadId: z.string().min(1, "Lead is required"),
+  title: z.string().min(1, "Title is required").max(300),
+  notes: z.string().nullable().optional(),
+  marginPercent: z.number().min(0).max(100).default(0).optional(),
+});
+
+export const updateRABSchema = createRABSchema.partial().extend({
+  status: z.enum(["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED"]).optional(),
+  version: z.number().int().positive().optional(),
+});
+
+export const createRABItemSchema = z.object({
+  rabId: z.string().min(1, "RAB is required"),
+  section: z.string().min(1, "Section is required"),
+  name: z.string().min(1, "Item name is required"),
+  unit: z.string().min(1, "Unit is required"),
+  qty: z.number().positive("Qty must be positive"),
+  unitPrice: z.number().min(0, "Unit price must be >= 0"),
+});
+
+export const updateRABItemSchema = createRABItemSchema.partial().extend({
+  id: z.string().min(1).optional(),
+});
 
 // ==================== PROGRESS REPORT ====================
 

@@ -154,7 +154,7 @@ function Avatar({ name, src }: { name: string; src?: string }) {
 }
 
 // ── Action Dropdown ────────────────────────────────────────────────────────
-function ActionDropdown({ projectId, router }: { projectId: string; router: any }) {
+function ActionDropdown({ projectId, router, canEdit }: { projectId: string; router: any; canEdit?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -167,17 +167,21 @@ function ActionDropdown({ projectId, router }: { projectId: string; router: any 
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const actions = [
+  const actions: Array<{ icon: string; label: string; color?: string; onClick: () => any }> = [
     { icon: "visibility", label: "View Details", onClick: () => router.push(`/dashboard/projects/${projectId}`) },
-    { icon: "edit", label: "Edit Project", onClick: () => router.push(`/dashboard/projects/${projectId}`) },
-    { icon: "delete", label: "Delete Project", color: T.error, onClick: async () => {
-      if (!confirm("Yakin ingin hapus project ini?")) return;
-      try {
-        const res = await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
-        if (res.ok) { setOpen(false); window.location.reload(); }
-      } catch { /* ignore */ }
-    }},
   ];
+  if (canEdit) {
+    actions.push(
+      { icon: "edit", label: "Edit Project", onClick: () => router.push(`/dashboard/projects/${projectId}`) },
+      { icon: "delete", label: "Delete Project", color: T.error, onClick: async () => {
+        if (!confirm("Are you sure you want to delete this project?")) return;
+        try {
+          const res = await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
+          if (res.ok) { setOpen(false); window.location.reload(); }
+        } catch { /* ignore */ }
+      }},
+    );
+  }
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
@@ -370,6 +374,7 @@ export default function ProjectsPage() {
   const router = useRouter();
   const userRole = (session?.user as any)?.role;
   const canCreate = CAN_CREATE.includes(userRole || "");
+  const canEdit = CAN_CREATE.includes(userRole || "");
 
   // Data states
   const [projects, setProjects] = useState<any[]>([]);
@@ -701,7 +706,7 @@ export default function ProjectsPage() {
                         <td><ProgressBar value={p.progress || 0} /></td>
                         <td style={{ fontFamily: T.fontBody, fontSize: "14px", fontWeight: 500 }}>{formatCurrency(Number(p.budget))}</td>
                         <td style={{ textAlign: "right" }}>
-                          <ActionDropdown projectId={p.id} router={router} />
+                          <ActionDropdown projectId={p.id} router={router} canEdit={canEdit} />
                         </td>
                       </tr>
                     ))}

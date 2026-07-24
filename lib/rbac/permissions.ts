@@ -65,8 +65,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Material
     "material:read",
     // Financial
-    "invoice:read", "invoice:verify",
-    "payment:read", "payment:verify",
+    "invoice:create", "invoice:read", "invoice:update", "invoice:verify",
+    "payment:create", "payment:read", "payment:verify",
     // Approval
     "approval:read", "approval:approve",  // Deal nominal besar
     // Report
@@ -99,7 +99,7 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Material
     "material:read",
     // Financial
-    "invoice:read",
+    "invoice:create", "invoice:read", "invoice:update",
     // Approval
     "approval:read", "approval:approve",  // RAB + Design + Deal nominal tertentu
     // Report
@@ -181,7 +181,7 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Material
     "material:create", "material:read", "material:update",
     // Financial
-    "invoice:create", "invoice:read",
+    "invoice:create", "invoice:read", "invoice:update",
     // PO
     "po:create", "po:read", "po:update",
     // Warranty
@@ -253,8 +253,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Project
     "project:read",
     // Financial
-    "invoice:read", "invoice:verify",
-    "payment:read", "payment:verify", "payment:reconcile",
+    "invoice:read", "invoice:update", "invoice:verify",
+    "payment:create", "payment:read", "payment:verify", "payment:reconcile",
     // Warranty
     "warranty:read", "warranty:manage",
     // Report

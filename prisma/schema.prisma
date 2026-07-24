@@ -1,33 +1,3 @@
-// ============================================================
-// Smart Konstruksi — Prisma Schema v3.0 (Revised)
-// 21 Models | Audit Fields + Code Prefixes + Branch CRUD
-// ============================================================
-//
-// REVISI v3.0 (30 June 2026):
-// 1. Audit fields: createdBy, updatedBy, deletedBy (plain String?, no relation)
-//    → Lookup di application layer saat butuh nama user
-//    → Alasan: hindari 30+ bidirectional relations di User model
-// 2. Project code: format PJ000001 (global sequence)
-// 3. Invoice code: format INV20260629000001 (daily reset sequence)
-// 4. Branch: sudah siap CRUD (Super Admin + Owner)
-//
-// AUDIT FIELD RULES:
-// - Business Core (Project, Invoice, Payment, Material, ProgressReport, Task)
-//   → createdBy ✅, updatedBy ✅, deletedBy ✅, deletedAt ✅
-// - User Mgmt (User, Client, Branch)
-//   → createdBy ✅, updatedBy ✅, deletedBy ✅, deletedAt ✅
-// - Lookup (MaterialCategory, Vendor)
-//   → createdBy ✅, updatedBy ✅, deletedAt ✅, deletedBy ✅
-// - Join/Relasi (ProjectMember, Checklist)
-//   → createdBy ✅ only
-// - Communication (Comment, Message)
-//   → createdBy ✅ only
-// - Operational (Attendance, File)
-//   → createdBy ✅ only
-// - System Generated (AuditLog, ActivityLog, Notification)
-//   → No audit fields (they ARE the audit trail)
-// ============================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -35,8 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
-// ==================== ENUMS ====================
 
 enum Role {
   SUPER_ADMIN
@@ -103,6 +71,13 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum RABStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
@@ -111,8 +86,6 @@ enum LeadStatus {
   WON
   LOST
 }
-
-// ==================== CORE MODELS ====================
 
 model User {
   id        String    @id @default(cuid())
@@ -126,17 +99,15 @@ model User {
   lastLogin DateTime?
   branchId  String?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-  createdBy String? // userId yang create record ini
-  updatedBy String? // userId yang last update
-  deletedBy String? // userId yang soft delete
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
 
   branch Branch? @relation(fields: [branchId], references: [id])
 
-  // Business relations
   managedProjects    Project[]        @relation("ProjectManager")
   supervisedProjects Project[]        @relation("SiteManager")
   clientProfile      Client?
@@ -154,9 +125,8 @@ model User {
   auditLogs          AuditLog[]
   activityLogs       ActivityLog[]
 
-  // Lead relations
-  assignedLeads  Lead[] @relation("LeadAssignee")
-  createdLeads   Lead[] @relation("LeadCreator")
+  assignedLeads Lead[] @relation("LeadAssignee")
+  createdLeads  Lead[] @relation("LeadCreator")
 
   @@index([email])
   @@index([role])
@@ -165,14 +135,13 @@ model User {
 }
 
 model Branch {
-  id      String  @id @default(cuid())
-  name    String  @unique
-  address String?
-  phone   String?
-  email   String?
+  id       String  @id @default(cuid())
+  name     String  @unique
+  address  String?
+  phone    String?
+  email    String?
   isActive Boolean @default(true)
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -187,11 +156,9 @@ model Branch {
   @@map("branches")
 }
 
-// ==================== PROJECT MODELS ====================
-
 model Project {
   id          String        @id @default(cuid())
-  code        String        @unique // Format: PJ000001 (global sequence)
+  code        String        @unique
   name        String
   description String?
   address     String
@@ -203,12 +170,10 @@ model Project {
   status      ProjectStatus @default(PLANNING)
   branchId    String
 
-  // Stakeholders
   projectManagerId String
   siteManagerId    String?
   clientId         String
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -221,7 +186,6 @@ model Project {
   siteManager    User?  @relation("SiteManager", fields: [siteManagerId], references: [id])
   client         Client @relation(fields: [clientId], references: [id])
 
-  // Business relations
   progressReports ProgressReport[]
   tasks           Task[]
   files           File[]
@@ -247,7 +211,6 @@ model Client {
   companyName String?
   address     String?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -267,7 +230,6 @@ model ProjectMember {
   userId    String
   role      Role
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -280,14 +242,11 @@ model ProjectMember {
   @@map("project_members")
 }
 
-// ==================== MATERIAL MODELS ====================
-
 model MaterialCategory {
   id          String  @id @default(cuid())
   name        String  @unique
   description String?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -308,7 +267,6 @@ model Vendor {
   address    String?
   isVerified Boolean @default(false)
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -326,13 +284,13 @@ model Material {
   name     String
   unit     String
   stock    Float   @default(0)
+  minStock Float   @default(0)
   avgPrice Decimal @default(0) @db.Decimal(15, 2)
   notes    String?
 
   categoryId String?
   vendorId   String?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -353,16 +311,16 @@ model Material {
 
 model Transaction {
   id         String   @id @default(cuid())
-  type       String   // "IN" | "OUT"
+  type       String   // IN / OUT
+  purpose    String   @default("OPERATIONAL") // MATERIAL_PURCHASE, OPERATIONAL, PROJECT_USAGE, WASTE, RETURN, ADJUSTMENT
   materialId String
   qty        Float
-  price      Decimal? @db.Decimal(15, 2) // Harga/satuan untuk IN, avg price untuk OUT
-  totalCost  Decimal  @db.Decimal(15, 2) // qty * price
-  projectId  String?  // Untuk OUT: project yg pakai
+  price      Decimal? @db.Decimal(15, 2)
+  totalCost  Decimal  @db.Decimal(15, 2)
+  projectId  String?
   date       DateTime @default(now())
   notes      String?
 
-  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?
@@ -377,8 +335,6 @@ model Transaction {
   @@map("transactions")
 }
 
-// ==================== PROGRESS MODELS ====================
-
 model ProgressReport {
   id          String   @id @default(cuid())
   projectId   String
@@ -390,7 +346,6 @@ model ProgressReport {
   latitude    Float?
   longitude   Float?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -409,8 +364,6 @@ model ProgressReport {
   @@map("progress_reports")
 }
 
-// ==================== TASK MODELS ====================
-
 model Task {
   id          String       @id @default(cuid())
   projectId   String
@@ -423,7 +376,6 @@ model Task {
   dueDate     DateTime
   completedAt DateTime?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -448,7 +400,6 @@ model Checklist {
   title  String
   isDone Boolean @default(false)
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -457,8 +408,6 @@ model Checklist {
   @@index([taskId])
   @@map("checklists")
 }
-
-// ==================== ATTENDANCE ====================
 
 model Attendance {
   id        String    @id @default(cuid())
@@ -471,7 +420,6 @@ model Attendance {
   photoUrl  String?
   notes     String?
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -484,8 +432,6 @@ model Attendance {
   @@map("attendances")
 }
 
-// ==================== FILE MANAGEMENT ====================
-
 model File {
   id         String  @id @default(cuid())
   filename   String
@@ -496,7 +442,6 @@ model File {
   projectId  String?
   reportId   String?
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -510,25 +455,22 @@ model File {
   @@map("files")
 }
 
-// ==================== LEADS ====================
-
 model Lead {
-  id        String     @id @default(cuid())
-  name      String
-  company   String?
-  phone     String?
-  email     String?
-  source    String?
-  status    LeadStatus @default(NEW)
-  type      String?
-  budgetMin Decimal?   @db.Decimal(15, 2)
-  budgetMax Decimal?   @db.Decimal(15, 2)
-  location  String?
-  notes     String?
+  id         String     @id @default(cuid())
+  name       String
+  company    String?
+  phone      String?
+  email      String?
+  source     String?
+  status     LeadStatus @default(NEW)
+  type       String?
+  budgetMin  Decimal?   @db.Decimal(15, 2)
+  budgetMax  Decimal?   @db.Decimal(15, 2)
+  location   String?
+  notes      String?
   assignedTo String?
   branchId   String?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -536,10 +478,11 @@ model Lead {
   updatedBy String?
   deletedBy String?
 
-  // Relations
-  assignedUser User?  @relation("LeadAssignee", fields: [assignedTo], references: [id])
-  branch       Branch? @relation(fields: [branchId], references: [id])
-  creator      User?   @relation("LeadCreator", fields: [createdBy], references: [id])
+  assignedUser User?      @relation("LeadAssignee", fields: [assignedTo], references: [id])
+  branch       Branch?    @relation(fields: [branchId], references: [id])
+  creator      User?      @relation("LeadCreator", fields: [createdBy], references: [id])
+  rabs         RAB[]
+  approvals    Approval[]
 
   @@index([status])
   @@index([assignedTo])
@@ -548,19 +491,63 @@ model Lead {
   @@map("leads")
 }
 
-// ==================== FINANCIAL MODELS ====================
+model RAB {
+  id      String    @id @default(cuid())
+  code    String    @unique
+  leadId  String
+  title   String
+  total   Decimal   @default(0) @db.Decimal(15, 2)
+  marginPercent Decimal @default(0) @db.Decimal(5, 2)
+  status  RABStatus @default(DRAFT)
+  notes   String?
+  version Int       @default(1)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  lead  Lead      @relation(fields: [leadId], references: [id])
+  items RABItem[]
+
+  @@index([leadId])
+  @@index([status])
+  @@index([code])
+  @@map("rabs")
+}
+
+model RABItem {
+  id        String  @id @default(cuid())
+  rabId     String
+  section   String
+  name      String
+  unit      String
+  qty       Decimal @db.Decimal(15, 2)
+  unitPrice Decimal @db.Decimal(15, 2)
+  total     Decimal @db.Decimal(15, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  rab RAB @relation(fields: [rabId], references: [id])
+
+  @@index([rabId])
+  @@map("rab_items")
+}
 
 model Invoice {
   id        String        @id @default(cuid())
   projectId String
-  invoiceNo String        @unique // Format: INV20260629000001 (daily reset)
+  invoiceNo String        @unique
   amount    Decimal       @db.Decimal(15, 2)
   status    InvoiceStatus @default(DRAFT)
   issuedAt  DateTime
   dueDate   DateTime
   paidAt    DateTime?
 
-  // Audit fields
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -587,7 +574,6 @@ model Payment {
   confirmedById String?
   confirmedAt   DateTime?
 
-  // Audit fields
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?
@@ -601,34 +587,32 @@ model Payment {
   @@map("payments")
 }
 
-// ==================== APPROVAL ====================
-
 model Approval {
   id         String         @id @default(cuid())
   type       ApprovalType
   entityId   String
-  projectId  String
+  projectId  String?
+  leadId     String?
   approverId String
   status     ApprovalStatus @default(PENDING)
   notes      String?
 
-  // Audit fields
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?
   updatedBy String?
 
-  project  Project @relation(fields: [projectId], references: [id])
-  approver User    @relation("Approver", fields: [approverId], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+  lead     Lead?    @relation(fields: [leadId], references: [id])
+  approver User     @relation("Approver", fields: [approverId], references: [id])
 
   @@index([type, entityId])
   @@index([projectId])
+  @@index([leadId])
   @@index([approverId])
   @@index([status])
   @@map("approvals")
 }
-
-// ==================== NOTIFICATION ====================
 
 model Notification {
   id        String    @id @default(cuid())
@@ -649,8 +633,6 @@ model Notification {
   @@map("notifications")
 }
 
-// ==================== COMMUNICATION ====================
-
 model Comment {
   id        String  @id @default(cuid())
   content   String
@@ -658,7 +640,6 @@ model Comment {
   projectId String
   reportId  String?
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -680,7 +661,6 @@ model Message {
   read       Boolean @default(false)
   projectId  String?
 
-  // Audit fields
   createdAt DateTime @default(now())
   createdBy String?
 
@@ -692,8 +672,6 @@ model Message {
   @@index([projectId])
   @@map("messages")
 }
-
-// ==================== AUDIT & ACTIVITY ====================
 
 model AuditLog {
   id        String   @id @default(cuid())

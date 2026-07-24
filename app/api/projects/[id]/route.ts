@@ -3,6 +3,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   apiSuccess,
@@ -133,6 +134,9 @@ export const PUT = withPermission(
         },
       });
 
+      // Audit log
+      await logAudit(user.id, "UPDATE", "Project", project.id, pickAuditFields(existing, ['name', 'code', 'status', 'budget', 'startDate', 'endDate']), pickAuditFields(project, ['name', 'code', 'status', 'budget', 'startDate', 'endDate']));
+
       return apiSuccess(project);
     } catch (error) {
       return apiError(error);
@@ -167,6 +171,9 @@ export const DELETE = withPermission(
           status: "CANCELLED",
         },
       });
+
+      // Audit log
+      await logAudit(user.id, "DELETE", "Project", existing.id, pickAuditFields(existing, ['name', 'code', 'status', 'budget', 'startDate', 'endDate']), null);
 
       return apiSuccess({ message: "Project deleted successfully" });
     } catch (error) {

@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Smart Konstruksi",
   description: "Construction Management Platform - PT. Kita Satu Intersolusi",
+  icons: {
+    icon: "/smartkonstrunksi.jpeg",
+    apple: "/smartkonstrunksi.jpeg",
+  },
 };
 
 export default function RootLayout({ children }) {

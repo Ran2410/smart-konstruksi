@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
 
 const T = {
   primary: "#004f35",
@@ -19,6 +22,7 @@ const T = {
   warning: "#b76e00",
   warningBg: "#fff7ed",
   error: "#ba1a1a",
+  fontDisplay: "'Hanken Grotesk', sans-serif",
   fontBody: "'Inter', sans-serif",
   fontLabel: "'Geist', monospace",
 };
@@ -66,11 +70,6 @@ const tdCell: React.CSSProperties = {
   verticalAlign: "middle",
 };
 
-const rowHover = {
-  onMouseEnter: (e: React.MouseEvent<HTMLTableRowElement>) => { e.currentTarget.style.backgroundColor = "#f8fafc"; },
-  onMouseLeave: (e: React.MouseEvent<HTMLTableRowElement>) => { e.currentTarget.style.backgroundColor = "transparent"; },
-};
-
 type Tx = {
   id: string;
   type: string;
@@ -79,9 +78,62 @@ type Tx = {
   totalCost: number;
   date: string;
   notes: string | null;
+  purpose: string;
   material: { id: string; name: string; unit: string };
   project: { id: string; name: string; code: string } | null;
 };
+
+type Summary = {
+  totalTransactions: number;
+  totalCost: number;
+  totalIn: number;
+  totalInCount: number;
+  totalOut: number;
+  totalOutCount: number;
+  net: number;
+};
+
+type MonthlyData = {
+  month: string;
+  IN: number;
+  OUT: number;
+};
+
+function formatCurrency(val: number) {
+  return val.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 });
+}
+
+function getMonthLabel(month: string) {
+  const d = new Date(month + "-01");
+  return d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" });
+}
+
+// ── Summary Card ──────────────────────────────────────────────────────────
+function SummaryCard({ label, value, sub, icon, color }: {
+  label: string; value: string; sub?: string; icon: string; color: string;
+}) {
+  return (
+    <div style={{
+      background: T.surfaceCard, borderRadius: "14px",
+      border: `1px solid rgba(190,201,193,0.2)`,
+      padding: "20px", display: "flex", alignItems: "flex-start", gap: "14px",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+    }}>
+      <div style={{
+        width: "44px", height: "44px", borderRadius: "12px",
+        background: `${color}15`, display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "24px", color }}>{icon}</span>
+      </div>
+      <div>
+        <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</p>
+        <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: "4px 0 0" }}>{value}</p>
+        {sub && <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{sub}</p>}
+      </div>
+    </div>
+  );
+}
 
 export default function TransactionsPage() {
   const { data: session } = useSession();
@@ -89,13 +141,23 @@ export default function TransactionsPage() {
 
   const [transactions, setTransactions] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [materialIdFilter, setMaterialIdFilter] = useState("");
   const [materialOptions, setMaterialOptions] = useState<{ id: string; name: string }[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+
+  // Report state
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [monthly, setMonthly] = useState<MonthlyData[]>([]);
+  const [topMaterials, setTopMaterials] = useState<any[]>([]);
+  const [reportLoading, setReportLoading] = useState(true);
+  const [dateFrom, setDateFrom] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 6);
+    return d.toISOString().split("T")[0];
+  });
+  const [dateTo, setDateTo] = useState(() => new Date().toISOString().split("T")[0]);
 
   const fetchTxs = useCallback(async () => {
     setLoading(true);
@@ -120,7 +182,22 @@ export default function TransactionsPage() {
     finally { setLoading(false); }
   }, [typeFilter, materialIdFilter, page]);
 
+  const fetchReport = useCallback(async () => {
+    setReportLoading(true);
+    try {
+      const res = await fetch(`/api/transactions/summary?from=${dateFrom}&to=${dateTo}`);
+      const json = await res.json();
+      if (json.data) {
+        setSummary(json.data.summary);
+        setMonthly(json.data.monthly || []);
+        setTopMaterials(json.data.topMaterials || []);
+      }
+    } catch (e) { console.error(e); }
+    finally { setReportLoading(false); }
+  }, [dateFrom, dateTo]);
+
   useEffect(() => { fetchTxs(); }, [fetchTxs]);
+  useEffect(() => { fetchReport(); }, [fetchReport]);
   useEffect(() => { setPage(1); }, [typeFilter, materialIdFilter]);
 
   const handleDelete = async (id: string) => {
@@ -130,14 +207,95 @@ export default function TransactionsPage() {
     fetchTxs();
   };
 
-  const formatCurrency = (val: number) => val.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 });
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-
   return (
-    <div style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
       <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontFamily: "'Hanken Grotesk', sans-serif", fontSize: "24px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Transaction History</h1>
-        <p style={{ color: T.onSurfaceMuted, fontFamily: T.fontBody, fontSize: "14px", margin: "4px 0 0" }}>All material stock movements — purchases &amp; usage</p>
+        <h1 style={{ fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 700, color: T.onSurface, margin: 0 }}>
+          Transaction Reports
+        </h1>
+        <p style={{ color: T.onSurfaceMuted, fontFamily: T.fontBody, fontSize: "14px", margin: "4px 0 0" }}>
+          Overview and history of all material stock movements
+        </p>
+      </div>
+
+      {/* ── Date Range ─────────────────────────────────────────────────── */}
+      <div style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+        <label style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, display: "flex", alignItems: "center", gap: "8px" }}>
+          From
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+            style={{ ...input, maxWidth: "160px", padding: "8px 12px" }} />
+        </label>
+        <label style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, display: "flex", alignItems: "center", gap: "8px" }}>
+          To
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+            style={{ ...input, maxWidth: "160px", padding: "8px 12px" }} />
+        </label>
+      </div>
+
+      {/* ── Summary Cards ─────────────────────────────────────────────── */}
+      {reportLoading ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "16px" }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ ...card, padding: "20px" }}><Skeleton className="h-16 w-full" /></div>
+          ))}
+        </div>
+      ) : summary ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "16px" }}>
+          <SummaryCard label="Total Transactions" value={String(summary.totalTransactions)} icon="receipt_long" color={T.primary} />
+          <SummaryCard label="Total Stock In" value={formatCurrency(summary.totalIn)} sub={`${summary.totalInCount} transactions`} icon="inventory" color="#2563eb" />
+          <SummaryCard label="Total Stock Out" value={formatCurrency(summary.totalOut)} sub={`${summary.totalOutCount} transactions`} icon="output" color={T.warning} />
+          <SummaryCard label="Net Movement" value={formatCurrency(summary.net)} icon="account_balance" color={summary.net >= 0 ? T.success : T.error} />
+          <SummaryCard label="Total Cost" value={formatCurrency(summary.totalCost)} icon="payments" color="#7c3aed" />
+        </div>
+      ) : null}
+
+      {/* ── Monthly Chart ─────────────────────────────────────────────── */}
+      {reportLoading ? (
+        <div style={{ ...card, marginBottom: "16px", padding: "24px" }}>
+          <Skeleton className="h-[240px] w-full" />
+        </div>
+      ) : monthly.length > 0 ? (
+        <div style={{ ...card, marginBottom: "16px" }}>
+          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "16px", fontWeight: 600, color: T.onSurface, margin: "0 0 16px" }}>
+            Monthly IN / OUT Trend
+          </h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={monthly} barGap={0} barCategoryGap="20%">
+              <CartesianGrid strokeDasharray="3 3" stroke={T.outlineSoft} />
+              <XAxis
+                dataKey="month"
+                tickFormatter={getMonthLabel}
+                tick={{ fontSize: 11, fontFamily: T.fontLabel, fill: T.onSurfaceMuted }}
+                axisLine={{ stroke: T.outlineSoft }}
+                tickLine={false}
+              />
+              <YAxis
+                tickFormatter={(v) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(0)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}K` : String(v)}
+                tick={{ fontSize: 11, fontFamily: T.fontLabel, fill: T.onSurfaceMuted }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(value: number) => formatCurrency(value)}
+                labelFormatter={(label) => getMonthLabel(label)}
+                contentStyle={{
+                  borderRadius: "10px", border: `1px solid ${T.outlineSoft}`,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: "12px",
+                }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: "12px", fontFamily: T.fontBody }}
+              />
+              <Bar dataKey="IN" name="Stock In" fill="#2563eb" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              <Bar dataKey="OUT" name="Stock Out" fill={T.warning} radius={[4, 4, 0, 0]} maxBarSize={32} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : null}
+
+      {/* ── Table ─────────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: "16px" }}>
+        <h3 style={{ fontFamily: T.fontDisplay, fontSize: "16px", fontWeight: 600, color: T.onSurface, margin: "0 0 12px" }}>Transaction History</h3>
       </div>
 
       {/* Filters */}
@@ -158,7 +316,6 @@ export default function TransactionsPage() {
       <div style={card}>
         {loading ? (
           <div style={{ padding: "4px 0" }}>
-            {/* Header skeleton pills */}
             <div style={{ display: "flex", gap: "24px", marginBottom: "16px", paddingBottom: "12px", borderBottom: `1px solid ${T.outlineSoft}44` }}>
               <Skeleton className="h-3 w-[100px]" />
               <Skeleton className="h-3 w-[60px]" />
@@ -168,7 +325,6 @@ export default function TransactionsPage() {
               <Skeleton className="h-3 w-[80px]" />
               <Skeleton className="h-3 w-[100px]" />
             </div>
-            {/* Table rows skeleton */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} style={{ display: "flex", gap: "24px", alignItems: "center" }}>
@@ -189,72 +345,85 @@ export default function TransactionsPage() {
           </div>
         ) : (
           <>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={thCell}>Date</th>
-                  <th style={{ ...thCell, textAlign: "center" }}>Type</th>
-                  <th style={thCell}>Material</th>
-                  <th style={{ ...thCell, textAlign: "right" }}>Qty</th>
-                  <th style={{ ...thCell, textAlign: "right" }}>Price</th>
-                  <th style={{ ...thCell, textAlign: "right" }}>Total</th>
-                  <th style={thCell}>Project</th>
-                  <th style={thCell}>Notes</th>
-                  {canDelete && <th style={{ ...thCell, textAlign: "right" }}>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((tx) => (
-                  <tr key={tx.id} {...rowHover}>
-                    <td style={tdCell}><span style={{ fontFamily: "'Geist', monospace", fontSize: "12px", color: T.onSurface }}>{formatDate(tx.date)}</span></td>
-                    <td style={{ ...tdCell, textAlign: "center" }}>
-                      <span style={{
-                        padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontFamily: T.fontLabel, fontWeight: 600, display: "inline-block",
-                        background: tx.type === "IN" ? T.successBg : T.warningBg,
-                        color: tx.type === "IN" ? T.success : T.warning,
-                      }}>{tx.type === "IN" ? "IN" : "OUT"}</span>
-                    </td>
-                    <td style={tdCell}><span style={{ fontWeight: 600, fontSize: "13px" }}>{tx.material.name}</span></td>
-                    <td style={{ ...tdCell, textAlign: "right" }}>
-                      <span style={{ fontFamily: "'Geist', monospace", fontWeight: 600, color: tx.type === "IN" ? T.success : T.warning }}>
-                        {tx.type === "IN" ? "+" : "-"}{tx.qty}
-                      </span>
-                      <span style={{ color: T.onSurfaceMuted, fontSize: "12px" }}> {tx.material.unit}</span>
-                    </td>
-                    <td style={{ ...tdCell, textAlign: "right" }}>
-                      <span style={{ fontFamily: "'Geist', monospace", fontSize: "12px", color: T.onSurfaceMuted }}>
-                        {tx.price ? formatCurrency(Number(tx.price)) : "—"}
-                      </span>
-                    </td>
-                    <td style={{ ...tdCell, textAlign: "right" }}>
-                      <span style={{ fontFamily: "'Geist', monospace", fontSize: "13px", fontWeight: 700, color: T.onSurface }}>
-                        {formatCurrency(Number(tx.totalCost))}
-                      </span>
-                    </td>
-                    <td style={tdCell}>
-                      {tx.project
-                        ? <span style={{ fontFamily: "'Geist', monospace", fontSize: "12px", color: T.primary }}>{tx.project.code}</span>
-                        : <span style={{ color: T.onSurfaceMuted, fontSize: "12px" }}>—</span>
-                      }
-                    </td>
-                    <td style={tdCell}>
-                      <span style={{ color: tx.notes ? T.onSurface : T.onSurfaceMuted, fontSize: "12px" }}>{tx.notes || "—"}</span>
-                    </td>
-                    {canDelete && (
-                      <td style={{ ...tdCell, textAlign: "right" }}>
-                        <button onClick={() => handleDelete(tx.id)} style={{
-                          background: "transparent", border: `1px solid ${T.error}44`, borderRadius: "8px",
-                          padding: "4px 10px", fontFamily: "'Geist', monospace", fontSize: "11px", fontWeight: 500,
-                          color: T.error, cursor: "pointer",
-                        }} onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
-                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                        >Delete</button>
-                      </td>
-                    )}
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px" }}>
+                <thead>
+                  <tr>
+                    <th style={thCell}>Date</th>
+                    <th style={{ ...thCell, textAlign: "center" }}>Type</th>
+                    <th style={thCell}>Material</th>
+                    <th style={{ ...thCell, textAlign: "right" }}>Qty</th>
+                    <th style={{ ...thCell, textAlign: "right" }}>Price</th>
+                    <th style={{ ...thCell, textAlign: "right" }}>Total</th>
+                    <th style={thCell}>Project</th>
+                    <th style={thCell}>Purpose</th>
+                    <th style={thCell}>Notes</th>
+                    {canDelete && <th style={{ ...thCell, textAlign: "right" }}>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {transactions.map((tx) => (
+                    <tr key={tx.id}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      <td style={tdCell}><span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurface }}>{new Date(tx.date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span></td>
+                      <td style={{ ...tdCell, textAlign: "center" }}>
+                        <span style={{
+                          padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontFamily: T.fontLabel, fontWeight: 600, display: "inline-block",
+                          background: tx.type === "IN" ? T.successBg : T.warningBg,
+                          color: tx.type === "IN" ? T.success : T.warning,
+                        }}>{tx.type === "IN" ? "IN" : "OUT"}</span>
+                      </td>
+                      <td style={tdCell}><span style={{ fontWeight: 600, fontSize: "13px" }}>{tx.material.name}</span></td>
+                      <td style={{ ...tdCell, textAlign: "right" }}>
+                        <span style={{ fontFamily: T.fontLabel, fontWeight: 600, color: tx.type === "IN" ? T.success : T.warning }}>
+                          {tx.type === "IN" ? "+" : "-"}{tx.qty}
+                        </span>
+                        <span style={{ color: T.onSurfaceMuted, fontSize: "12px" }}> {tx.material.unit}</span>
+                      </td>
+                      <td style={{ ...tdCell, textAlign: "right" }}>
+                        <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted }}>
+                          {tx.price ? formatCurrency(Number(tx.price)) : "—"}
+                        </span>
+                      </td>
+                      <td style={{ ...tdCell, textAlign: "right" }}>
+                        <span style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface }}>
+                          {formatCurrency(Number(tx.totalCost))}
+                        </span>
+                      </td>
+                      <td style={tdCell}>
+                        {tx.project
+                          ? <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.primary }}>{tx.project.code}</span>
+                          : <span style={{ color: T.onSurfaceMuted, fontSize: "12px" }}>—</span>
+                        }
+                      </td>
+                      <td style={tdCell}>
+                        <span style={{
+                          padding: "2px 8px", borderRadius: "12px", fontSize: "10px", fontFamily: T.fontLabel, fontWeight: 600, display: "inline-block",
+                          background: tx.purpose === "PURCHASE" ? T.primaryLight : tx.purpose === "OPERATIONAL" ? "#f0f0ff" : tx.purpose === "PROJECT_USAGE" ? T.warningBg : T.surfaceContainerLow,
+                          color: tx.purpose === "PURCHASE" ? T.primary : tx.purpose === "OPERATIONAL" ? "#5555cc" : tx.purpose === "PROJECT_USAGE" ? T.warning : T.onSurfaceVariant,
+                        }}>{tx.purpose?.replace(/_/g, ' ') || "—"}</span>
+                      </td>
+                      <td style={tdCell}>
+                        <span style={{ color: tx.notes ? T.onSurface : T.onSurfaceMuted, fontSize: "12px" }}>{tx.notes || "—"}</span>
+                      </td>
+                      {canDelete && (
+                        <td style={{ ...tdCell, textAlign: "right" }}>
+                          <button onClick={() => handleDelete(tx.id)} style={{
+                            background: "transparent", border: `1px solid ${T.error}44`, borderRadius: "8px",
+                            padding: "4px 10px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 500,
+                            color: T.error, cursor: "pointer",
+                          }} onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
+                            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                          >Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             {totalPages > 0 && total > 0 && (
               <div style={{ padding: "16px 0 0", borderTop: `1px solid rgba(190,201,193,0.2)`, marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
                 <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
@@ -268,10 +437,7 @@ export default function TransactionsPage() {
                     background: "#fff", color: T.onSurfaceVariant,
                     fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
                     cursor: page <= 1 ? "not-allowed" : "pointer", opacity: page <= 1 ? 0.4 : 1,
-                    transition: "all 0.15s",
-                  }} onMouseEnter={(e) => { if (page > 1) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
-                    onMouseLeave={(e) => { if (page > 1) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
-                  >← Prev</button>
+                  }}>← Prev</button>
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let n = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
                     return (
@@ -282,10 +448,8 @@ export default function TransactionsPage() {
                         background: page === n ? T.primary : "#fff",
                         color: page === n ? "#fff" : T.onSurfaceVariant,
                         fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
-                        cursor: "pointer", transition: "all 0.15s", lineHeight: 1,
-                      }} onMouseEnter={(e) => { if (page !== n) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
-                        onMouseLeave={(e) => { if (page !== n) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
-                      >{n}</button>
+                        cursor: "pointer",
+                      }}>{n}</button>
                     );
                   })}
                   {totalPages > 5 && <span style={{ padding: "0 4px", color: T.outline }}>…</span>}
@@ -296,10 +460,7 @@ export default function TransactionsPage() {
                     background: "#fff", color: T.onSurfaceVariant,
                     fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
                     cursor: page >= totalPages ? "not-allowed" : "pointer", opacity: page >= totalPages ? 0.4 : 1,
-                    transition: "all 0.15s",
-                  }} onMouseEnter={(e) => { if (page < totalPages) { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.color = T.primary; e.currentTarget.style.background = T.primaryLight; }}}
-                    onMouseLeave={(e) => { if (page < totalPages) { e.currentTarget.style.borderColor = "rgba(190,201,193,0.5)"; e.currentTarget.style.color = T.onSurfaceVariant; e.currentTarget.style.background = "#fff"; }}}
-                  >Next →</button>
+                  }}>Next →</button>
                 </div>
               </div>
             )}

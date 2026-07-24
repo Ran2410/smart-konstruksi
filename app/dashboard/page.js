@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { RevenueTrendChart, WeeklyProfitChart } from "@/components/charts/dashboard-charts";
+import Link from "next/link";
 
 // ── Shared style tokens ──────────────────────────────────────────────────────
 const TOKEN = {
@@ -335,12 +336,15 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       {config.stats && config.stats.length > 0 && (
-        <section className="sk-dash-grid-stats">
+        <section className="«redacted:sk-…»">
           {config.stats.map((s) => (
             <StatCard key={s.label} {...s} />
           ))}
         </section>
       )}
+
+      {/* ── Stock Alert ───────────────────────────────────────────────── */}
+      <StockAlertSection />
 
       {/* Quick Stats + Activity */}
       <section className="sk-dash-grid-mid">
@@ -370,6 +374,66 @@ export default function DashboardPage() {
 }
 
 // ── Action Button ────────────────────────────────────────────────────────────
+// ── Stock Alert Section ──────────────────────────────────────────────────────
+function StockAlertSection() {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAlerts() {
+      try {
+        const res = await fetch("/api/materials?limit=500");
+        const json = await res.json();
+        const items = json.data || [];
+        const lowStock = items.filter((m) => Number(m.stock) > 0 && Number(m.stock) <= Number(m.minStock));
+        const outOfStock = items.filter((m) => Number(m.stock) <= 0);
+        setAlerts([...outOfStock.map((m) => ({ ...m, alertType: "out" })), ...lowStock.map((m) => ({ ...m, alertType: "low" }))]);
+      } catch (_) {}
+      finally { setLoading(false); }
+    }
+    fetchAlerts();
+  }, []);
+
+  if (loading || alerts.length === 0) return null;
+
+  const outCount = alerts.filter((a) => a.alertType === "out").length;
+  const lowCount = alerts.filter((a) => a.alertType === "low").length;
+
+  return (
+    <Link href="/dashboard/materials" style={{ textDecoration: "none", display: "block" }}>
+      <div style={{
+        background: outCount > 0 ? "#fef2f2" : TOKEN.warningBg,
+        borderRadius: "14px", border: `1px solid ${outCount > 0 ? "#fecaca" : "#fed7aa"}`,
+        padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px",
+        cursor: "pointer", transition: "all 0.15s",
+      }}
+        onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+      >
+        <div style={{
+          width: "40px", height: "40px", borderRadius: "10px",
+          background: outCount > 0 ? "#fecaca" : "#fed7aa",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "22px", color: outCount > 0 ? TOKEN.error : TOKEN.warning }}>inventory</span>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontFamily: TOKEN.fontDisplay, fontSize: "15px", fontWeight: 700, color: TOKEN.onSurface, margin: 0 }}>
+            Stock Alert{outCount + lowCount > 1 ? "s" : ""}
+          </p>
+          <p style={{ fontFamily: TOKEN.fontBody, fontSize: "13px", color: TOKEN.onSurfaceVariant, margin: "2px 0 0" }}>
+            {outCount > 0 && <span style={{ fontWeight: 600, color: TOKEN.error }}>{outCount} out of stock</span>}
+            {outCount > 0 && lowCount > 0 && <span> • </span>}
+            {lowCount > 0 && <span style={{ fontWeight: 600, color: TOKEN.warning }}>{lowCount} low stock</span>}
+            <span> — click to view inventory</span>
+          </p>
+        </div>
+        <span className="material-symbols-outlined" style={{ fontSize: "20px", color: TOKEN.outline }}>chevron_right</span>
+      </div>
+    </Link>
+  );
+}
+
 function ActionBtn({ icon, label }) {
   return (
     <button

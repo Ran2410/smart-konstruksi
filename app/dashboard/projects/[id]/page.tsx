@@ -332,6 +332,108 @@ function StatCard({ icon, label, value, color, onClick }: {
   );
 }
 
+// ── Invoices Tab ──────────────────────────────────────────────────────────
+function InvoicesTab({ projectId }: { projectId: string }) {
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!projectId) return;
+    setLoading(true);
+    fetch(`/api/invoices?projectId=${projectId}&limit=50`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => setInvoices(data.data || []))
+      .catch(() => setInvoices([]))
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  const invStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    DRAFT: { label: "Draft", color: "#6f7a72", bg: "rgba(111,122,114,0.12)" },
+    SENT: { label: "Sent", color: "#2563eb", bg: "rgba(37,99,235,0.10)" },
+    PAID: { label: "Paid", color: "#15803d", bg: "rgba(21,128,61,0.10)" },
+    OVERDUE: { label: "Overdue", color: "#ba1a1a", bg: "rgba(186,26,26,0.10)" },
+  };
+
+  if (loading) {
+    return (
+      <div style={{ padding: "24px 0", textAlign: "center" }}>
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  if (invoices.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "48px 0" }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>receipt_long</span>
+        <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>No invoices for this project yet</p>
+      </div>
+    );
+  }
+
+  const totAmount = invoices.reduce((s, i) => s + Number(i.amount || 0), 0);
+  const totPaid = invoices.reduce((s, i) => s + (i.payments || []).reduce((sp: number, p: any) => sp + Number(p.amount || 0), 0), 0);
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+        <div style={{ background: T.primaryLight, borderRadius: "12px", padding: "16px" }}>
+          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
+          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{invoices.length}</p>
+        </div>
+        <div style={{ background: T.successLight, borderRadius: "12px", padding: "16px" }}>
+          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Amount</p>
+          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.success, margin: 0 }}>{formatCurrency(totAmount)}</p>
+        </div>
+        <div style={{ background: totPaid >= totAmount ? T.successLight : "rgba(37,99,235,0.08)", borderRadius: "12px", padding: "16px" }}>
+          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid</p>
+          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: totPaid >= totAmount ? T.success : T.info, margin: 0 }}>{formatCurrency(totPaid)}</p>
+        </div>
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Invoice No</th>
+              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "right", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Amount</th>
+              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "center", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Status</th>
+              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.map((inv) => {
+              const cfg = invStatusConfig[inv.status] || { label: inv.status, color: T.outline, bg: T.surfaceContainerLow };
+              const due = inv.dueDate ? new Date(inv.dueDate) : null;
+              const pastDue = due && inv.status !== "PAID" && inv.status !== "DRAFT" && due < new Date();
+              return (
+                <tr
+                  key={inv.id}
+                  style={{ cursor: "pointer", transition: "background 0.12s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f8fafc"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                  onClick={() => router.push(`/dashboard/invoices/${inv.id}`)}
+                >
+                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22` }}>{inv.invoiceNo}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22`, textAlign: "right" }}>{formatCurrency(Number(inv.amount))}</td>
+                  <td style={{ padding: "14px 16px", borderBottom: `1px solid ${T.outlineSoft}22`, textAlign: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", borderRadius: "9999px", fontFamily: T.fontLabel, fontSize: "10px", fontWeight: 700, color: cfg.color, background: cfg.bg, whiteSpace: "nowrap" }}>
+                      <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
+                      {cfg.label}
+                    </span>
+                  </td>
+                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "12px", color: pastDue ? T.error : T.onSurfaceMuted, fontWeight: pastDue ? 700 : 400, borderBottom: `1px solid ${T.outlineSoft}22` }}>{formatDate(inv.dueDate)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function SectionHeader({ icon, title, subtitle, badge }: {
   icon: string;
   title: string;
@@ -454,7 +556,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "tasks" | "reports">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "tasks" | "reports" | "invoices">("overview");
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
@@ -1317,7 +1419,12 @@ export default function ProjectDetailPage() {
             { key: "overview", label: "Overview", icon: "dashboard" },
             { key: "tasks", label: "Tasks", icon: "task_alt" },
             { key: "reports", label: "Reports", icon: "monitoring" },
-          ].map((tab) => (
+            { key: "invoices", label: "Invoices", icon: "receipt_long" },
+          ].filter((t) => {
+            // Hide Tasks from client-facing roles
+            if (t.key === "tasks" && ["CLIENT", "HOME_OWNER"].includes(userRole || "")) return false;
+            return true;
+          }).map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
@@ -1555,6 +1662,27 @@ export default function ProjectDetailPage() {
             </span>
           </div>
         </>
+      )}
+
+      {/* ═══ INVOICES TAB ═══ */}
+      {!editMode && activeTab === "invoices" && (
+        <div className="animate-fade-in">
+          <div style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+              <SectionHeader icon="receipt_long" title="Project Invoices" subtitle={`All invoices for ${project.name}`} />
+              {canEditProject && (
+                <Link
+                  href={`/dashboard/invoices/new`}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 20px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, textDecoration: "none" }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>add</span>
+                  New Invoice
+                </Link>
+              )}
+            </div>
+            <InvoicesTab projectId={projectId} />
+          </div>
+        </div>
       )}
 
       {/* ═══ TASKS TAB ═══ */}

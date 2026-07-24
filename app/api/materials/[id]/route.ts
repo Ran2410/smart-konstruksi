@@ -3,6 +3,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   apiSuccess,
@@ -50,6 +51,7 @@ export const PUT = withPermission("material:update", async (request, { user }) =
     if (parsed.name !== undefined) updateData.name = parsed.name.trim();
     if (parsed.unit !== undefined) updateData.unit = parsed.unit;
     if (parsed.stock !== undefined) updateData.stock = parsed.stock;
+    if (parsed.minStock !== undefined) updateData.minStock = parsed.minStock;
     if (parsed.avgPrice !== undefined) updateData.avgPrice = parsed.avgPrice;
     if (parsed.notes !== undefined) updateData.notes = parsed.notes || null;
     if (parsed.categoryId !== undefined) updateData.categoryId = parsed.categoryId || null;
@@ -63,6 +65,9 @@ export const PUT = withPermission("material:update", async (request, { user }) =
         vendor: { select: { id: true, name: true } },
       },
     });
+
+    // Audit log
+    await logAudit(user.id, "UPDATE", "Material", material.id, pickAuditFields(existing, ['name', 'categoryId', 'unit', 'stock', 'minStock']), pickAuditFields(material, ['name', 'categoryId', 'unit', 'stock', 'minStock']));
 
     return apiSuccess(material);
   } catch (error) {
@@ -82,6 +87,9 @@ export const DELETE = withPermission("material:delete", async (request, { user }
       where: { id },
       data: { deletedAt: new Date(), deletedBy: user.id },
     });
+
+    // Audit log
+    await logAudit(user.id, "DELETE", "Material", existing.id, pickAuditFields(existing, ['name', 'categoryId', 'unit', 'stock', 'minStock']), null);
 
     return apiNoContent();
   } catch (error) {

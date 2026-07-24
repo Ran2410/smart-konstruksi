@@ -86,6 +86,7 @@ type Material = {
   unit: string;
   stock: number;
   avgPrice: number;
+  minStock: number;
   notes: string | null;
   category: { id: string; name: string } | null;
   vendor: { id: string; name: string } | null;
@@ -118,7 +119,7 @@ export default function InventoryPage() {
   const [showStockIn, setShowStockIn] = useState<Material | null>(null);
   const [showStockOut, setShowStockOut] = useState<Material | null>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", unit: "", stock: 0, avgPrice: 0, notes: "", categoryId: "", vendorId: "" });
+  const [formData, setFormData] = useState({ name: "", unit: "", stock: 0, minStock: 0, avgPrice: 0, notes: "", categoryId: "", vendorId: "" });
   const [txForm, setTxForm] = useState({ qty: 1, price: 0, projectId: "", notes: "" });
   const [saving, setSaving] = useState(false);
 
@@ -157,12 +158,12 @@ export default function InventoryPage() {
   useEffect(() => { setPage(1); }, [search, categoryFilter]);
 
   const openCreate = () => {
-    setFormData({ name: "", unit: "", stock: 0, avgPrice: 0, notes: "", categoryId: "", vendorId: "" });
+    setFormData({ name: "", unit: "", stock: 0, minStock: 0, avgPrice: 0, notes: "", categoryId: "", vendorId: "" });
     setShowCreate(true);
   };
 
   const openEdit = (item: Material) => {
-    setFormData({ name: item.name, unit: item.unit, stock: item.stock, avgPrice: Number(item.avgPrice), notes: item.notes || "", categoryId: item.category?.id || "", vendorId: item.vendor?.id || "" });
+    setFormData({ name: item.name, unit: item.unit, stock: item.stock, minStock: item.minStock, avgPrice: Number(item.avgPrice), notes: item.notes || "", categoryId: item.category?.id || "", vendorId: item.vendor?.id || "" });
     setShowEdit(item);
   };
 
@@ -262,6 +263,34 @@ export default function InventoryPage() {
           <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, display: "block" }}>TOTAL STOCK VALUE</span>
           <span style={{ fontFamily: "'Hanken Grotesk', sans-serif", fontSize: "20px", fontWeight: 700, color: T.primary }}>{formatCurrency(totalValue)}</span>
         </div>
+        {(() => {
+          const lowStockCount = items.filter((m) => m.stock > 0 && m.stock <= m.minStock).length;
+          const outOfStockCount = items.filter((m) => m.stock <= 0).length;
+          const totalAlerts = lowStockCount + outOfStockCount;
+          if (totalAlerts === 0) return null;
+          return (
+            <>
+              <div style={{ padding: "8px 16px", background: outOfStockCount > 0 ? "#fef2f2" : T.warningBg, borderRadius: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: outOfStockCount > 0 ? T.error : T.warning }}>warning</span>
+                <div>
+                  {lowStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.warning }}>
+                      {lowStockCount} low stock
+                    </span>
+                  )}
+                  {lowStockCount > 0 && outOfStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "0 6px" }}>•</span>
+                  )}
+                  {outOfStockCount > 0 && (
+                    <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.error }}>
+                      {outOfStockCount} out of stock
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          );
+        })()}
         <input placeholder="Search materials..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...input, maxWidth: "280px" }} />
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ ...input, maxWidth: "200px" }}>
           <option value="">All Categories</option>
@@ -334,9 +363,12 @@ export default function InventoryPage() {
                       <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontFamily: T.fontLabel, fontWeight: 600, background: T.primaryLight, color: T.primary }}>{m.unit}</span>
                     </td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
-                      <span style={{ fontFamily: "'Geist', monospace", fontSize: "15px", fontWeight: 700, color: m.stock > 10 ? T.success : m.stock > 0 ? T.warning : T.error }}>
+                      <span style={{ fontFamily: "'Geist', monospace", fontSize: "15px", fontWeight: 700, color: m.stock > m.minStock ? T.success : m.stock > 0 ? T.warning : T.error }}>
                         {m.stock}
                       </span>
+                      {m.stock > 0 && m.stock <= m.minStock && (
+                        <span style={{ marginLeft: "6px", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontFamily: "'Geist', monospace", fontWeight: 700, background: T.warningBg, color: T.warning, verticalAlign: "middle" }}>LOW</span>
+                      )}
                     </td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
                       <span style={{ fontFamily: "'Geist', monospace", fontSize: "13px", color: T.onSurfaceMuted }}>{formatCurrency(Number(m.avgPrice))}/<span style={{ fontSize: "11px" }}>{m.unit}</span></span>
@@ -466,7 +498,7 @@ export default function InventoryPage() {
               <label style={label}>Material Name *</label>
               <input value={formData.name} onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))} style={input} autoFocus />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "14px" }}>
               <div>
                 <label style={label}>Unit *</label>
                 <select value={formData.unit} onChange={(e) => setFormData((f) => ({ ...f, unit: e.target.value }))} style={input}>
@@ -487,6 +519,10 @@ export default function InventoryPage() {
               <div>
                 <label style={label}>Initial Stock</label>
                 <input type="number" value={formData.stock} onChange={(e) => setFormData((f) => ({ ...f, stock: Number(e.target.value) }))} style={input} min={0} />
+              </div>
+              <div>
+                <label style={label}>Min Stock</label>
+                <input type="number" value={formData.minStock} onChange={(e) => setFormData((f) => ({ ...f, minStock: Number(e.target.value) }))} style={input} min={0} />
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>

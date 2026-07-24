@@ -3,6 +3,7 @@
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import {
   withPermission,
   parsePagination,
@@ -66,6 +67,7 @@ export const POST = withPermission("material:create", async (request, { user }) 
         name: parsed.name.trim(),
         unit: parsed.unit,
         stock: parsed.stock,
+        minStock: parsed.minStock,
         avgPrice: parsed.avgPrice,
         notes: parsed.notes || null,
         categoryId: parsed.categoryId || null,
@@ -77,6 +79,9 @@ export const POST = withPermission("material:create", async (request, { user }) 
         vendor: { select: { id: true, name: true } },
       },
     });
+
+    // Audit log
+    await logAudit(user.id, "CREATE", "Material", material.id, null, pickAuditFields(material, ['name', 'category', 'unit', 'stock', 'minStock']));
 
     return apiCreated({ data: material });
   } catch (error) {
