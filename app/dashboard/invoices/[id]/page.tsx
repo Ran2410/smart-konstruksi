@@ -5,32 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  warning: "#b45309",
-  warningLight: "rgba(253,230,138,0.3)",
-  success: "#15803d",
-  successLight: "rgba(220,252,231,0.8)",
-  info: "#2563eb",
-  infoMedium: "rgba(37,99,235,0.12)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,
@@ -47,7 +22,7 @@ const input: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -57,7 +32,7 @@ const input: React.CSSProperties = {
 
 const label: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.outline,
@@ -122,13 +97,13 @@ function Field({ label: lbl, required, hint, children, error }: {
       </label>
       {children}
       {error && (
-        <p style={{ margin: "6px 0 0", fontFamily: T.fontBody, fontSize: "12px", color: T.error, display: "flex", alignItems: "center", gap: "4px" }}>
+        <p style={{ margin: "6px 0 0", fontFamily: FONT_BODY, fontSize: "12px", color: T.error, display: "flex", alignItems: "center", gap: "4px" }}>
           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>error</span>
           {error}
         </p>
       )}
       {!error && hint && (
-        <p style={{ margin: "6px 0 0", fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted }}>
+        <p style={{ margin: "6px 0 0", fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted }}>
           {hint}
         </p>
       )}
@@ -151,7 +126,7 @@ function StatusBadge({ status }: { status: string }) {
         gap: "6px",
         padding: "4px 12px",
         borderRadius: "9999px",
-        fontFamily: T.fontLabel,
+        fontFamily: FONT_LABEL,
         fontSize: "11px",
         fontWeight: 700,
         color: cfg.color,
@@ -168,8 +143,8 @@ function StatusBadge({ status }: { status: string }) {
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${T.outlineSoft}22` }}>
-      <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</span>
-      <span style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface, fontWeight: 600 }}>{value}</span>
+      <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</span>
+      <span style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, fontWeight: 600 }}>{value}</span>
     </div>
   );
 }
@@ -441,7 +416,7 @@ export default function InvoiceDetailPage() {
           <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.error, display: "block", marginBottom: "12px" }}>
             error
           </span>
-          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", color: T.onSurface, margin: "0 0 8px" }}>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", color: T.onSurface, margin: "0 0 8px" }}>
             {error || "Invoice not found"}
           </h3>
           <Link
@@ -454,7 +429,7 @@ export default function InvoiceDetailPage() {
               background: T.primary,
               color: "#fff",
               borderRadius: "10px",
-              fontFamily: T.fontLabel,
+              fontFamily: FONT_LABEL,
               fontSize: "14px",
               fontWeight: 700,
               textDecoration: "none",
@@ -477,7 +452,7 @@ export default function InvoiceDetailPage() {
           alignItems: "center",
           gap: "8px",
           marginBottom: "24px",
-          fontFamily: T.fontLabel,
+          fontFamily: FONT_LABEL,
           fontSize: "12px",
           color: T.onSurfaceMuted,
         }}
@@ -499,12 +474,12 @@ export default function InvoiceDetailPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginBottom: "24px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-              <h1 style={{ fontFamily: T.fontDisplay, fontSize: "26px", fontWeight: 700, color: T.onSurface, margin: 0 }}>
+              <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: "26px", fontWeight: 700, color: T.onSurface, margin: 0 }}>
                 {invoice.invoiceNo}
               </h1>
               <StatusBadge status={invoice.status} />
             </div>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>
               Project: {" "}
               <Link
                 href={`/dashboard/projects/${invoice.project?.id}`}
@@ -528,7 +503,7 @@ export default function InvoiceDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 700,
                   cursor: actionBusy ? "not-allowed" : "pointer",
@@ -548,7 +523,7 @@ export default function InvoiceDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 700,
                   cursor: actionBusy ? "not-allowed" : "pointer",
@@ -568,7 +543,7 @@ export default function InvoiceDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 700,
                   cursor: actionBusy ? "not-allowed" : "pointer",
@@ -587,7 +562,7 @@ export default function InvoiceDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 700,
                   cursor: "pointer",
@@ -610,7 +585,7 @@ export default function InvoiceDetailPage() {
                 color: T.onSurface,
                 border: `1px solid ${T.outlineSoft}`,
                 borderRadius: "10px",
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "13px",
                 fontWeight: 600,
                 textDecoration: "none",
@@ -645,7 +620,7 @@ export default function InvoiceDetailPage() {
                   color: T.onSurface,
                   border: `1px solid ${T.outlineSoft}`,
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -678,7 +653,7 @@ export default function InvoiceDetailPage() {
                   color: T.error,
                   border: `1px solid ${T.error}44`,
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -701,7 +676,7 @@ export default function InvoiceDetailPage() {
         </div>
 
         {actionError && (
-          <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: T.fontBody, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: FONT_BODY, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>error</span>
             {actionError}
           </div>
@@ -710,16 +685,16 @@ export default function InvoiceDetailPage() {
         {/* Summary grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
           <div style={{ background: T.primaryLight, borderRadius: "12px", padding: "16px" }}>
-            <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Invoice Amount</p>
-            <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{formatCurrency(invoice.amount)}</p>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Invoice Amount</p>
+            <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{formatCurrency(invoice.amount)}</p>
           </div>
           <div style={{ background: T.successLight, borderRadius: "12px", padding: "16px" }}>
-            <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Paid</p>
-            <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.success, margin: 0 }}>{formatCurrency(invoice.totalPaid)}</p>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Paid</p>
+            <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: T.success, margin: 0 }}>{formatCurrency(invoice.totalPaid)}</p>
           </div>
           <div style={{ background: remaining > 0 ? "rgba(180,83,9,0.08)" : T.successLight, borderRadius: "12px", padding: "16px" }}>
-            <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Remaining</p>
-            <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: remaining > 0 ? T.warning : T.success, margin: 0 }}>{formatCurrency(remaining)}</p>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Remaining</p>
+            <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: remaining > 0 ? T.warning : T.success, margin: 0 }}>{formatCurrency(remaining)}</p>
           </div>
         </div>
       </div>
@@ -727,7 +702,7 @@ export default function InvoiceDetailPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
         {/* Details */}
         <div style={card}>
-          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: "0 0 20px" }}>Invoice Details</h3>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: "0 0 20px" }}>Invoice Details</h3>
           <DetailRow label="Invoice Number" value={invoice.invoiceNo} />
           <DetailRow label="Project" value={invoice.project?.name || "—"} />
           <DetailRow label="Issued Date" value={formatDate(invoice.issuedAt)} />
@@ -738,25 +713,25 @@ export default function InvoiceDetailPage() {
 
         {/* Payment history */}
         <div style={card}>
-          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: "0 0 20px" }}>Payment History</h3>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: "0 0 20px" }}>Payment History</h3>
           {(!invoice.payments || invoice.payments.length === 0) ? (
             <div style={{ textAlign: "center", padding: "32px 0" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.outlineSoft, display: "block", marginBottom: "8px" }}>
                 payments
               </span>
-              <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>No payments recorded yet</p>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>No payments recorded yet</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {invoice.payments.map((p: any) => (
                 <div key={p.id} style={{ padding: "14px", background: T.surfaceContainerLow, borderRadius: "12px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface }}>{formatCurrency(p.amount)}</span>
-                    <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, background: T.surfaceCard, padding: "2px 8px", borderRadius: "4px" }}>{p.method}</span>
+                    <span style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 700, color: T.onSurface }}>{formatCurrency(p.amount)}</span>
+                    <span style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, background: T.surfaceCard, padding: "2px 8px", borderRadius: "4px" }}>{p.method}</span>
                   </div>
-                  <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>Paid on {formatDate(p.paidAt)}</p>
+                  <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>Paid on {formatDate(p.paidAt)}</p>
                   {p.confirmedBy && (
-                    <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.success, margin: "4px 0 0" }}>
+                    <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.success, margin: "4px 0 0" }}>
                       Verified by {p.confirmedBy.name}
                     </p>
                   )}
@@ -797,7 +772,7 @@ export default function InvoiceDetailPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Record Payment</h3>
+              <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Record Payment</h3>
               <button
                 onClick={() => setPaymentOpen(false)}
                 style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", borderRadius: "8px", color: T.onSurfaceMuted }}
@@ -807,12 +782,12 @@ export default function InvoiceDetailPage() {
             </div>
 
             <div style={{ padding: "12px 16px", background: T.surfaceContainerLow, borderRadius: "10px", marginBottom: "20px" }}>
-              <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: "0 0 4px" }}>Remaining Balance</p>
-              <p style={{ fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{formatCurrency(remaining)}</p>
+              <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, margin: "0 0 4px" }}>Remaining Balance</p>
+              <p style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{formatCurrency(remaining)}</p>
             </div>
 
             {paymentError && (
-              <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: T.fontBody, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: FONT_BODY, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>error</span>
                 {paymentError}
               </div>
@@ -832,7 +807,7 @@ export default function InvoiceDetailPage() {
                     style={{
                       ...input,
                       borderColor: paymentErrors.amount ? T.error : T.outlineSoft,
-                      fontFamily: T.fontLabel,
+                      fontFamily: FONT_LABEL,
                     }}
                   />
                 </Field>
@@ -898,14 +873,14 @@ export default function InvoiceDetailPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentOpen(false)}
-                  style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                  style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={paymentSubmitting}
-                  style={{ padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, cursor: paymentSubmitting ? "not-allowed" : "pointer", opacity: paymentSubmitting ? 0.7 : 1 }}
+                  style={{ padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, cursor: paymentSubmitting ? "not-allowed" : "pointer", opacity: paymentSubmitting ? 0.7 : 1 }}
                 >
                   {paymentSubmitting ? "Saving..." : "Save Payment"}
                 </button>
@@ -927,22 +902,22 @@ export default function InvoiceDetailPage() {
           >
             <div style={{ textAlign: "center", marginBottom: "24px" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.error, display: "block", marginBottom: "12px" }}>delete_forever</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: "0 0 8px" }}>Delete Invoice?</h3>
-              <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>
+              <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: "0 0 8px" }}>Delete Invoice?</h3>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>
                 This will soft-delete invoice <strong>{invoice.invoiceNo}</strong>. Payments will remain but the invoice will no longer appear in listings.
               </p>
             </div>
             <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
               <button
                 onClick={() => setDeleteConfirm(false)}
-                style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleteBusy}
-                style={{ padding: "10px 20px", background: T.error, color: "#fff", border: "none", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, cursor: deleteBusy ? "not-allowed" : "pointer", opacity: deleteBusy ? 0.7 : 1 }}
+                style={{ padding: "10px 20px", background: T.error, color: "#fff", border: "none", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, cursor: deleteBusy ? "not-allowed" : "pointer", opacity: deleteBusy ? 0.7 : 1 }}
               >
                 {deleteBusy ? "Deleting..." : "Delete"}
               </button>
@@ -962,14 +937,14 @@ export default function InvoiceDetailPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Edit Invoice</h3>
+              <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Edit Invoice</h3>
               <button onClick={() => setEditOpen(false)} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", borderRadius: "8px", color: T.onSurfaceMuted }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>close</span>
               </button>
             </div>
 
             {editErrors._general && (
-              <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: T.fontBody, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: FONT_BODY, fontSize: "13px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>error</span>
                 {editErrors._general}
               </div>
@@ -983,7 +958,7 @@ export default function InvoiceDetailPage() {
                     value={editForm.amountDisplay}
                     onChange={handleEditChange("amountDisplay")}
                     onFocus={focus} onBlur={blur}
-                    style={{ ...input, borderColor: editErrors.amount ? T.error : T.outlineSoft, fontFamily: T.fontLabel }}
+                    style={{ ...input, borderColor: editErrors.amount ? T.error : T.outlineSoft, fontFamily: FONT_LABEL }}
                   />
                 </Field>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
@@ -998,8 +973,8 @@ export default function InvoiceDetailPage() {
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: `1px solid rgba(190,201,193,0.2)`, paddingTop: "20px" }}>
-                <button type="button" onClick={() => setEditOpen(false)} style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-                <button type="submit" disabled={editSubmitting} style={{ padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, cursor: editSubmitting ? "not-allowed" : "pointer", opacity: editSubmitting ? 0.7 : 1 }}>
+                <button type="button" onClick={() => setEditOpen(false)} style={{ padding: "10px 20px", border: `1px solid ${T.outlineSoft}`, borderRadius: "10px", background: "#fff", color: T.onSurface, fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                <button type="submit" disabled={editSubmitting} style={{ padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, cursor: editSubmitting ? "not-allowed" : "pointer", opacity: editSubmitting ? 0.7 : 1 }}>
                   {editSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>

@@ -5,27 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  error: "#ba1a1a",
-  warning: "#b45309",
-  success: "#15803d",
-  info: "#2563eb",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const cardStyle: React.CSSProperties = {
   background: T.surfaceCard,
@@ -37,7 +17,7 @@ const cardStyle: React.CSSProperties = {
 
 const thCell: React.CSSProperties = {
   padding: "12px 16px",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.onSurfaceMuted,
@@ -51,7 +31,7 @@ const thCell: React.CSSProperties = {
 
 const tdCell: React.CSSProperties = {
   padding: "14px 16px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "13px",
   color: T.onSurface,
   borderBottom: `1px solid ${T.outlineSoft}22`,
@@ -134,7 +114,7 @@ function StatusBadge({ status }: { status: string }) {
         gap: "6px",
         padding: "4px 12px",
         borderRadius: "9999px",
-        fontFamily: T.fontLabel,
+        fontFamily: FONT_LABEL,
         fontSize: "11px",
         fontWeight: 700,
         color: cfg.color,
@@ -182,7 +162,7 @@ function FilterChip({
           background: T.surfaceContainerLow,
           border: `1px solid rgba(190,201,193,0.3)`,
           borderRadius: "9999px",
-          fontFamily: T.fontLabel,
+          fontFamily: FONT_LABEL,
           fontSize: "12px",
           cursor: "pointer",
         }}
@@ -226,7 +206,7 @@ function FilterChip({
                   padding: "10px 16px",
                   background: o.value === value ? T.primaryLight : "none",
                   border: "none",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: o.value === value ? 700 : 400,
                   color: o.value === value ? T.primary : T.onSurface,
@@ -293,7 +273,7 @@ function KpiCard({
       </div>
       <p
         style={{
-          fontFamily: T.fontLabel,
+          fontFamily: FONT_LABEL,
           fontSize: "11px",
           fontWeight: 600,
           letterSpacing: "0.08em",
@@ -306,7 +286,7 @@ function KpiCard({
       </p>
       <h3
         style={{
-          fontFamily: T.fontDisplay,
+          fontFamily: FONT_DISPLAY,
           fontSize: "28px",
           fontWeight: 700,
           color: T.onSurface,
@@ -403,7 +383,7 @@ export default function InvoicesPage() {
           min-width: 34px; height: 34px; padding: 0 8px;
           border: 1px solid rgba(190,201,193,0.5); border-radius: 8px;
           background: ${T.surfaceCard}; color: ${T.onSurfaceVariant};
-          font-family: ${T.fontLabel}; font-size: 13px; font-weight: 600;
+          font-family: ${FONT_LABEL}; font-size: 13px; font-weight: 600;
           cursor: pointer; transition: all 0.15s; line-height: 1;
         }
         .sk-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryLight}; }
@@ -424,7 +404,7 @@ export default function InvoicesPage() {
         <div>
           <h2
             style={{
-              fontFamily: T.fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontSize: "32px",
               fontWeight: 600,
               letterSpacing: "-0.01em",
@@ -436,7 +416,7 @@ export default function InvoicesPage() {
           </h2>
           <p
             style={{
-              fontFamily: T.fontBody,
+              fontFamily: FONT_BODY,
               fontSize: "16px",
               color: T.onSurfaceMuted,
               margin: "4px 0 0",
@@ -458,7 +438,7 @@ export default function InvoicesPage() {
               color: "#fff",
               border: "none",
               borderRadius: "10px",
-              fontFamily: T.fontLabel,
+              fontFamily: FONT_LABEL,
               fontSize: "14px",
               fontWeight: 700,
               textDecoration: "none",
@@ -517,7 +497,7 @@ export default function InvoicesPage() {
       {outstanding > 0 && (
         <p
           style={{
-            fontFamily: T.fontLabel,
+            fontFamily: FONT_LABEL,
             fontSize: "12px",
             color: T.onSurfaceMuted,
             margin: 0,
@@ -574,7 +554,7 @@ export default function InvoicesPage() {
                   background: T.surfaceContainerLow,
                   border: `1px solid rgba(190,201,193,0.3)`,
                   borderRadius: "10px",
-                  fontFamily: T.fontBody,
+                  fontFamily: FONT_BODY,
                   fontSize: "14px",
                   color: T.onSurface,
                   outline: "none",
@@ -597,7 +577,7 @@ export default function InvoicesPage() {
               <button
                 onClick={resetFilters}
                 style={{
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "12px",
                   fontWeight: 700,
                   color: T.primary,
@@ -646,7 +626,7 @@ export default function InvoicesPage() {
             >
               error
             </span>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error }}>{error}</p>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error }}>{error}</p>
             <button
               onClick={fetchInvoices}
               style={{
@@ -656,7 +636,7 @@ export default function InvoicesPage() {
                 color: T.primary,
                 border: `1px solid ${T.primary}`,
                 borderRadius: "8px",
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -680,7 +660,7 @@ export default function InvoicesPage() {
             </span>
             <h3
               style={{
-                fontFamily: T.fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontSize: "18px",
                 fontWeight: 600,
                 color: T.onSurface,
@@ -691,7 +671,7 @@ export default function InvoicesPage() {
             </h3>
             <p
               style={{
-                fontFamily: T.fontBody,
+                fontFamily: FONT_BODY,
                 fontSize: "14px",
                 color: T.outline,
                 margin: "0 0 20px",
@@ -710,7 +690,7 @@ export default function InvoicesPage() {
                   background: T.primary,
                   color: "#fff",
                   borderRadius: "10px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "14px",
                   fontWeight: 700,
                   textDecoration: "none",
@@ -751,7 +731,7 @@ export default function InvoicesPage() {
                       <td style={tdCell}>
                         <span
                           style={{
-                            fontFamily: T.fontLabel,
+                            fontFamily: FONT_LABEL,
                             fontSize: "13px",
                             fontWeight: 700,
                             color: T.onSurface,
@@ -763,7 +743,7 @@ export default function InvoicesPage() {
                       <td style={tdCell}>
                         <div
                           style={{
-                            fontFamily: T.fontBody,
+                            fontFamily: FONT_BODY,
                             fontSize: "13px",
                             fontWeight: 600,
                             color: T.onSurface,
@@ -774,7 +754,7 @@ export default function InvoicesPage() {
                         {inv.project?.code && (
                           <div
                             style={{
-                              fontFamily: T.fontLabel,
+                              fontFamily: FONT_LABEL,
                               fontSize: "11px",
                               color: T.onSurfaceMuted,
                               marginTop: "2px",
@@ -788,7 +768,7 @@ export default function InvoicesPage() {
                         style={{
                           ...tdCell,
                           textAlign: "right",
-                          fontFamily: T.fontLabel,
+                          fontFamily: FONT_LABEL,
                           fontWeight: 600,
                         }}
                       >
@@ -798,7 +778,7 @@ export default function InvoicesPage() {
                         style={{
                           ...tdCell,
                           textAlign: "right",
-                          fontFamily: T.fontLabel,
+                          fontFamily: FONT_LABEL,
                           color: paid > 0 ? T.success : T.onSurfaceMuted,
                         }}
                       >
@@ -810,7 +790,7 @@ export default function InvoicesPage() {
                       <td
                         style={{
                           ...tdCell,
-                          fontFamily: T.fontLabel,
+                          fontFamily: FONT_LABEL,
                           fontSize: "12px",
                           color: T.onSurfaceMuted,
                           whiteSpace: "nowrap",
@@ -821,7 +801,7 @@ export default function InvoicesPage() {
                       <td
                         style={{
                           ...tdCell,
-                          fontFamily: T.fontLabel,
+                          fontFamily: FONT_LABEL,
                           fontSize: "12px",
                           color: pastDue ? T.error : T.onSurfaceMuted,
                           fontWeight: pastDue ? 700 : 400,
@@ -851,7 +831,7 @@ export default function InvoicesPage() {
               gap: "12px",
             }}
           >
-            <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
               Showing {Math.min((page - 1) * limit + 1, total)} to {Math.min(page * limit, total)} of{" "}
               {total} invoices
             </p>

@@ -5,27 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainer: "#eef2ef",
-  error: "#ba1a1a",
-  errorContainer: "rgba(255,218,214,0.4)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const card: React.CSSProperties = {
@@ -44,7 +24,7 @@ const inputStyle: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -54,7 +34,7 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.outline,
@@ -73,7 +53,7 @@ function Field({ label, required, hint, children }: { label: string; required?: 
       {children}
       {hint && (
         <p style={{
-          fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted,
+          fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted,
           margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px"
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>info</span>
@@ -103,14 +83,14 @@ function SectionHeader({ icon, title, subtitle }: { icon: string; title: string;
       </div>
       <div style={{ flex: 1 }}>
         <h3 style={{
-          fontFamily: T.fontDisplay, fontSize: "19px", fontWeight: 700,
+          fontFamily: FONT_DISPLAY, fontSize: "19px", fontWeight: 700,
           color: T.onSurface, margin: 0, letterSpacing: "-0.01em"
         }}>
           {title}
         </h3>
         {subtitle && (
           <p style={{
-            fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted,
+            fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted,
             margin: "4px 0 0", lineHeight: "1.4"
           }}>
             {subtitle}
@@ -297,13 +277,13 @@ export default function NewBranchPage() {
         </Link>
         <div style={{ flex: 1 }}>
           <h2 style={{
-            fontFamily: T.fontDisplay, fontSize: "32px", fontWeight: 700,
+            fontFamily: FONT_DISPLAY, fontSize: "32px", fontWeight: 700,
             color: T.onSurface, margin: "0 0 4px", letterSpacing: "-0.02em"
           }}>
             Create New Branch
           </h2>
           <p style={{
-            fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted,
+            fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted,
             margin: 0, lineHeight: "1.5"
           }}>
             Add a new company branch to organize your projects and teams.
@@ -321,7 +301,7 @@ export default function NewBranchPage() {
           borderRadius: "12px",
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "20px", color: T.error }}>error</span>
-          <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error, margin: 0, flex: 1 }}>{submitError}</p>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error, margin: 0, flex: 1 }}>{submitError}</p>
           <button onClick={() => setSubmitError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.error, padding: "4px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
           </button>
@@ -349,7 +329,7 @@ export default function NewBranchPage() {
               style={inputClass("name")}
             />
             {errors.name && touched.name && (
-              <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.error, margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.error, margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>error</span>
                 {errors.name}
               </p>
@@ -393,7 +373,7 @@ export default function NewBranchPage() {
                 style={inputClass("email")}
               />
               {errors.email && touched.email && (
-                <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.error, margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.error, margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>
                   <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>error</span>
                   {errors.email}
                 </p>
@@ -411,7 +391,7 @@ export default function NewBranchPage() {
               style={{
                 padding: "12px 24px", background: T.surfaceCard,
                 border: `1px solid ${T.outlineSoft}`, borderRadius: "12px",
-                fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                 color: T.onSurface, textDecoration: "none", transition: "all 0.15s",
               }}
             >
@@ -424,7 +404,7 @@ export default function NewBranchPage() {
                 display: "flex", alignItems: "center", gap: "8px",
                 padding: "12px 28px", background: submitting ? T.outlineSoft : T.primary,
                 border: "none", borderRadius: "12px",
-                fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                 color: "#fff", cursor: submitting ? "not-allowed" : "pointer",
                 boxShadow: submitting ? "none" : "0 2px 8px rgba(0,79,53,0.2)",
                 transition: "all 0.15s",

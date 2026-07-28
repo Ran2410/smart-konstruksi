@@ -21,34 +21,7 @@ import { TasksBoard } from "@/components/projects/tasks-board";
 import { PhotoUpload } from "@/components/projects/photo-upload";
 import { ProgressChart } from "@/components/projects/progress-chart";
 import { ReportDetail } from "@/components/projects/report-detail";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  secondary: "#565e74",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainerHigh: "#eef2ef",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  warning: "#b45309",
-  warningLight: "rgba(253,230,138,0.3)",
-  success: "#15803d",
-  successLight: "rgba(220,252,231,0.8)",
-  info: "#2563eb",
-  infoLight: "rgba(219,234,254,0.6)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const cardStyle: React.CSSProperties = {
@@ -76,7 +49,7 @@ const editFieldStyle: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -148,7 +121,7 @@ function StatusBadge({ status, large }: { status: string; large?: boolean }) {
         gap: "8px",
         padding: large ? "8px 20px" : "6px 14px",
         borderRadius: "9999px",
-        fontFamily: T.fontLabel,
+        fontFamily: FONT_LABEL,
         fontSize: large ? "13px" : "11px",
         fontWeight: 700,
         color: cfg.color,
@@ -192,7 +165,7 @@ function ProgressBar({ value, large, showLabel = true }: { value: number; large?
       {showLabel && (
         <span
           style={{
-            fontFamily: T.fontLabel,
+            fontFamily: FONT_LABEL,
             fontSize: large ? "18px" : "14px",
             fontWeight: 700,
             color: T.onSurface,
@@ -228,7 +201,7 @@ function InfoRow({ label, icon, children }: { label: string; icon?: string; chil
         )}
         <span
           style={{
-            fontFamily: T.fontLabel,
+            fontFamily: FONT_LABEL,
             fontSize: "10px",
             fontWeight: 600,
             color: T.outline,
@@ -241,7 +214,7 @@ function InfoRow({ label, icon, children }: { label: string; icon?: string; chil
       </div>
       <span
         style={{
-          fontFamily: T.fontBody,
+          fontFamily: FONT_BODY,
           fontSize: "14px",
           color: T.onSurface,
           lineHeight: "1.5",
@@ -306,7 +279,7 @@ function StatCard({ icon, label, value, color, onClick }: {
       <div>
         <div
           style={{
-            fontFamily: T.fontDisplay,
+            fontFamily: FONT_DISPLAY,
             fontSize: "28px",
             fontWeight: 700,
             color: T.onSurface,
@@ -317,7 +290,7 @@ function StatCard({ icon, label, value, color, onClick }: {
         </div>
         <div
           style={{
-            fontFamily: T.fontLabel,
+            fontFamily: FONT_LABEL,
             fontSize: "11px",
             fontWeight: 600,
             color: T.outline,
@@ -367,7 +340,7 @@ function InvoicesTab({ projectId }: { projectId: string }) {
     return (
       <div style={{ textAlign: "center", padding: "48px 0" }}>
         <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>receipt_long</span>
-        <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>No invoices for this project yet</p>
+        <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: 0 }}>No invoices for this project yet</p>
       </div>
     );
   }
@@ -379,16 +352,16 @@ function InvoicesTab({ projectId }: { projectId: string }) {
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "24px" }}>
         <div style={{ background: T.primaryLight, borderRadius: "12px", padding: "16px" }}>
-          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
-          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{invoices.length}</p>
+          <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
+          <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{invoices.length}</p>
         </div>
         <div style={{ background: T.successLight, borderRadius: "12px", padding: "16px" }}>
-          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Amount</p>
-          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.success, margin: 0 }}>{formatCurrency(totAmount)}</p>
+          <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Amount</p>
+          <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: T.success, margin: 0 }}>{formatCurrency(totAmount)}</p>
         </div>
         <div style={{ background: totPaid >= totAmount ? T.successLight : "rgba(37,99,235,0.08)", borderRadius: "12px", padding: "16px" }}>
-          <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid</p>
-          <p style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: totPaid >= totAmount ? T.success : T.info, margin: 0 }}>{formatCurrency(totPaid)}</p>
+          <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid</p>
+          <p style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: totPaid >= totAmount ? T.success : T.info, margin: 0 }}>{formatCurrency(totPaid)}</p>
         </div>
       </div>
 
@@ -396,10 +369,10 @@ function InvoicesTab({ projectId }: { projectId: string }) {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Invoice No</th>
-              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "right", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Amount</th>
-              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "center", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Status</th>
-              <th style={{ padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Due</th>
+              <th style={{ padding: "12px 16px", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Invoice No</th>
+              <th style={{ padding: "12px 16px", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "right", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Amount</th>
+              <th style={{ padding: "12px 16px", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "center", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Status</th>
+              <th style={{ padding: "12px 16px", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.onSurfaceMuted, textTransform: "uppercase", letterSpacing: "0.06em", background: T.surfaceContainerLow, textAlign: "left", borderBottom: `2px solid ${T.outlineSoft}44`, whiteSpace: "nowrap" }}>Due</th>
             </tr>
           </thead>
           <tbody>
@@ -415,15 +388,15 @@ function InvoicesTab({ projectId }: { projectId: string }) {
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                   onClick={() => router.push(`/dashboard/invoices/${inv.id}`)}
                 >
-                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22` }}>{inv.invoiceNo}</td>
-                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22`, textAlign: "right" }}>{formatCurrency(Number(inv.amount))}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 700, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22` }}>{inv.invoiceNo}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: T.onSurface, borderBottom: `1px solid ${T.outlineSoft}22`, textAlign: "right" }}>{formatCurrency(Number(inv.amount))}</td>
                   <td style={{ padding: "14px 16px", borderBottom: `1px solid ${T.outlineSoft}22`, textAlign: "center" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", borderRadius: "9999px", fontFamily: T.fontLabel, fontSize: "10px", fontWeight: 700, color: cfg.color, background: cfg.bg, whiteSpace: "nowrap" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", borderRadius: "9999px", fontFamily: FONT_LABEL, fontSize: "10px", fontWeight: 700, color: cfg.color, background: cfg.bg, whiteSpace: "nowrap" }}>
                       <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
                       {cfg.label}
                     </span>
                   </td>
-                  <td style={{ padding: "14px 16px", fontFamily: T.fontLabel, fontSize: "12px", color: pastDue ? T.error : T.onSurfaceMuted, fontWeight: pastDue ? 700 : 400, borderBottom: `1px solid ${T.outlineSoft}22` }}>{formatDate(inv.dueDate)}</td>
+                  <td style={{ padding: "14px 16px", fontFamily: FONT_LABEL, fontSize: "12px", color: pastDue ? T.error : T.onSurfaceMuted, fontWeight: pastDue ? 700 : 400, borderBottom: `1px solid ${T.outlineSoft}22` }}>{formatDate(inv.dueDate)}</td>
                 </tr>
               );
             })}
@@ -463,7 +436,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <h3
             style={{
-              fontFamily: T.fontDisplay,
+              fontFamily: FONT_DISPLAY,
               fontSize: "20px",
               fontWeight: 700,
               color: T.onSurface,
@@ -478,7 +451,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
               style={{
                 padding: "4px 12px",
                 borderRadius: "9999px",
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "11px",
                 fontWeight: 600,
                 background: T.primaryLight,
@@ -492,7 +465,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
         {subtitle && (
           <p
             style={{
-              fontFamily: T.fontBody,
+              fontFamily: FONT_BODY,
               fontSize: "13px",
               color: T.onSurfaceMuted,
               margin: "4px 0 0",
@@ -904,10 +877,10 @@ export default function ProjectDetailPage() {
           <span className="material-symbols-outlined" style={{ fontSize: "64px", color: T.outlineSoft, display: "block", marginBottom: "16px" }}>
             error
           </span>
-          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "24px", color: T.onSurface, margin: "0 0 8px" }}>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "24px", color: T.onSurface, margin: "0 0 8px" }}>
             {error || "Project tidak ditemukan"}
           </h3>
-          <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 24px" }}>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 24px" }}>
             Project yang Anda cari mungkin telah dihapus atau tidak tersedia.
           </p>
           <Link
@@ -920,7 +893,7 @@ export default function ProjectDetailPage() {
               background: T.primary,
               color: "#fff",
               borderRadius: "12px",
-              fontFamily: T.fontLabel,
+              fontFamily: FONT_LABEL,
               fontSize: "14px",
               fontWeight: 600,
               textDecoration: "none",
@@ -998,7 +971,7 @@ export default function ProjectDetailPage() {
             <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", marginBottom: "8px" }}>
               <span
                 style={{
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "12px",
                   fontWeight: 700,
                   color: T.primary,
@@ -1015,7 +988,7 @@ export default function ProjectDetailPage() {
             </div>
             <h1
               style={{
-                fontFamily: T.fontDisplay,
+                fontFamily: FONT_DISPLAY,
                 fontSize: "36px",
                 fontWeight: 700,
                 color: T.onSurface,
@@ -1028,7 +1001,7 @@ export default function ProjectDetailPage() {
             </h1>
             <p
               style={{
-                fontFamily: T.fontBody,
+                fontFamily: FONT_BODY,
                 fontSize: "14px",
                 color: T.onSurfaceMuted,
                 margin: 0,
@@ -1057,7 +1030,7 @@ export default function ProjectDetailPage() {
                   color: T.onSurfaceVariant,
                   border: `1.5px solid ${T.outlineSoft}`,
                   borderRadius: "12px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -1086,7 +1059,7 @@ export default function ProjectDetailPage() {
                   color: T.error,
                   border: `1.5px solid ${T.error}20`,
                   borderRadius: "12px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -1114,7 +1087,7 @@ export default function ProjectDetailPage() {
                   color: T.onSurfaceVariant,
                   border: `1.5px solid ${T.outlineSoft}`,
                   borderRadius: "12px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -1134,7 +1107,7 @@ export default function ProjectDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "12px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: saving ? "not-allowed" : "pointer",
@@ -1190,7 +1163,7 @@ export default function ProjectDetailPage() {
           <span className="material-symbols-outlined" style={{ fontSize: "20px", color: T.error, flexShrink: 0 }}>
             error
           </span>
-          <span style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error, flex: 1 }}>{saveError}</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error, flex: 1 }}>{saveError}</span>
           <button
             onClick={() => setSaveError(null)}
             style={{ background: "none", border: "none", cursor: "pointer", color: T.error, padding: "4px" }}
@@ -1216,7 +1189,7 @@ export default function ProjectDetailPage() {
               <div>
                 <h4
                   style={{
-                    fontFamily: T.fontLabel,
+                    fontFamily: FONT_LABEL,
                     fontSize: "12px",
                     fontWeight: 600,
                     color: T.outline,
@@ -1227,7 +1200,7 @@ export default function ProjectDetailPage() {
                 >
                   Overall Progress
                 </h4>
-                <div style={{ fontFamily: T.fontDisplay, fontSize: "42px", fontWeight: 700, color: T.onSurface, lineHeight: 1 }}>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: "42px", fontWeight: 700, color: T.onSurface, lineHeight: 1 }}>
                   {project.progress || 0}%
                 </div>
               </div>
@@ -1267,7 +1240,7 @@ export default function ProjectDetailPage() {
           <div style={cardStyle}>
             <h4
               style={{
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "12px",
                 fontWeight: 600,
                 color: T.outline,
@@ -1280,23 +1253,23 @@ export default function ProjectDetailPage() {
             </h4>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted }}>Total Budget</span>
-                <span style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, color: T.onSurface }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted }}>Total Budget</span>
+                <span style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, color: T.onSurface }}>
                   {formatCurrency(Number(project.budget))}
                 </span>
               </div>
               {project.actualCost > 0 && (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted }}>Actual Cost</span>
-                    <span style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, color: T.warning }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted }}>Actual Cost</span>
+                    <span style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, color: T.warning }}>
                       {formatCurrency(Number(project.actualCost))}
                     </span>
                   </div>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                      <span style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted }}>Budget Usage</span>
-                      <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 600, color: budgetUsage > 90 ? T.error : T.warning }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted }}>Budget Usage</span>
+                      <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: budgetUsage > 90 ? T.error : T.warning }}>
                         {budgetUsage.toFixed(1)}%
                       </span>
                     </div>
@@ -1321,7 +1294,7 @@ export default function ProjectDetailPage() {
           <div style={cardStyle}>
             <h4
               style={{
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "12px",
                 fontWeight: 600,
                 color: T.outline,
@@ -1334,16 +1307,16 @@ export default function ProjectDetailPage() {
             </h4>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted }}>Start Date</span>
-                <span style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.onSurface }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted }}>Start Date</span>
+                <span style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: T.onSurface }}>
                   {formatDate(project.startDate)}
                 </span>
               </div>
               {project.endDate && (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted }}>Target End</span>
-                    <span style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.onSurface }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted }}>Target End</span>
+                    <span style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: T.onSurface }}>
                       {formatDate(project.endDate)}
                     </span>
                   </div>
@@ -1369,7 +1342,7 @@ export default function ProjectDetailPage() {
                       </span>
                       <span
                         style={{
-                          fontFamily: T.fontLabel,
+                          fontFamily: FONT_LABEL,
                           fontSize: "13px",
                           fontWeight: 600,
                           color: daysLeft < 0 ? T.error : daysLeft < 30 ? T.warning : T.success,
@@ -1437,7 +1410,7 @@ export default function ProjectDetailPage() {
                 color: activeTab === tab.key ? T.primary : T.onSurfaceMuted,
                 border: "none",
                 borderRadius: "12px",
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -1488,7 +1461,7 @@ export default function ProjectDetailPage() {
                     color: "#fff",
                     border: "none",
                     borderRadius: "12px",
-                    fontFamily: T.fontLabel,
+                    fontFamily: FONT_LABEL,
                     fontSize: "13px",
                     fontWeight: 600,
                     cursor: "pointer",
@@ -1517,7 +1490,7 @@ export default function ProjectDetailPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>
                   group_off
                 </span>
-                <p style={{ fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted, margin: "0 0 16px" }}>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted, margin: "0 0 16px" }}>
                   No team members assigned yet
                 </p>
                 {canEditProject && (
@@ -1529,7 +1502,7 @@ export default function ProjectDetailPage() {
                       color: T.primary,
                       border: `1.5px solid ${T.primary}30`,
                       borderRadius: "12px",
-                      fontFamily: T.fontLabel,
+                      fontFamily: FONT_LABEL,
                       fontSize: "13px",
                       fontWeight: 600,
                       cursor: "pointer",
@@ -1572,16 +1545,16 @@ export default function ProjectDetailPage() {
                       </span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: T.fontBody, fontSize: "14px", fontWeight: 600, color: T.onSurface }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: "14px", fontWeight: 600, color: T.onSurface }}>
                         {m.user?.name || "Unknown"}
                       </div>
-                      <div style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, marginTop: "2px" }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted, marginTop: "2px" }}>
                         {m.user?.email || ""}
                       </div>
                     </div>
                     <span
                       style={{
-                        fontFamily: T.fontLabel,
+                        fontFamily: FONT_LABEL,
                         fontSize: "11px",
                         fontWeight: 700,
                         color: T.primary,
@@ -1636,7 +1609,7 @@ export default function ProjectDetailPage() {
           >
             <span
               style={{
-                fontFamily: T.fontBody,
+                fontFamily: FONT_BODY,
                 fontSize: "12px",
                 color: T.onSurfaceMuted,
                 display: "flex",
@@ -1649,7 +1622,7 @@ export default function ProjectDetailPage() {
             </span>
             <span
               style={{
-                fontFamily: T.fontBody,
+                fontFamily: FONT_BODY,
                 fontSize: "12px",
                 color: T.onSurfaceMuted,
                 display: "flex",
@@ -1673,7 +1646,7 @@ export default function ProjectDetailPage() {
               {canEditProject && (
                 <Link
                   href={`/dashboard/invoices/new`}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 20px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, textDecoration: "none" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 20px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 700, textDecoration: "none" }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>add</span>
                   New Invoice
@@ -1725,7 +1698,7 @@ export default function ProjectDetailPage() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "12px",
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                   fontSize: "13px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -1754,17 +1727,17 @@ export default function ProjectDetailPage() {
               <span className="material-symbols-outlined" style={{ fontSize: "32px", display: "block", marginBottom: "12px", animation: "spin 1s linear infinite" }}>
                 progress_activity
               </span>
-              <span style={{ fontFamily: T.fontLabel, fontSize: "14px" }}>Loading reports…</span>
+              <span style={{ fontFamily: FONT_LABEL, fontSize: "14px" }}>Loading reports…</span>
             </div>
           ) : reports.length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 16px" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "56px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>
                 monitoring
               </span>
-              <p style={{ fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted, margin: "0 0 8px" }}>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted, margin: "0 0 8px" }}>
                 Belum ada laporan progress
               </p>
-              <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.outlineSoft, margin: "0 0 20px" }}>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.outlineSoft, margin: "0 0 20px" }}>
                 Laporkan progress pekerjaan untuk memulai tracking
               </p>
               {canReport && (
@@ -1781,7 +1754,7 @@ export default function ProjectDetailPage() {
                     color: "#fff",
                     border: "none",
                     borderRadius: "12px",
-                    fontFamily: T.fontLabel,
+                    fontFamily: FONT_LABEL,
                     fontSize: "13px",
                     fontWeight: 600,
                     cursor: "pointer",
@@ -1846,31 +1819,31 @@ export default function ProjectDetailPage() {
                         justifyContent: "center",
                       }}
                     >
-                      <span style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, color: getProgressColor(r.percentage) }}>
+                      <span style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, color: getProgressColor(r.percentage) }}>
                         {r.percentage}%
                       </span>
                     </div>
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface, lineHeight: 1.5, marginBottom: "8px" }}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, lineHeight: 1.5, marginBottom: "8px" }}>
                       {r.description}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, display: "flex", alignItems: "center", gap: "4px" }}>
+                      <span style={{ fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, display: "flex", alignItems: "center", gap: "4px" }}>
                         <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>calendar_today</span>
                         {new Date(r.reportDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                       {r.weather && (
-                        <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.outline, display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.outline, display: "flex", alignItems: "center", gap: "4px" }}>
                           {getWeatherIcon(r.weather)} {r.weather}
                         </span>
                       )}
-                      <span style={{ fontFamily: T.fontBody, fontSize: "11px", color: T.onSurfaceMuted }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: "11px", color: T.onSurfaceMuted }}>
                         oleh {r.reporter?.name || "—"}
                       </span>
                       {photoCount > 0 && (
-                        <span style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.primary, display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.primary, display: "flex", alignItems: "center", gap: "4px" }}>
                           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>photo_camera</span>
                           {photoCount} foto
                         </span>
@@ -1896,7 +1869,7 @@ export default function ProjectDetailPage() {
                             width: "44px", height: "44px", borderRadius: "8px",
                             background: T.surfaceContainerHigh, display: "flex",
                             alignItems: "center", justifyContent: "center",
-                            fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+                            fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
                             color: T.outline, flexShrink: 0,
                           }}>
                             +{r.photos.length - 4}
@@ -2001,55 +1974,55 @@ export default function ProjectDetailPage() {
           <SectionHeader icon="edit" title="Edit Project" subtitle="Modify project details and settings" />
           <div className="sk-edit-grid">
             <div className="full">
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Project Name
               </label>
               <input value={editForm.name} onChange={ef("name")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} placeholder="Enter project name" />
             </div>
             <div className="full">
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Description
               </label>
               <textarea value={editForm.description} onChange={ef("description") as any} onFocus={focusInput as any} onBlur={blurInput as any} rows={3} style={{ ...editFieldStyle, resize: "vertical" }} placeholder="Project description" />
             </div>
             <div className="full">
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Address
               </label>
               <input value={editForm.address} onChange={ef("address")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} placeholder="Project address" />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Start Date
               </label>
               <input type="date" value={editForm.startDate} onChange={ef("startDate")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 End Date
               </label>
               <input type="date" value={editForm.endDate} onChange={ef("endDate")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Budget (IDR)
               </label>
               <input type="number" value={editForm.budget} onChange={ef("budget")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} placeholder="0" />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Actual Cost (IDR)
               </label>
               <input type="number" value={editForm.actualCost} onChange={ef("actualCost")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} placeholder="0" />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Progress (%)
               </label>
               <input type="number" min="0" max="100" value={editForm.progress} onChange={ef("progress")} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Status
               </label>
               <select value={editForm.status} onChange={ef("status")} onFocus={focusInput} onBlur={blurInput} className="sk-select-edit" style={{ ...editFieldStyle }}>
@@ -2057,7 +2030,7 @@ export default function ProjectDetailPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Branch
               </label>
               <select value={editForm.branchId} onChange={ef("branchId")} onFocus={focusInput} onBlur={blurInput} className="sk-select-edit" style={{ ...editFieldStyle }}>
@@ -2066,7 +2039,7 @@ export default function ProjectDetailPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Client
               </label>
               <select value={editForm.clientId} onChange={ef("clientId")} onFocus={focusInput} onBlur={blurInput} className="sk-select-edit" style={{ ...editFieldStyle }}>
@@ -2075,7 +2048,7 @@ export default function ProjectDetailPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Project Manager
               </label>
               <select value={editForm.projectManagerId} onChange={ef("projectManagerId")} onFocus={focusInput} onBlur={blurInput} className="sk-select-edit" style={{ ...editFieldStyle }}>
@@ -2084,7 +2057,7 @@ export default function ProjectDetailPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Site Manager
               </label>
               <select value={editForm.siteManagerId} onChange={ef("siteManagerId")} onFocus={focusInput} onBlur={blurInput} className="sk-select-edit" style={{ ...editFieldStyle }}>
@@ -2110,20 +2083,20 @@ export default function ProjectDetailPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px", color: T.primary }}>person_add</span>
               </div>
               <div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Add Team Member</h3>
-                <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>Assign a new member to this project</p>
+                <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Add Team Member</h3>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>Assign a new member to this project</p>
               </div>
             </div>
 
             {memberError && (
-              <div style={{ marginBottom: "20px", padding: "12px 16px", background: T.errorLight, border: `1px solid ${T.error}20`, borderRadius: "10px", fontFamily: T.fontBody, fontSize: "13px", color: T.error }}>
+              <div style={{ marginBottom: "20px", padding: "12px 16px", background: T.errorLight, border: `1px solid ${T.error}20`, borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "13px", color: T.error }}>
                 {memberError}
               </div>
             )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <div>
-                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Select User
                 </label>
                 <UserPicker
@@ -2135,7 +2108,7 @@ export default function ProjectDetailPage() {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Role in Project
                 </label>
                 <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} onFocus={focusInput} onBlur={blurInput} style={{ ...editFieldStyle, cursor: "pointer" }}>
@@ -2146,13 +2119,13 @@ export default function ProjectDetailPage() {
             </div>
 
             <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "28px" }}>
-              <button onClick={() => setShowAddMember(false)} disabled={addingMember} style={{ padding: "12px 24px", background: T.surfaceCard, color: T.onSurfaceVariant, border: `1.5px solid ${T.outlineSoft}`, borderRadius: "12px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setShowAddMember(false)} disabled={addingMember} style={{ padding: "12px 24px", background: T.surfaceCard, color: T.onSurfaceVariant, border: `1.5px solid ${T.outlineSoft}`, borderRadius: "12px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
                 Cancel
               </button>
               <button
                 onClick={addMember}
                 disabled={addingMember || !selectedUserId || !selectedRole}
-                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: addingMember || !selectedUserId || !selectedRole ? T.outlineSoft : T.primary, color: "#fff", border: "none", borderRadius: "12px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, cursor: addingMember || !selectedUserId || !selectedRole ? "not-allowed" : "pointer", boxShadow: addingMember || !selectedUserId || !selectedRole ? "none" : "0 4px 12px rgba(0,79,53,0.25)", transition: "all 0.2s" }}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: addingMember || !selectedUserId || !selectedRole ? T.outlineSoft : T.primary, color: "#fff", border: "none", borderRadius: "12px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, cursor: addingMember || !selectedUserId || !selectedRole ? "not-allowed" : "pointer", boxShadow: addingMember || !selectedUserId || !selectedRole ? "none" : "0 4px 12px rgba(0,79,53,0.25)", transition: "all 0.2s" }}
               >
                 {addingMember ? (
                   <><span className="material-symbols-outlined" style={{ fontSize: "16px", animation: "spin 1s linear infinite" }}>progress_activity</span>Adding…</>
@@ -2177,13 +2150,13 @@ export default function ProjectDetailPage() {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px", color: T.primary }}>monitoring</span>
               </div>
               <div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{editingReport ? "Edit Laporan" : "Lapor Progress"}</h3>
-                <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{editingReport ? "Perbarui laporan progress pekerjaan" : "Laporkan progress pekerjaan hari ini"}</p>
+                <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{editingReport ? "Edit Laporan" : "Lapor Progress"}</h3>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{editingReport ? "Perbarui laporan progress pekerjaan" : "Laporkan progress pekerjaan hari ini"}</p>
               </div>
             </div>
 
             {reportError && (
-              <div style={{ marginBottom: "20px", padding: "12px 16px", background: T.errorLight, border: `1px solid ${T.error}20`, borderRadius: "10px", fontFamily: T.fontBody, fontSize: "13px", color: T.error }}>
+              <div style={{ marginBottom: "20px", padding: "12px 16px", background: T.errorLight, border: `1px solid ${T.error}20`, borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "13px", color: T.error }}>
                 {reportError}
               </div>
             )}
@@ -2191,7 +2164,7 @@ export default function ProjectDetailPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                  <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                     Progress (%) *
                   </label>
                   <div style={{ position: "relative", paddingTop: "8px" }}>
@@ -2201,13 +2174,13 @@ export default function ProjectDetailPage() {
                       onChange={(e) => setReportForm((f: any) => ({ ...f, percentage: Number(e.target.value) }))}
                       style={{ width: "100%", accentColor: getProgressColor(reportForm.percentage), height: "8px", borderRadius: "9999px", cursor: "pointer" }}
                     />
-                    <div style={{ position: "absolute", right: "0", top: "-24px", fontFamily: T.fontLabel, fontSize: "24px", fontWeight: 700, color: getProgressColor(reportForm.percentage) }}>
+                    <div style={{ position: "absolute", right: "0", top: "-24px", fontFamily: FONT_LABEL, fontSize: "24px", fontWeight: 700, color: getProgressColor(reportForm.percentage) }}>
                       {reportForm.percentage}%
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                  <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                     Tanggal
                   </label>
                   <input type="date" value={reportForm.reportDate} onChange={(e) => setReportForm((f: any) => ({ ...f, reportDate: e.target.value }))} onFocus={focusInput} onBlur={blurInput} style={editFieldStyle} />
@@ -2215,7 +2188,7 @@ export default function ProjectDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Cuaca
                 </label>
                 <select value={reportForm.weather} onChange={(e) => setReportForm((f: any) => ({ ...f, weather: e.target.value }))} onFocus={focusInput} onBlur={blurInput} style={{ ...editFieldStyle, cursor: "pointer" }}>
@@ -2224,14 +2197,14 @@ export default function ProjectDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Foto
                 </label>
                 <PhotoUpload value={photoIds} onChange={setPhotoIds} disabled={reportSubmitting} />
               </div>
 
               <div>
-                <label style={{ display: "block", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
                   Deskripsi Pekerjaan *
                 </label>
                 <textarea value={reportForm.description} onChange={(e) => setReportForm((f: any) => ({ ...f, description: e.target.value }))} onFocus={focusInput} onBlur={blurInput} placeholder="Jelaskan progress pekerjaan yang sudah dilakukan hari ini…" rows={4} style={{ ...editFieldStyle, resize: "vertical" }} />
@@ -2239,13 +2212,13 @@ export default function ProjectDetailPage() {
             </div>
 
             <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "28px" }}>
-              <button onClick={() => (setShowReportForm(false), setReportError(null))} disabled={reportSubmitting} style={{ padding: "12px 24px", background: T.surfaceCard, color: T.onSurfaceVariant, border: `1.5px solid ${T.outlineSoft}`, borderRadius: "12px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => (setShowReportForm(false), setReportError(null))} disabled={reportSubmitting} style={{ padding: "12px 24px", background: T.surfaceCard, color: T.onSurfaceVariant, border: `1.5px solid ${T.outlineSoft}`, borderRadius: "12px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
                 Batal
               </button>
               <button
                 onClick={submitReport}
                 disabled={reportSubmitting}
-                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: reportSubmitting ? T.outlineSoft : T.primary, color: "#fff", border: "none", borderRadius: "12px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, cursor: reportSubmitting ? "not-allowed" : "pointer", boxShadow: reportSubmitting ? "none" : "0 4px 12px rgba(0,79,53,0.25)", transition: "all 0.2s" }}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px", background: reportSubmitting ? T.outlineSoft : T.primary, color: "#fff", border: "none", borderRadius: "12px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, cursor: reportSubmitting ? "not-allowed" : "pointer", boxShadow: reportSubmitting ? "none" : "0 4px 12px rgba(0,79,53,0.25)", transition: "all 0.2s" }}
               >
                 {reportSubmitting ? (
                   <><span className="material-symbols-outlined" style={{ fontSize: "16px", animation: "spin 1s linear infinite" }}>progress_activity</span>Menyimpan…</>

@@ -5,33 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  secondary: "#565e74",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainerHigh: "#eef2ef",
-  error: "#ba1a1a",
-  errorContainer: "rgba(255,218,214,0.4)",
-  errorLight: "rgba(255,218,214,0.4)",
-  warning: "#b45309",
-  warningLight: "rgba(253,230,138,0.3)",
-  success: "#15803d",
-  successLight: "rgba(220,252,231,0.8)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const cardStyle: React.CSSProperties = {
@@ -59,7 +33,7 @@ const editFieldStyle: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -69,7 +43,7 @@ const editFieldStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.outline,
@@ -104,14 +78,14 @@ function InfoRow({ label, icon, children }: { label: string; icon?: string; chil
           </span>
         )}
         <span style={{
-          fontFamily: T.fontLabel, fontSize: "10px", fontWeight: 600,
+          fontFamily: FONT_LABEL, fontSize: "10px", fontWeight: 600,
           color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase",
         }}>
           {label}
         </span>
       </div>
       <span style={{
-        fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface,
+        fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface,
         lineHeight: "1.5", fontWeight: 500,
       }}>
         {children || "—"}
@@ -138,7 +112,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <h3 style={{
-            fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700,
+            fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700,
             color: T.onSurface, margin: 0, letterSpacing: "-0.01em",
           }}>
             {title}
@@ -146,7 +120,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
           {badge && (
             <span style={{
               padding: "4px 12px", borderRadius: "9999px",
-              fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+              fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
               background: T.primaryLight, color: T.primary,
             }}>
               {badge}
@@ -155,7 +129,7 @@ function SectionHeader({ icon, title, subtitle, badge }: {
         </div>
         {subtitle && (
           <p style={{
-            fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted,
+            fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted,
             margin: "4px 0 0", lineHeight: "1.4",
           }}>
             {subtitle}
@@ -186,13 +160,13 @@ function StatCard({ icon, label, value, color }: {
       </div>
       <div>
         <div style={{
-          fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 700,
+          fontFamily: FONT_DISPLAY, fontSize: "28px", fontWeight: 700,
           color: T.onSurface, lineHeight: 1.1,
         }}>
           {value}
         </div>
         <div style={{
-          fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+          fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
           color: T.outline, marginTop: "4px", letterSpacing: "0.04em",
         }}>
           {label}
@@ -376,12 +350,12 @@ export default function BranchDetailPage() {
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 16px" }}>
         <div style={{ ...cardStyle, textAlign: "center", padding: "64px 32px" }}>
           <span className="material-symbols-outlined" style={{ fontSize: "56px", color: T.error, display: "block", marginBottom: "12px" }}>error</span>
-          <h3 style={{ fontFamily: T.fontDisplay, fontSize: "20px", color: T.onSurface, margin: "0 0 8px" }}>Branch Not Found</h3>
-          <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.outline, margin: "0 0 24px" }}>{error || "The branch you are looking for does not exist or has been deleted."}</p>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", color: T.onSurface, margin: "0 0 8px" }}>Branch Not Found</h3>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: "0 0 24px" }}>{error || "The branch you are looking for does not exist or has been deleted."}</p>
           <Link href="/dashboard/branches" style={{
             display: "inline-flex", alignItems: "center", gap: "8px",
             padding: "10px 24px", background: T.primary, color: "#fff",
-            border: "none", borderRadius: "10px", fontFamily: T.fontLabel,
+            border: "none", borderRadius: "10px", fontFamily: FONT_LABEL,
             fontSize: "14px", fontWeight: 700, textDecoration: "none",
           }}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>arrow_back</span>
@@ -434,18 +408,18 @@ export default function BranchDetailPage() {
         </Link>
         <div style={{ flex: 1 }}>
           <h2 style={{
-            fontFamily: T.fontDisplay, fontSize: "32px", fontWeight: 700,
+            fontFamily: FONT_DISPLAY, fontSize: "32px", fontWeight: 700,
             color: T.onSurface, margin: "0 0 4px", letterSpacing: "-0.02em",
             display: "flex", alignItems: "center", gap: "12px"
           }}>
             {branch.name}
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "9999px", fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: branch.isActive !== false ? T.primary : T.error, background: branch.isActive !== false ? T.primaryLight : T.errorContainer, whiteSpace: "nowrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "9999px", fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700, color: branch.isActive !== false ? T.primary : T.error, background: branch.isActive !== false ? T.primaryLight : T.errorContainer, whiteSpace: "nowrap" }}>
               <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: branch.isActive !== false ? T.primary : T.error, flexShrink: 0 }} />
               {branch.isActive !== false ? "Active" : "Inactive"}
             </span>
           </h2>
           <p style={{
-            fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted,
+            fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted,
             margin: 0, lineHeight: "1.5"
           }}>
             Branch details and team management. {totalUsers} members, {totalProjects} projects.
@@ -458,7 +432,7 @@ export default function BranchDetailPage() {
               style={{
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "10px 20px", background: T.primary, color: "#fff",
-                border: "none", borderRadius: "10px", fontFamily: T.fontLabel,
+                border: "none", borderRadius: "10px", fontFamily: FONT_LABEL,
                 fontSize: "14px", fontWeight: 700, cursor: "pointer",
                 boxShadow: "0 2px 8px rgba(0,79,53,0.2)",
               }}
@@ -474,7 +448,7 @@ export default function BranchDetailPage() {
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "10px 20px", background: T.errorLight, color: T.error,
                 border: `1px solid rgba(186,26,26,0.2)`, borderRadius: "10px",
-                fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                 cursor: "pointer",
               }}
             >
@@ -518,23 +492,23 @@ export default function BranchDetailPage() {
               </div>
               <div>
                 <h3 style={{
-                  fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700,
+                  fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700,
                   color: T.onSurface, margin: 0,
                 }}>Delete Branch</h3>
                 <p style={{
-                  fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted,
+                  fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted,
                   margin: "2px 0 0",
                 }}>This action cannot be undone.</p>
               </div>
             </div>
             <p style={{
-              fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceVariant,
+              fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceVariant,
               margin: "0 0 8px", lineHeight: "1.5",
             }}>
               Are you sure you want to delete <strong style={{ color: T.onSurface }}>{branch.name}</strong>?
             </p>
             <p style={{
-              fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted,
+              fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted,
               margin: 0, lineHeight: "1.5",
             }}>
               {totalUsers > 0 ? (
@@ -553,7 +527,7 @@ export default function BranchDetailPage() {
                 borderRadius: "10px",
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "18px", color: T.error }}>error</span>
-                <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.error }}>{deleteError}</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.error }}>{deleteError}</span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
@@ -563,7 +537,7 @@ export default function BranchDetailPage() {
                 style={{
                   padding: "10px 20px", background: T.surfaceCard,
                   border: `1px solid ${T.outlineSoft}`, borderRadius: "10px",
-                  fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                  fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                   color: T.onSurface, cursor: "pointer",
                 }}
               >
@@ -576,7 +550,7 @@ export default function BranchDetailPage() {
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "10px 20px", background: deleting ? T.outlineSoft : T.error,
                   border: "none", borderRadius: "10px",
-                  fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                  fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                   color: "#fff", cursor: deleting ? "not-allowed" : "pointer",
                 }}
               >
@@ -614,7 +588,7 @@ export default function BranchDetailPage() {
                 border: `1px solid rgba(186,26,26,0.2)`, borderRadius: "12px",
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px", color: T.error }}>error</span>
-                <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error, margin: 0, flex: 1 }}>{saveError}</p>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error, margin: 0, flex: 1 }}>{saveError}</p>
               </div>
             )}
 
@@ -673,13 +647,13 @@ export default function BranchDetailPage() {
             <div>
               <label style={labelStyle}>Status</label>
               <button type="button" onClick={() => setEditActive(v => !v)}
-                style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "10px 16px", background: editActive ? T.primaryLight : T.errorContainer, border: `1px solid ${editActive ? T.primary : T.error}44`, borderRadius: "10px", cursor: "pointer", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: editActive ? T.primary : T.error }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: "10px", padding: "10px 16px", background: editActive ? T.primaryLight : T.errorContainer, border: `1px solid ${editActive ? T.primary : T.error}44`, borderRadius: "10px", cursor: "pointer", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: editActive ? T.primary : T.error }}>
                 <div style={{ width: "20px", height: "20px", borderRadius: "9999px", background: editActive ? T.primary : T.error, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
                   <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>{editActive ? "check" : "close"}</span>
                 </div>
                 {editActive ? "Active" : "Inactive"}
               </button>
-              <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
                 Inactive branches will be hidden from user selection and project assignments.
               </p>
             </div>
@@ -696,7 +670,7 @@ export default function BranchDetailPage() {
                 style={{
                   padding: "12px 24px", background: T.surfaceCard,
                   border: `1px solid ${T.outlineSoft}`, borderRadius: "12px",
-                  fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                  fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                   color: T.onSurface, cursor: "pointer",
                 }}
               >
@@ -709,7 +683,7 @@ export default function BranchDetailPage() {
                   display: "flex", alignItems: "center", gap: "8px",
                   padding: "12px 28px", background: saving ? T.outlineSoft : T.primary,
                   border: "none", borderRadius: "12px",
-                  fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+                  fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
                   color: "#fff", cursor: saving ? "not-allowed" : "pointer",
                   boxShadow: saving ? "none" : "0 2px 8px rgba(0,79,53,0.2)",
                 }}
@@ -756,7 +730,7 @@ export default function BranchDetailPage() {
             border: `1px solid ${T.outlineSoft}30`,
           }}>
             <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.outlineSoft, display: "block", marginBottom: "8px" }}>group</span>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.outline, margin: 0 }}>No members in this branch yet.</p>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: 0 }}>No members in this branch yet.</p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
@@ -765,28 +739,28 @@ export default function BranchDetailPage() {
                 <tr>
                   <th style={{
                     textAlign: "left", padding: "12px 16px",
-                    fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+                    fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
                     letterSpacing: "0.05em", textTransform: "uppercase",
                     color: T.outline, background: "rgba(239,244,255,0.5)",
                     borderBottom: `1px solid rgba(190,201,193,0.3)`,
                   }}>Name</th>
                   <th style={{
                     textAlign: "left", padding: "12px 16px",
-                    fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+                    fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
                     letterSpacing: "0.05em", textTransform: "uppercase",
                     color: T.outline, background: "rgba(239,244,255,0.5)",
                     borderBottom: `1px solid rgba(190,201,193,0.3)`,
                   }}>Email</th>
                   <th style={{
                     textAlign: "left", padding: "12px 16px",
-                    fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+                    fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
                     letterSpacing: "0.05em", textTransform: "uppercase",
                     color: T.outline, background: "rgba(239,244,255,0.5)",
                     borderBottom: `1px solid rgba(190,201,193,0.3)`,
                   }}>Role</th>
                   <th style={{
                     textAlign: "left", padding: "12px 16px",
-                    fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+                    fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
                     letterSpacing: "0.05em", textTransform: "uppercase",
                     color: T.outline, background: "rgba(239,244,255,0.5)",
                     borderBottom: `1px solid rgba(190,201,193,0.3)`,
@@ -796,16 +770,16 @@ export default function BranchDetailPage() {
               <tbody>
                 {users.map((u: any) => (
                   <tr key={u.id} style={{ borderBottom: `1px solid rgba(190,201,193,0.2)` }}>
-                    <td style={{ padding: "14px 16px", fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface, verticalAlign: "middle" }}>
+                    <td style={{ padding: "14px 16px", fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, verticalAlign: "middle" }}>
                       <span style={{ fontWeight: 600 }}>{u.name}</span>
                     </td>
-                    <td style={{ padding: "14px 16px", fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceVariant, verticalAlign: "middle" }}>
+                    <td style={{ padding: "14px 16px", fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceVariant, verticalAlign: "middle" }}>
                       {u.email}
                     </td>
                     <td style={{ padding: "14px 16px", verticalAlign: "middle" }}>
                       <span style={{
                         display: "inline-block", padding: "4px 10px",
-                        borderRadius: "9999px", fontFamily: T.fontLabel,
+                        borderRadius: "9999px", fontFamily: FONT_LABEL,
                         fontSize: "11px", fontWeight: 600,
                         background: T.primaryLight, color: T.primary,
                       }}>
@@ -816,7 +790,7 @@ export default function BranchDetailPage() {
                       <span style={{
                         display: "inline-flex", alignItems: "center", gap: "6px",
                         padding: "4px 10px", borderRadius: "9999px",
-                        fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+                        fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
                         color: u.isActive ? T.success : T.error,
                         background: u.isActive ? T.successLight : T.errorLight,
                       }}>

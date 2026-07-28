@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 import {
   LineChart,
   Line,
@@ -13,20 +14,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-
-const TOKEN = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#eff4ff",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
 
 // Fallback generators (used when no prop data at all)
 function generateMonthlyData() {
@@ -68,15 +55,15 @@ function CustomTooltip({ active, payload, label }) {
     <div
       style={{
         background: "#fff",
-        border: `1px solid ${TOKEN.outlineSoft}`,
+        border: `1px solid ${T.outlineSoft}`,
         borderRadius: "8px",
         padding: "12px 16px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        fontFamily: TOKEN.fontBody,
+        fontFamily: FONT_BODY,
         fontSize: "13px",
       }}
     >
-      <p style={{ margin: "0 0 8px", fontWeight: 600, color: TOKEN.onSurface }}>{label}</p>
+      <p style={{ margin: "0 0 8px", fontWeight: 600, color: T.onSurface }}>{label}</p>
       {payload.map((entry, i) => (
         <p key={i} style={{ margin: "2px 0", color: entry.color }}>
           {entry.name}: <strong>{entry.value}</strong>
@@ -105,9 +92,9 @@ export function RevenueTrendChart({ data: propData }) {
   return (
     <div
       style={{
-        background: TOKEN.surfaceCard,
+        background: T.surfaceCard,
         borderRadius: "16px",
-        border: `1px solid ${TOKEN.outlineSoft}`,
+        border: `1px solid ${T.outlineSoft}`,
         boxShadow: "0 8px 32px rgba(31,38,135,0.07)",
         padding: "24px",
       }}
@@ -127,19 +114,19 @@ export function RevenueTrendChart({ data: propData }) {
           {/* Legend */}
           <div style={{ display: "flex", gap: "20px", marginBottom: "4px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: TOKEN.primary }} />
-              <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 600, color: TOKEN.onSurface }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.primary }} />
+              <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.onSurface }}>
                 Total Revenue
               </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#1a1a2e" }} />
-              <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 600, color: TOKEN.onSurface }}>
+              <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.onSurface }}>
                 Total Sales
               </span>
             </div>
           </div>
-          <p style={{ fontFamily: TOKEN.fontLabel, fontSize: "11px", color: TOKEN.outline, margin: 0 }}>
+          <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.outline, margin: 0 }}>
             {period === "Day" ? "Last 14 days" : period === "Week" ? "Last 12 weeks" : "01.01.2025 - 12.05.2025"}
           </p>
         </div>
@@ -149,7 +136,7 @@ export function RevenueTrendChart({ data: propData }) {
           style={{
             display: "flex",
             gap: "4px",
-            background: TOKEN.surfaceContainerLow,
+            background: T.surfaceContainerLow,
             borderRadius: "8px",
             padding: "3px",
           }}
@@ -162,11 +149,11 @@ export function RevenueTrendChart({ data: propData }) {
                 padding: "6px 14px",
                 border: "none",
                 borderRadius: "6px",
-                fontFamily: TOKEN.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "12px",
                 fontWeight: period === p ? 600 : 500,
-                color: period === p ? "#fff" : TOKEN.onSurfaceVariant,
-                background: period === p ? TOKEN.primary : "transparent",
+                color: period === p ? "#fff" : T.onSurfaceVariant,
+                background: period === p ? T.primary : "transparent",
                 cursor: "pointer",
                 transition: "all 0.15s",
               }}
@@ -186,22 +173,22 @@ export function RevenueTrendChart({ data: propData }) {
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: TOKEN.outline, fontSize: 12, fontFamily: TOKEN.fontLabel }}
+              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: TOKEN.outline, fontSize: 12, fontFamily: TOKEN.fontLabel }}
+              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line
               type="monotone"
               dataKey="revenue"
               name="Revenue"
-              stroke={TOKEN.primary}
+              stroke={T.primary}
               strokeWidth={2.5}
               dot={false}
-              activeDot={{ r: 5, fill: TOKEN.primary, stroke: "#fff", strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: T.primary, stroke: "#fff", strokeWidth: 2 }}
             />
             <Line
               type="monotone"
@@ -237,9 +224,9 @@ export function WeeklyProfitChart({ data: propData }) {
   return (
     <div
       style={{
-        background: TOKEN.surfaceCard,
+        background: T.surfaceCard,
         borderRadius: "16px",
-        border: `1px solid ${TOKEN.outlineSoft}`,
+        border: `1px solid ${T.outlineSoft}`,
         boxShadow: "0 8px 32px rgba(31,38,135,0.07)",
         padding: "24px",
       }}
@@ -255,10 +242,10 @@ export function WeeklyProfitChart({ data: propData }) {
       >
         <h3
           style={{
-            fontFamily: TOKEN.fontDisplay,
+            fontFamily: FONT_DISPLAY,
             fontSize: "18px",
             fontWeight: 600,
-            color: TOKEN.onSurface,
+            color: T.onSurface,
             margin: 0,
           }}
         >
@@ -272,12 +259,12 @@ export function WeeklyProfitChart({ data: propData }) {
             onChange={(e) => setWeek(e.target.value)}
             style={{
               padding: "6px 28px 6px 12px",
-              border: `1px solid ${TOKEN.outlineSoft}`,
+              border: `1px solid ${T.outlineSoft}`,
               borderRadius: "8px",
-              fontFamily: TOKEN.fontLabel,
+              fontFamily: FONT_LABEL,
               fontSize: "12px",
               fontWeight: 500,
-              color: TOKEN.onSurface,
+              color: T.onSurface,
               background: "#fff",
               cursor: "pointer",
               appearance: "none",
@@ -296,7 +283,7 @@ export function WeeklyProfitChart({ data: propData }) {
               top: "50%",
               transform: "translateY(-50%)",
               fontSize: "16px",
-              color: TOKEN.outline,
+              color: T.outline,
               pointerEvents: "none",
             }}
           >
@@ -308,14 +295,14 @@ export function WeeklyProfitChart({ data: propData }) {
       {/* Legend */}
       <div style={{ display: "flex", gap: "20px", marginBottom: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: TOKEN.primary }} />
-          <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 500, color: TOKEN.onSurfaceVariant }}>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.primary }} />
+          <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 500, color: T.onSurfaceVariant }}>
             Sales
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#1a1a2e" }} />
-          <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 500, color: TOKEN.onSurfaceVariant }}>
+          <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 500, color: T.onSurfaceVariant }}>
             Revenue
           </span>
         </div>
@@ -330,15 +317,15 @@ export function WeeklyProfitChart({ data: propData }) {
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: TOKEN.outline, fontSize: 12, fontFamily: TOKEN.fontLabel }}
+              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: TOKEN.outline, fontSize: 12, fontFamily: TOKEN.fontLabel }}
+              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="sales" name="Sales" fill={TOKEN.primary} radius={[4, 4, 0, 0]} barSize={20} />
+            <Bar dataKey="sales" name="Sales" fill={T.primary} radius={[4, 4, 0, 0]} barSize={20} />
             <Bar dataKey="revenue" name="Revenue" fill="#1a1a2e" radius={[4, 4, 0, 0]} barSize={20} />
           </BarChart>
         </ResponsiveContainer>

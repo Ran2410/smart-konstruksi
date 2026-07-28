@@ -4,26 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
-const T = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#eff4ff",
-  surfaceContainer: "#e5eeff",
-  success: "#15803d",
-  successBg: "#f0fdf4",
-  warning: "#b76e00",
-  warningBg: "#fff7ed",
-  error: "#ba1a1a",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,

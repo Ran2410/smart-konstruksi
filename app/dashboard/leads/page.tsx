@@ -5,34 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  secondary: "#565e74",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainerHigh: "#eef2ef",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  warning: "#b45309",
-  warningLight: "rgba(253,230,138,0.3)",
-  success: "#15803d",
-  successLight: "rgba(220,252,231,0.8)",
-  info: "#2563eb",
-  infoMedium: "rgba(37,99,235,0.12)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const cardStyle: React.CSSProperties = {
   background: T.surfaceCard,
@@ -103,7 +76,7 @@ function StatusBadge({ status }: { status: string }) {
     <span style={{
       display: "inline-flex", alignItems: "center", gap: "6px",
       padding: "4px 12px", borderRadius: "9999px",
-      fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700,
+      fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700,
       color: cfg.color, background: cfg.bg, whiteSpace: "nowrap",
     }}>
       <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: cfg.dot, flexShrink: 0 }} />
@@ -127,7 +100,7 @@ function FilterChip({ label, value, onChange, options }: {
           display: "flex", alignItems: "center", gap: "6px",
           padding: "6px 12px", background: T.surfaceContainerLow,
           border: `1px solid rgba(190,201,193,0.3)`, borderRadius: "9999px",
-          fontFamily: T.fontLabel, fontSize: "12px", cursor: "pointer",
+          fontFamily: FONT_LABEL, fontSize: "12px", cursor: "pointer",
         }}
       >
         <span style={{ color: T.onSurfaceMuted }}>{label}:</span>
@@ -151,7 +124,7 @@ function FilterChip({ label, value, onChange, options }: {
                 style={{
                   display: "block", width: "100%", textAlign: "left",
                   padding: "10px 16px", background: o.value === value ? T.primaryLight : "none",
-                  border: "none", fontFamily: T.fontLabel, fontSize: "13px",
+                  border: "none", fontFamily: FONT_LABEL, fontSize: "13px",
                   fontWeight: o.value === value ? 700 : 400,
                   color: o.value === value ? T.primary : T.onSurface, cursor: "pointer",
                 }}
@@ -203,8 +176,8 @@ function PipelineMetrics({ leads }: { leads: any[] }) {
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "28px", color: m.color }}>{m.icon}</span>
           <div>
-            <p style={{ fontFamily: T.fontLabel, fontSize: "11px", color: T.onSurfaceMuted, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>{m.label}</p>
-            <p style={{ fontFamily: T.fontDisplay, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: "2px 0 0" }}>{m.value}</p>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.onSurfaceMuted, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>{m.label}</p>
+            <p style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 700, color: T.onSurface, margin: "2px 0 0" }}>{m.value}</p>
           </div>
         </div>
       ))}
@@ -277,7 +250,7 @@ function LeadCard({ lead, canEdit, onDragStart }: {
       {/* Status badge + Source */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", marginBottom: "10px" }}>
         <span style={{
-          fontFamily: T.fontLabel, fontSize: "9px", fontWeight: 700,
+          fontFamily: FONT_LABEL, fontSize: "9px", fontWeight: 700,
           color: cfg.color, background: `${cfg.color}12`,
           padding: "2px 8px", borderRadius: "4px",
           textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: "16px",
@@ -286,7 +259,7 @@ function LeadCard({ lead, canEdit, onDragStart }: {
         </span>
         {lead.source && (
           <span style={{
-            fontFamily: T.fontLabel, fontSize: "9px", fontWeight: 600,
+            fontFamily: FONT_LABEL, fontSize: "9px", fontWeight: 600,
             color: T.onSurfaceMuted, background: T.surfaceContainerLow,
             padding: "2px 6px", borderRadius: "4px", whiteSpace: "nowrap",
           }}>
@@ -297,7 +270,7 @@ function LeadCard({ lead, canEdit, onDragStart }: {
 
       {/* Name */}
       <div style={{
-        fontFamily: T.fontDisplay, fontSize: "13px", fontWeight: 600,
+        fontFamily: FONT_DISPLAY, fontSize: "13px", fontWeight: 600,
         color: T.onSurface, marginBottom: "4px", lineHeight: 1.4,
       }}>
         {lead.name}
@@ -306,7 +279,7 @@ function LeadCard({ lead, canEdit, onDragStart }: {
       {/* Company */}
       {lead.company && (
         <div style={{
-          fontFamily: T.fontBody, fontSize: "11px", color: T.onSurfaceVariant,
+          fontFamily: FONT_BODY, fontSize: "11px", color: T.onSurfaceVariant,
           marginBottom: "10px",
         }}>
           {lead.company}
@@ -320,19 +293,19 @@ function LeadCard({ lead, canEdit, onDragStart }: {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
         {lead.budgetMax != null ? (
           <span style={{
-            fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.primary,
+            fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700, color: T.primary,
             display: "flex", alignItems: "center", gap: "4px",
           }}>
             <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>payments</span>
             {formatCurrency(Number(lead.budgetMax))}
           </span>
         ) : (
-          <span style={{ fontFamily: T.fontBody, fontSize: "11px", color: T.outlineSoft, fontStyle: "italic" }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: "11px", color: T.outlineSoft, fontStyle: "italic" }}>
             No budget
           </span>
         )}
         <span style={{
-          fontFamily: T.fontLabel, fontSize: "10px", fontWeight: 600, color: T.outline,
+          fontFamily: FONT_LABEL, fontSize: "10px", fontWeight: 600, color: T.outline,
           display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>schedule</span>
@@ -354,7 +327,7 @@ function LeadCard({ lead, canEdit, onDragStart }: {
             <span className="material-symbols-outlined" style={{ fontSize: "12px", color: T.primary }}>person</span>
           </div>
           <span style={{
-            fontFamily: T.fontBody, fontSize: "11px", fontWeight: 500,
+            fontFamily: FONT_BODY, fontSize: "11px", fontWeight: 500,
             color: T.onSurfaceVariant, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {lead.assignedUser.name}
@@ -475,13 +448,13 @@ export default function LeadsPage() {
         .sk-table { width: 100%; border-collapse: collapse; }
         .sk-table th {
           text-align: left; padding: 14px 24px;
-          font-family: ${T.fontLabel}; font-size: 11px; font-weight: 700;
+          font-family: ${FONT_LABEL}; font-size: 11px; font-weight: 700;
           letter-spacing: 0.05em; text-transform: uppercase; color: ${T.outline};
           background: rgba(245,248,246,0.5);
           border-bottom: 1px solid rgba(190,201,193,0.2);
         }
         .sk-table td {
-          padding: 16px 24px; font-family: ${T.fontBody}; font-size: 14px;
+          padding: 16px 24px; font-family: ${FONT_BODY}; font-size: 14px;
           color: ${T.onSurface}; border-bottom: 1px solid rgba(190,201,193,0.15);
           vertical-align: middle;
         }
@@ -493,7 +466,7 @@ export default function LeadsPage() {
           min-width: 34px; height: 34px; padding: 0 8px;
           border: 1px solid rgba(190,201,193,0.5); border-radius: 8px;
           background: ${T.surfaceCard}; color: ${T.onSurfaceVariant};
-          font-family: ${T.fontLabel}; font-size: 13px; font-weight: 600;
+          font-family: ${FONT_LABEL}; font-size: 13px; font-weight: 600;
           cursor: pointer; transition: all 0.15s; line-height: 1;
         }
         .sk-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryLight}; }
@@ -513,10 +486,10 @@ export default function LeadsPage() {
             </span>
           </div>
           <div>
-            <h2 style={{ fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.01em", color: T.onSurface, margin: 0 }}>
+            <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.01em", color: T.onSurface, margin: 0 }}>
               {view === "pipeline" ? "Pipeline" : "Leads"}
             </h2>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>
               {view === "pipeline" ? `${allLeads.length} leads · Drag & drop to update status` : "Track and manage potential customer leads."}
             </p>
           </div>
@@ -534,7 +507,7 @@ export default function LeadsPage() {
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "7px 14px", borderRadius: "8px",
                 border: "none", cursor: "pointer",
-                fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700,
                 background: view === "pipeline" ? T.surfaceCard : "transparent",
                 color: view === "pipeline" ? T.primary : T.onSurfaceMuted,
                 boxShadow: view === "pipeline" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
@@ -550,7 +523,7 @@ export default function LeadsPage() {
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "7px 14px", borderRadius: "8px",
                 border: "none", cursor: "pointer",
-                fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700,
                 background: view === "table" ? T.surfaceCard : "transparent",
                 color: view === "table" ? T.primary : T.onSurfaceMuted,
                 boxShadow: view === "table" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
@@ -567,7 +540,7 @@ export default function LeadsPage() {
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "10px 22px", background: T.primary, color: "#fff",
               border: "none", borderRadius: "10px",
-              fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+              fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
               textDecoration: "none", boxShadow: "0 2px 6px rgba(0,79,53,0.25)",
               transition: "all 0.15s ease",
             }}
@@ -604,7 +577,7 @@ export default function LeadsPage() {
                 style={{
                   width: "100%", padding: "9px 12px 9px 40px",
                   background: T.surfaceContainerLow, border: `1px solid rgba(190,201,193,0.3)`,
-                  borderRadius: "10px", fontFamily: T.fontBody, fontSize: "14px",
+                  borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "14px",
                   color: T.onSurface, outline: "none", boxSizing: "border-box",
                 }}
               />
@@ -612,7 +585,7 @@ export default function LeadsPage() {
             <FilterChip label="Source" value={sourceFilter} onChange={(v) => { setSourceFilter(v); }} options={SOURCE_OPTIONS} />
             {hasActiveFilters && (
               <button onClick={resetFilters} style={{
-                fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
+                fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700,
                 color: T.primary, background: "none", border: "none", cursor: "pointer",
               }}>
                 Reset Filters
@@ -625,7 +598,7 @@ export default function LeadsPage() {
             <div style={{
               display: "flex", alignItems: "center", gap: "10px",
               padding: "32px", justifyContent: "center", color: T.outline,
-              fontFamily: T.fontLabel, fontSize: "14px",
+              fontFamily: FONT_LABEL, fontSize: "14px",
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>progress_activity</span>
               Loading pipeline…
@@ -692,14 +665,14 @@ export default function LeadsPage() {
                           {col.icon}
                         </span>
                         <span style={{
-                          fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700,
+                          fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700,
                           color: T.onSurface, textTransform: "uppercase", letterSpacing: "0.04em",
                         }}>
                           {col.label}
                         </span>
                       </div>
                       <span style={{
-                        fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+                        fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
                         color: T.outline, background: "rgba(111,122,114,0.08)",
                         padding: "2px 9px", borderRadius: "6px",
                         minWidth: "20px", textAlign: "center",
@@ -714,7 +687,7 @@ export default function LeadsPage() {
                         <div style={{
                           textAlign: "center", padding: "24px 8px",
                           color: dropTarget === col.value ? T.primary : T.outlineSoft,
-                          fontFamily: T.fontBody, fontSize: "12px",
+                          fontFamily: FONT_BODY, fontSize: "12px",
                           borderRadius: "8px",
                           background: dropTarget === col.value ? "rgba(0,79,53,0.04)" : "transparent",
                           border: dropTarget === col.value ? `2px dashed ${T.primary}40` : "2px dashed transparent",
@@ -759,13 +732,13 @@ export default function LeadsPage() {
                   alignItems: "center",
                 }}>
                   <span className="material-symbols-outlined" style={{ fontSize: "16px", color: T.primary }}>touch_app</span>
-                  <span style={{ fontFamily: T.fontBody, fontSize: "12px", fontWeight: 500, color: T.onSurface }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: "12px", fontWeight: 500, color: T.onSurface }}>
                     <strong>Drag & drop</strong> lead cards between columns to update status
                   </span>
                   <div style={{ display: "flex", gap: "6px", marginLeft: "auto" }}>
                     {PIPELINE_STAGES.map((s) => (
                       <span key={s} style={{
-                        fontFamily: T.fontLabel, fontSize: "10px",
+                        fontFamily: FONT_LABEL, fontSize: "10px",
                         color: STATUS_CONFIG[s]?.color || T.outline,
                         background: `${(STATUS_CONFIG[s]?.color || T.outline)}10`,
                         padding: "2px 6px", borderRadius: "4px",
@@ -797,7 +770,7 @@ export default function LeadsPage() {
                   placeholder="Search by name or company..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  style={{ width: "100%", padding: "9px 12px 9px 40px", background: T.surfaceContainerLow, border: `1px solid rgba(190,201,193,0.3)`, borderRadius: "10px", fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface, outline: "none", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "9px 12px 9px 40px", background: T.surfaceContainerLow, border: `1px solid rgba(190,201,193,0.3)`, borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, outline: "none", boxSizing: "border-box" }}
                 />
               </div>
             </div>
@@ -805,7 +778,7 @@ export default function LeadsPage() {
               <FilterChip label="Status" value={statusFilter} onChange={(v) => { setStatusFilter(v); setPage(1); }} options={STATUS_OPTIONS} />
               <FilterChip label="Source" value={sourceFilter} onChange={(v) => { setSourceFilter(v); setPage(1); }} options={SOURCE_OPTIONS} />
               {hasActiveFilters && (
-                <button onClick={resetFilters} style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.primary, background: "none", border: "none", cursor: "pointer", marginLeft: "4px" }}>
+                <button onClick={resetFilters} style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700, color: T.primary, background: "none", border: "none", cursor: "pointer", marginLeft: "4px" }}>
                   Reset Filters
                 </button>
               )}
@@ -843,15 +816,15 @@ export default function LeadsPage() {
           ) : error ? (
             <div style={{ padding: "48px", textAlign: "center" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.error, display: "block", marginBottom: "8px" }}>error</span>
-              <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error }}>{error}</p>
-              <button onClick={fetchLeads} style={{ marginTop: "12px", padding: "8px 20px", background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}`, borderRadius: "8px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Retry</button>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error }}>{error}</p>
+              <button onClick={fetchLeads} style={{ marginTop: "12px", padding: "8px 20px", background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}`, borderRadius: "8px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Retry</button>
             </div>
           ) : leads.length === 0 ? (
             <div style={{ padding: "64px", textAlign: "center" }}>
               <span className="material-symbols-outlined" style={{ fontSize: "56px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>person_search</span>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 600, color: T.onSurface, margin: "0 0 8px" }}>No leads found</h3>
-              <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.outline, margin: "0 0 20px" }}>Try adjusting your filters or create a new lead.</p>
-              <Link href="/dashboard/leads/new" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 24px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+              <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 600, color: T.onSurface, margin: "0 0 8px" }}>No leads found</h3>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: "0 0 20px" }}>Try adjusting your filters or create a new lead.</p>
+              <Link href="/dashboard/leads/new" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 24px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>add</span>Add Lead
               </Link>
             </div>
@@ -874,24 +847,24 @@ export default function LeadsPage() {
                   {leads.map((lead) => (
                     <tr key={lead.id} onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <td>
-                        <p style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{lead.name}</p>
-                        {lead.email && <p style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{lead.email}</p>}
+                        <p style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, color: T.onSurface, margin: 0 }}>{lead.name}</p>
+                        {lead.email && <p style={{ fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>{lead.email}</p>}
                       </td>
-                      <td style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceVariant }}>{lead.company || "—"}</td>
-                      <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted }}>{lead.phone || "—"}</td>
+                      <td style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceVariant }}>{lead.company || "—"}</td>
+                      <td style={{ fontFamily: FONT_LABEL, fontSize: "13px", color: T.onSurfaceMuted }}>{lead.phone || "—"}</td>
                       <td>{lead.source ? (
-                        <span style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceVariant, background: T.surfaceContainerLow, padding: "2px 8px", borderRadius: "4px" }}>
+                        <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceVariant, background: T.surfaceContainerLow, padding: "2px 8px", borderRadius: "4px" }}>
                           {lead.source.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
                         </span>
                       ) : "—"}</td>
                       <td><StatusBadge status={lead.status} /></td>
-                      <td style={{ fontFamily: T.fontBody, fontSize: "14px" }}>{lead.assignedUser?.name || "—"}</td>
-                      <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted }}>
+                      <td style={{ fontFamily: FONT_BODY, fontSize: "14px" }}>{lead.assignedUser?.name || "—"}</td>
+                      <td style={{ fontFamily: FONT_LABEL, fontSize: "13px", color: T.onSurfaceMuted }}>
                         {lead.budgetMin != null || lead.budgetMax != null
                           ? `${formatCurrency(Number(lead.budgetMin))} – ${formatCurrency(Number(lead.budgetMax))}`
                           : "—"}
                       </td>
-                      <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted, whiteSpace: "nowrap" }}>{formatDate(lead.createdAt)}</td>
+                      <td style={{ fontFamily: FONT_LABEL, fontSize: "13px", color: T.onSurfaceMuted, whiteSpace: "nowrap" }}>{formatDate(lead.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -902,7 +875,7 @@ export default function LeadsPage() {
           {/* Pagination */}
           {totalPages > 0 && leads.length > 0 && (
             <div style={{ padding: "16px 0 0", borderTop: `1px solid rgba(190,201,193,0.2)`, marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-              <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
+              <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
                 Showing {Math.min((page - 1) * limit + 1, total)} to {Math.min(page * limit, total)} of {total} leads
               </p>
               <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>

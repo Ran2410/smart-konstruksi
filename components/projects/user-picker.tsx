@@ -12,20 +12,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { T } from "@/lib/design-tokens";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-// ── Design Tokens ───────────────────────────────────────
-const FONT_DISPLAY = "'Hanken Grotesk', sans-serif";
-const FONT_BODY = "'Inter', sans-serif";
-const FONT_LABEL = "'Geist', monospace";
-const PRIMARY = "#004f35";
-const PRIMARY_LIGHT = "rgba(0,79,53,0.08)";
-const ON_SURFACE = "#0b1c30";
-const MUTED = "#6f7a72";
 
 export interface UserOption {
   id: string;
@@ -72,13 +64,13 @@ export function UserPicker({
             !selected && "text-muted-foreground",
             className
           )}
-          style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600 }}
+          style={{ fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600 }}
         >
           {selected ? (
             <div className="flex items-center gap-2 truncate">
               <div
                 className="flex items-center justify-center w-5 h-5 rounded-full shrink-0"
-                style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+                style={{ background: T.primaryLight, color: T.primary }}
               >
                 <span
                   className="material-symbols-outlined"
@@ -87,8 +79,8 @@ export function UserPicker({
                   person
                 </span>
               </div>
-              <span className="truncate" style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, color: ON_SURFACE }}>{selected.name}</span>
-              <span className="text-xs ml-auto truncate hidden sm:inline" style={{ fontFamily: FONT_BODY, color: MUTED }}>
+              <span className="truncate" style={{ fontFamily: T.fontDisplay, fontWeight: 600, color: T.onSurface }}>{selected.name}</span>
+              <span className="text-xs ml-auto truncate hidden sm:inline" style={{ fontFamily: T.fontBody, color: T.muted }}>
                 {selected.email}
               </span>
             </div>
@@ -97,7 +89,7 @@ export function UserPicker({
               <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
                 person_search
               </span>
-              <span style={{ fontFamily: FONT_BODY, fontWeight: 400 }}>{placeholder}</span>
+              <span style={{ fontFamily: T.fontBody, fontWeight: 400 }}>{placeholder}</span>
             </div>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -108,7 +100,7 @@ export function UserPicker({
         align="start"
       >
         <Command className="">
-          <CommandInput placeholder="Search by name or email…" className="" style={{ fontFamily: FONT_BODY }} />
+          <CommandInput placeholder="Search by name or email…" className="" style={{ fontFamily: T.fontBody }} />
           <CommandList className="">
             <CommandEmpty className="">
               <div className="flex flex-col items-center gap-2 py-4 text-muted-foreground">
@@ -118,7 +110,7 @@ export function UserPicker({
                 >
                   person_off
                 </span>
-                <span className="text-sm" style={{ fontFamily: FONT_BODY }}>No user found</span>
+                <span className="text-sm" style={{ fontFamily: T.fontBody }}>No user found</span>
               </div>
             </CommandEmpty>
             <CommandGroup className="">
@@ -134,20 +126,20 @@ export function UserPicker({
                 >
                   <div
                     className="flex items-center justify-center w-8 h-8 rounded-full shrink-0"
-                    style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+                    style={{ background: T.primaryLight, color: T.primary }}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
                       person
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="truncate" style={{ fontFamily: FONT_DISPLAY, fontSize: "14px", fontWeight: 600, color: ON_SURFACE }}>
+                    <div className="truncate" style={{ fontFamily: T.fontDisplay, fontSize: "14px", fontWeight: 600, color: T.onSurface }}>
                       {user.name}
                     </div>
-                    <div className="truncate" style={{ fontFamily: FONT_BODY, fontSize: "12px", color: MUTED }}>
+                    <div className="truncate" style={{ fontFamily: T.fontBody, fontSize: "12px", color: T.muted }}>
                       {user.email}
                       {user.role && (
-                        <span className="ml-2 opacity-60" style={{ fontFamily: FONT_LABEL, fontSize: "11px" }}>
+                        <span className="ml-2 opacity-60" style={{ fontFamily: T.fontLabel, fontSize: "11px" }}>
                           · {user.role.replace(/_/g, " ")}
                         </span>
                       )}
@@ -160,7 +152,7 @@ export function UserPicker({
                         ? "opacity-100"
                         : "opacity-0"
                     )}
-                    style={{ color: PRIMARY }}
+                    style={{ color: T.primary }}
                   />
                 </CommandItem>
               ))}

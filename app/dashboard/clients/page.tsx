@@ -5,34 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryGlow: "rgba(0,79,53,0.12)",
-  secondary: "#565e74",
-  secondaryContainer: "#d7dff9",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainer: "#e5eeff",
-  surfaceContainerLow: "#eff4ff",
-  surfaceContainerHigh: "#dce9ff",
-  error: "#ba1a1a",
-  errorContainer: "rgba(255,218,214,0.2)",
-  errorLight: "rgba(186,26,26,0.08)",
-  success: "#15803d",
-  successBg: "rgba(220,252,231,0.6)",
-  tertiary: "#424545",
-  tertiaryFixed: "#e2e3e2",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,
@@ -79,8 +52,8 @@ function KpiCard({ icon, iconBg, iconColor, label, value }: {
           <span className="material-symbols-outlined" style={{ fontSize: "22px", color: iconColor, display: "block", fontVariationSettings: "'FILL' 1" }}>{icon}</span>
         </div>
       </div>
-      <p style={{ fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.onSurfaceMuted, margin: "0 0 4px" }}>{label}</p>
-      <h3 style={{ fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>{value}</h3>
+      <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.onSurfaceMuted, margin: "0 0 4px" }}>{label}</p>
+      <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "28px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>{value}</h3>
     </div>
   );
 }
@@ -93,7 +66,7 @@ function StatusBadge({ active }: { active: boolean }) {
       padding: "4px 12px", borderRadius: "20px",
       background: active ? T.successBg : T.errorContainer,
       color: active ? T.success : T.error,
-      fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+      fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
       letterSpacing: "0.04em",
     }}>
       <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: active ? T.success : T.error }} />
@@ -147,7 +120,7 @@ function ActionMenu({
           <Link href={`/dashboard/clients/${clientId}`} style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "8px 12px", borderRadius: "8px", textDecoration: "none",
-            fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurface,
+            fontFamily: FONT_LABEL, fontSize: "13px", color: T.onSurface,
             transition: "background 0.15s",
           }}
             onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
@@ -159,7 +132,7 @@ function ActionMenu({
           <button onClick={() => { setOpen(false); onDelete(clientId); }} style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "8px 12px", borderRadius: "8px", textDecoration: "none",
-            fontFamily: T.fontLabel, fontSize: "13px", color: T.error,
+            fontFamily: FONT_LABEL, fontSize: "13px", color: T.error,
             background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left",
             transition: "background 0.15s",
           }}
@@ -186,7 +159,7 @@ function Pagination({ page, totalPages, total, onPageChange, limit = 10 }: {
     minWidth: "34px", height: "34px", padding: "0 8px",
     border: `1px solid rgba(190,201,193,0.5)`, borderRadius: "8px",
     background: "#fff", color: T.onSurfaceVariant,
-    fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
+    fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600,
     cursor: "pointer", transition: "all 0.15s", lineHeight: 1,
   };
 
@@ -196,7 +169,7 @@ function Pagination({ page, totalPages, total, onPageChange, limit = 10 }: {
 
   return (
     <div style={{ padding: "16px 0 0", borderTop: `1px solid rgba(190,201,193,0.2)`, marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-      <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
+      <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
         Showing {Math.min((page - 1) * limit + 1, total)} to {Math.min(page * limit, total)} of {total} clients
       </p>
       <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
@@ -281,8 +254,8 @@ export default function ClientsPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontFamily: T.fontDisplay, fontSize: "26px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>Clients</h1>
-          <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
+          <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: "26px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>Clients</h1>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
             Manage client companies and their projects
           </p>
         </div>
@@ -291,7 +264,7 @@ export default function ClientsPage() {
             display: "inline-flex", alignItems: "center", gap: "8px",
             padding: "10px 20px", background: T.primary, color: "#fff",
             borderRadius: "10px", textDecoration: "none",
-            fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
+            fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600,
             letterSpacing: "0.02em", transition: "all 0.15s", border: "none", cursor: "pointer",
           }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#003d29")}
@@ -324,7 +297,7 @@ export default function ClientsPage() {
               style={{
                 width: "100%", boxSizing: "border-box", padding: "10px 14px 10px 42px",
                 background: T.surfaceContainerLow, border: `1.5px solid ${T.outlineSoft}66`,
-                borderRadius: "10px", fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface,
+                borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface,
                 outline: "none", transition: "all 0.2s",
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = T.primary)}
@@ -334,7 +307,7 @@ export default function ClientsPage() {
           <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} style={{
             padding: "10px 16px", background: T.surfaceContainerLow,
             border: `1.5px solid ${T.outlineSoft}66`, borderRadius: "10px",
-            fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface,
+            fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface,
             outline: "none", cursor: "pointer", minWidth: "130px",
             transition: "border-color 0.2s",
           }} onFocus={(e) => (e.currentTarget.style.borderColor = T.primary)}
@@ -374,16 +347,16 @@ export default function ClientsPage() {
         ) : clients.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "56px", display: "block", marginBottom: "12px", color: `${T.outlineSoft}88`, fontVariationSettings: "'FILL' 1" }}>groups</span>
-            <p style={{ fontFamily: T.fontDisplay, fontSize: "16px", fontWeight: 600, color: T.onSurface, margin: "0 0 4px" }}>
+            <p style={{ fontFamily: FONT_DISPLAY, fontSize: "16px", fontWeight: 600, color: T.onSurface, margin: "0 0 4px" }}>
               {search || statusFilter ? "No clients found" : "No clients yet"}
             </p>
-            <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: 0 }}>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted, margin: 0 }}>
               {search || statusFilter ? "Try adjusting your search or filter" : "Add your first client to get started"}
             </p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: T.fontBody }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: FONT_BODY }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${T.outlineSoft}44` }}>
                   <th style={thStyle}>Company</th>
@@ -409,7 +382,7 @@ export default function ClientsPage() {
                           background: T.primaryLight, display: "flex", alignItems: "center",
                           justifyContent: "center", flexShrink: 0,
                         }}>
-                          <span style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.primary }}>
+                          <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700, color: T.primary }}>
                             {getInitials(displayName(client))}
                           </span>
                         </div>
@@ -418,7 +391,7 @@ export default function ClientsPage() {
                             {displayName(client)}
                           </span>
                           {!client.companyName && client.companyName !== null && (
-                            <span style={{ fontFamily: T.fontLabel, fontSize: "10px", color: T.onSurfaceMuted, marginLeft: "6px" }}>
+                            <span style={{ fontFamily: FONT_LABEL, fontSize: "10px", color: T.onSurfaceMuted, marginLeft: "6px" }}>
                               (Individual)
                             </span>
                           )}
@@ -432,7 +405,7 @@ export default function ClientsPage() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                         <span style={{ color: T.onSurface, fontSize: "13px" }}>{client.user.email}</span>
                         {client.user.phone && (
-                          <span style={{ color: T.onSurfaceMuted, fontSize: "12px", fontFamily: T.fontLabel }}>{client.user.phone}</span>
+                          <span style={{ color: T.onSurfaceMuted, fontSize: "12px", fontFamily: FONT_LABEL }}>{client.user.phone}</span>
                         )}
                       </div>
                     </td>
@@ -441,7 +414,7 @@ export default function ClientsPage() {
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         minWidth: "28px", padding: "2px 10px", borderRadius: "20px",
                         background: T.primaryLight, color: T.primary,
-                        fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 600,
+                        fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600,
                       }}>
                         {client._count?.projects || 0}
                       </span>
@@ -450,7 +423,7 @@ export default function ClientsPage() {
                       <StatusBadge active={client.user.isActive} />
                     </td>
                     <td style={{ ...tdStyle, textAlign: "center" }}>
-                      <span style={{ color: T.onSurfaceMuted, fontSize: "12px", fontFamily: T.fontLabel }}>
+                      <span style={{ color: T.onSurfaceMuted, fontSize: "12px", fontFamily: FONT_LABEL }}>
                         {fmtDate(client.createdAt)}
                       </span>
                     </td>
@@ -476,7 +449,7 @@ export default function ClientsPage() {
 }
 
 const thStyle: React.CSSProperties = {
-  padding: "12px 16px", fontFamily: T.fontLabel, fontSize: "11px",
+  padding: "12px 16px", fontFamily: FONT_LABEL, fontSize: "11px",
   fontWeight: 600, color: T.outline, letterSpacing: "0.06em",
   textTransform: "uppercase", textAlign: "left", whiteSpace: "nowrap",
 };

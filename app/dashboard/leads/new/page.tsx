@@ -4,34 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  secondary: "#565e74",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainerHigh: "#eef2ef",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  warning: "#b45309",
-  warningLight: "rgba(253,230,138,0.3)",
-  success: "#15803d",
-  successLight: "rgba(220,252,231,0.8)",
-  info: "#2563eb",
-  infoMedium: "rgba(37,99,235,0.12)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const cardStyle: React.CSSProperties = {
@@ -49,7 +22,7 @@ const editFieldStyle: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -59,7 +32,7 @@ const editFieldStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.outline,
@@ -110,7 +83,7 @@ function Field({ label, required, hint, children }: {
       {children}
       {hint && (
         <p style={{
-          fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted,
+          fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted,
           margin: "6px 0 0", display: "flex", alignItems: "center", gap: "4px",
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>info</span>
@@ -266,7 +239,7 @@ export default function NewLeadPage() {
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "0 16px" }}>
       <style>{`
         .sk-error-msg {
-          font-family: ${T.fontBody};
+          font-family: ${FONT_BODY};
           font-size: 12px;
           color: ${T.error};
           margin: 6px 0 0;
@@ -314,10 +287,10 @@ export default function NewLeadPage() {
           <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>arrow_back</span>
         </Link>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontFamily: T.fontDisplay, fontSize: "32px", fontWeight: 700, color: T.onSurface, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: "32px", fontWeight: 700, color: T.onSurface, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
             New Lead
           </h2>
-          <p style={{ fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted, margin: 0, lineHeight: "1.5" }}>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted, margin: 0, lineHeight: "1.5" }}>
             Add a new potential customer to the pipeline.
           </p>
         </div>
@@ -333,7 +306,7 @@ export default function NewLeadPage() {
           borderRadius: "12px",
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: "20px", color: T.error }}>error</span>
-          <span style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.error, flex: 1 }}>{submitError}</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.error, flex: 1 }}>{submitError}</span>
           <button onClick={() => setSubmitError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.error }}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>close</span>
           </button>
@@ -349,8 +322,8 @@ export default function NewLeadPage() {
               <span className="material-symbols-outlined" style={{ fontSize: "24px", color: T.primary }}>person_add</span>
             </div>
             <div>
-              <h3 style={{ fontFamily: T.fontDisplay, fontSize: "19px", fontWeight: 700, color: T.onSurface, margin: 0, letterSpacing: "-0.01em" }}>Lead Information</h3>
-              <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "4px 0 0", lineHeight: "1.4" }}>Fill in the prospective client's details.</p>
+              <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "19px", fontWeight: 700, color: T.onSurface, margin: 0, letterSpacing: "-0.01em" }}>Lead Information</h3>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted, margin: "4px 0 0", lineHeight: "1.4" }}>Fill in the prospective client's details.</p>
             </div>
           </div>
 
@@ -553,7 +526,7 @@ export default function NewLeadPage() {
             style={{
               padding: "12px 24px", background: T.surfaceCard, color: T.onSurfaceVariant,
               border: `1px solid ${T.outlineSoft}`, borderRadius: "12px",
-              fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 600,
+              fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 600,
               textDecoration: "none", cursor: "pointer", transition: "all 0.15s",
             }}
           >
@@ -565,7 +538,7 @@ export default function NewLeadPage() {
             style={{
               padding: "12px 32px", background: submitting ? T.outline : T.primary,
               color: "#fff", border: "none", borderRadius: "12px",
-              fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700,
+              fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700,
               cursor: submitting ? "not-allowed" : "pointer",
               boxShadow: submitting ? "none" : "0 2px 8px rgba(0,79,53,0.2)",
               transition: "all 0.15s",
