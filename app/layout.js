@@ -17,7 +17,7 @@ export const metadata = {
   description: "Construction Management Platform - PT. Kita Satu Intersolusi",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/smartkonstrunksi.svg", type: "image/svg+xml" },
       { url: "/smartkonstrunksi.jpeg", type: "image/jpeg" },
     ],
     apple: "/smartkonstrunksi.jpeg",

@@ -241,26 +241,8 @@ export function Sidebar({ onClose }) {
       >
         <Link
           href="/dashboard/profile"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "10px 16px",
-            textDecoration: "none",
-            fontFamily: FONT_LABEL,
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "#5a6278",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = T.surfaceContainerLow;
-            e.currentTarget.style.color = T.primary;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "#5a6278";
-          }}
+          style={linkStyle(pathname === "/dashboard/profile")}
+          {...hoverHandlers(pathname === "/dashboard/profile")}
           onClick={onClose}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
