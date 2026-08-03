@@ -2,24 +2,21 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
-
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
-
 const isFullMode = process.argv.includes("--full");
-
 function daysAgo(n: number): Date {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d;
 }
-
 function daysFromNow(n: number): Date {
   const d = new Date();
   d.setDate(d.getDate() + n);
   return d;
 }
-
 async function cleanup() {
   console.log("🧹 Cleaning existing data...");
   await prisma.activityLog.deleteMany();
@@ -45,10 +42,8 @@ async function cleanup() {
   await prisma.branch.deleteMany();
   console.log("🧹 Cleanup done\n");
 }
-
 async function seedMinimal() {
   const password = await bcrypt.hash("Password123", 10);
-
   const branch = await prisma.branch.upsert({
     where: { id: "branch-ksipusat" },
     update: {},
@@ -61,7 +56,6 @@ async function seedMinimal() {
     },
   });
   console.log(`✅ Branch: ${branch.name}`);
-
   const users = [
     {
       id: "u-owner",
@@ -80,7 +74,6 @@ async function seedMinimal() {
       phone: "0812-1000-0001",
     },
   ];
-
   for (const u of users) {
     await prisma.user.upsert({
       where: { email: u.email },
@@ -89,7 +82,6 @@ async function seedMinimal() {
     });
   }
   console.log(`✅ Users: ${users.length} (owner + admin)`);
-
   console.log(
     "\n═══════════════════════════════════════════════════════════════",
   );
@@ -101,15 +93,88 @@ async function seedMinimal() {
   🔑 Login Credentials (password: Password123):
   ├── owner@ksi.co.id   → OWNER
   └── admin@ksi.co.id   → SUPER_ADMIN
-
   ℹ️  Run with --full flag for dev data:
       npx prisma db seed -- --full
 `);
 }
-
+// ── Helper: create dummy file buffer ──
+function createDummyFile(filename: string): Buffer {
+  if (filename.endsWith(".pdf")) {
+    return Buffer.from(
+      "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
+      "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n" +
+      "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\n" +
+      "xref\n0 4\ntrailer\n<< /Root 1 0 R /Size 4 >>\n%%EOF"
+    );
+  }
+  return Buffer.from(`[Dummy file content for ${filename}]\n`);
+}
+// ── Helper: seed sample documents with dummy files ──
+async function seedDocuments() {
+  const categories = await prisma.documentCategory.findMany();
+  if (!categories.length) {
+    console.log("  ⏭️  No document categories found, skipping documents");
+    return;
+  }
+  const adminUser = await prisma.user.findFirst({ where: { email: "admin@ksi.co.id" } });
+  if (!adminUser) return;
+  const projects = await prisma.project.findMany();
+  if (!projects.length) return;
+  const catMap: Record<string, string> = {};
+  categories.forEach((c) => { catMap[c.name] = c.id; });
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "documents");
+  await mkdir(uploadDir, { recursive: true });
+  const docs = [
+    { name: "Kontrak Utama - Gedung Sentra Bisnis", desc: "Kontrak kerja utama antara KSI dan PT. Wulandari Properti", file: "pdf", cat: "Contract Documents", proj: 0, visible: true },
+    { name: "Addendum #1 - Perubahan Timeline", desc: "Perpanjangan timeline proyek 2 bulan akibat cuaca ekstrem", file: "pdf", cat: "Contract Documents", proj: 0, visible: true },
+    { name: "Drawing Arsitektur - Lantai 1-8", desc: "Gambar kerja arsitektur lengkap gedung 8 lantai", file: "pdf", cat: "Technical Documents", proj: 0, visible: true },
+    { name: "RAB Detail - Struktur Beton", desc: "Rincian anggaran biaya untuk pekerjaan struktur beton", file: "xlsx", cat: "Technical Documents", proj: 0, visible: false },
+    { name: "Laporan Progress Minggu ke-12", desc: "Laporan progress mingguan periode 15-21 Juli 2026", file: "pdf", cat: "Progress Documents", proj: 0, visible: true },
+    { name: "Foto Progress - Juli 2026", desc: "Dokumentasi foto progress pekerjaan struktur lantai 3", file: "jpg", cat: "Progress Documents", proj: 0, visible: true },
+    { name: "Invoice #INV-2026-001", desc: "Invoice termin 1 - 30% dari nilai kontrak", file: "pdf", cat: "Financial Documents", proj: 0, visible: true },
+    { name: "Bukti Transfer Termin 1", desc: "Bukti transfer pembayaran termin 1 dari client", file: "pdf", cat: "Financial Documents", proj: 0, visible: false },
+    { name: "IMB/PBG - Gedung Sentra Bisnis", desc: "Izin Mendirikan Bangunan / Persetujuan Bangunan Gedung", file: "pdf", cat: "Legal & Permits", proj: 0, visible: true, expiry: "2028-12-31" },
+    { name: "Kontrak Utama - Villa Lembang", desc: "Kontrak kerja utama proyek Villa Modern Lembang", file: "pdf", cat: "Contract Documents", proj: 1, visible: true },
+    { name: "Drawing Arsitektur - Villa", desc: "Gambar kerja arsitektur villa 3 lantai", file: "pdf", cat: "Technical Documents", proj: 1, visible: true },
+    { name: "Laporan Progress Minggu ke-8", desc: "Laporan progress mingguan periode 15-21 Juli 2026", file: "pdf", cat: "Progress Documents", proj: 1, visible: true },
+    { name: "BAST - Ruko Citra Commercial Park", desc: "Berita Acara Serah Terima pekerjaan renovasi ruko", file: "pdf", cat: "Handover Documents", proj: 2, visible: true },
+    { name: "Warranty Certificate - Ruko Citra", desc: "Sertifikat garansi pekerjaan 6 bulan pasca serah terima", file: "pdf", cat: "Handover Documents", proj: 2, visible: true, expiry: "2027-01-01" },
+    { name: "SLF - SD Harapan Bangsa", desc: "Sertifikat Laik Fungsi untuk gedung sekolah", file: "pdf", cat: "Legal & Permits", proj: 3, visible: true, expiry: "2031-01-31" },
+  ];
+  let created = 0;
+  for (const d of docs) {
+    const proj = projects[d.proj];
+    if (!proj) continue;
+    const existing = await prisma.document.findFirst({ where: { name: d.name, projectId: proj.id } });
+    if (existing) continue;
+    const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${d.file}`;
+    const filePath = path.join(uploadDir, uniqueName);
+    const content = createDummyFile(uniqueName);
+    await writeFile(filePath, content);
+    await prisma.document.create({
+      data: {
+        name: d.name,
+        description: d.desc,
+        fileUrl: `/uploads/documents/${uniqueName}`,
+        fileType: d.file,
+        fileSize: content.length,
+        categoryId: catMap[d.cat] || categories[0].id,
+        projectId: proj.id,
+        uploaderId: adminUser.id,
+        isClientVisible: d.visible,
+        expiryDate: (d as any).expiry ? new Date((d as any).expiry) : null,
+        status: "ACTIVE",
+        version: 1,
+        createdBy: adminUser.id,
+      },
+    });
+    created++;
+  }
+  const total = await prisma.document.count();
+  console.log(`✅ Documents: ${created} created (total: ${total})`);
+}
 async function seedFull() {
   const password = await bcrypt.hash("Password123", 10);
-
   const branch1 = await prisma.branch.upsert({
     where: { id: "branch-ksipusat" },
     update: {},
@@ -133,7 +198,6 @@ async function seedFull() {
     },
   });
   console.log(`✅ Branches: ${branch1.name}, ${branch2.name}`);
-
   const userData = [
     {
       id: "u-admin",
@@ -248,7 +312,6 @@ async function seedFull() {
       phone: "0813-2000-0003",
     },
   ];
-
   for (const u of userData) {
     await prisma.user.upsert({
       where: { email: u.email },
@@ -257,7 +320,6 @@ async function seedFull() {
     });
   }
   console.log(`✅ Users: ${userData.length} users`);
-
   const clientProfiles = [
     {
       userId: "u-client1",
@@ -283,7 +345,6 @@ async function seedFull() {
   }
   const clients = await prisma.client.findMany();
   console.log(`✅ Clients: ${clients.length} client profiles`);
-
   const vendors = [
     {
       id: "v-1",
@@ -322,7 +383,6 @@ async function seedFull() {
     await prisma.vendor.upsert({ where: { id: v.id }, update: {}, create: v });
   }
   console.log(`✅ Vendors: ${vendors.length} vendors`);
-
   const categories = [
     "Struktur",
     "Finishing",
@@ -339,7 +399,6 @@ async function seedFull() {
   }
   const cats = await prisma.materialCategory.findMany();
   console.log(`✅ Material Categories: ${cats.length}`);
-
   const projectData = [
     {
       code: "KSI-001",
@@ -442,7 +501,6 @@ async function seedFull() {
       branchId: branch2.id,
     },
   ];
-
   for (const p of projectData) {
     await prisma.project.upsert({
       where: { code: p.code },
@@ -456,15 +514,12 @@ async function seedFull() {
   }
   const projects = await prisma.project.findMany();
   console.log(`✅ Projects: ${projects.length} projects`);
-
   const matCatStruktur = cats.find((c) => c.name === "Struktur")!.id;
   const matCatFinishing = cats.find((c) => c.name === "Finishing")!.id;
   const matCatMekanikal = cats.find((c) => c.name === "Mekanikal")!.id;
   const matCatElektrikal = cats.find((c) => c.name === "Elektrikal")!.id;
-
   const materialData = [
     {
-      projectId: projects[0].id,
       name: "Semen Portland Komposit 50kg",
       quantity: 2000,
       unit: "sak",
@@ -474,7 +529,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[0].id,
       name: "Besi Beton Ulir 12mm",
       quantity: 800,
       unit: "batang",
@@ -484,7 +538,6 @@ async function seedFull() {
       vendorId: "v-2",
     },
     {
-      projectId: projects[0].id,
       name: "Besi Beton Ulir 16mm",
       quantity: 500,
       unit: "batang",
@@ -494,7 +547,6 @@ async function seedFull() {
       vendorId: "v-2",
     },
     {
-      projectId: projects[0].id,
       name: "Hollow Block 20cm",
       quantity: 5000,
       unit: "pcs",
@@ -504,7 +556,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[0].id,
       name: "Kabel NYM 3x2.5mm",
       quantity: 500,
       unit: "meter",
@@ -514,7 +565,6 @@ async function seedFull() {
       vendorId: "v-4",
     },
     {
-      projectId: projects[1].id,
       name: "Semen Portland 50kg",
       quantity: 400,
       unit: "sak",
@@ -524,7 +574,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[1].id,
       name: "Keramik Granit 60x60cm",
       quantity: 280,
       unit: "meter",
@@ -534,7 +583,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[1].id,
       name: "Cat Propan Interior",
       quantity: 50,
       unit: "gallon",
@@ -544,7 +592,6 @@ async function seedFull() {
       vendorId: "v-3",
     },
     {
-      projectId: projects[1].id,
       name: "Pompa Air Grundfos",
       quantity: 3,
       unit: "unit",
@@ -554,7 +601,6 @@ async function seedFull() {
       vendorId: "v-4",
     },
     {
-      projectId: projects[4].id,
       name: "Partisi Gypsum 12mm",
       quantity: 200,
       unit: "lembar",
@@ -564,7 +610,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[4].id,
       name: "Panel Listrik 3 Phase",
       quantity: 5,
       unit: "unit",
@@ -574,7 +619,6 @@ async function seedFull() {
       vendorId: "v-4",
     },
     {
-      projectId: projects[5].id,
       name: "Beton Ready Mix K-300",
       quantity: 300,
       unit: "m3",
@@ -584,7 +628,6 @@ async function seedFull() {
       vendorId: "v-1",
     },
     {
-      projectId: projects[5].id,
       name: "Besi Beton 12mm Ulir",
       quantity: 1200,
       unit: "batang",
@@ -594,7 +637,6 @@ async function seedFull() {
       vendorId: "v-2",
     },
     {
-      projectId: projects[5].id,
       name: "AC Split Daikin 1.5PK",
       quantity: 320,
       unit: "unit",
@@ -604,14 +646,12 @@ async function seedFull() {
       vendorId: "v-4",
     },
   ];
-
   for (const m of materialData) {
     await prisma.material.create({
       data: { ...m, totalPrice: m.quantity * m.unitPrice },
     });
   }
   console.log(`✅ Materials: ${materialData.length} materials`);
-
   const taskData = [
     {
       projectId: projects[0].id,
@@ -775,12 +815,10 @@ async function seedFull() {
       dueDate: new Date("2026-07-15"),
     },
   ];
-
   for (const t of taskData) {
     await prisma.task.create({ data: t });
   }
   console.log(`✅ Tasks: ${taskData.length} tasks`);
-
   const reportData = [
     {
       projectId: projects[0].id,
@@ -866,12 +904,10 @@ async function seedFull() {
       weather: "Cerah",
     },
   ];
-
   for (const r of reportData) {
     await prisma.progressReport.create({ data: r });
   }
   console.log(`✅ Progress Reports: ${reportData.length} reports`);
-
   const invoiceData = [
     {
       projectId: projects[0].id,
@@ -959,12 +995,10 @@ async function seedFull() {
       dueDate: new Date("2026-07-28"),
     },
   ];
-
   for (const i of invoiceData) {
     await prisma.invoice.create({ data: i });
   }
   console.log(`✅ Invoices: ${invoiceData.length} invoices`);
-
   const paidInvoices = invoiceData.filter((i) => i.status === "PAID");
   const paymentData = paidInvoices.map((inv, idx) => ({
     invoiceNo: inv.invoiceNo,
@@ -980,7 +1014,6 @@ async function seedFull() {
     confirmedById: "u-finance",
     confirmedAt: inv.paidAt!,
   }));
-
   for (const p of paymentData) {
     const invoice = await prisma.invoice.findUnique({
       where: { invoiceNo: p.invoiceNo },
@@ -1001,7 +1034,6 @@ async function seedFull() {
   console.log(
     `✅ Payments: ${paymentData.length} payments (for ${paidInvoices.length} paid invoices)`,
   );
-
   const notifData = [
     {
       userId: "u-admin",
@@ -1082,12 +1114,10 @@ async function seedFull() {
       isRead: false,
     },
   ];
-
   for (const n of notifData) {
     await prisma.notification.create({ data: n });
   }
   console.log(`✅ Notifications: ${notifData.length} notifications`);
-
   const activityData = [
     {
       userId: "u-mandor",
@@ -1168,12 +1198,11 @@ async function seedFull() {
       createdAt: daysAgo(15),
     },
   ];
-
   for (const a of activityData) {
     await prisma.activityLog.create({ data: a });
   }
   console.log(`✅ Activity Logs: ${activityData.length} logs`);
-
+  await seedDocuments();
   console.log(
     "\n═══════════════════════════════════════════════════════════════",
   );
@@ -1195,8 +1224,8 @@ async function seedFull() {
   ├── ${invoiceData.length} invoices (4 paid, 3 sent, 1 overdue, 1 draft)
   ├── ${paymentData.length} payments (linked to paid invoices)
   ├── ${notifData.length} notifications
-  └── ${activityData.length} activity logs
-
+  ├── ${activityData.length} activity logs
+  └── documents (15 seeded with dummy files)
   🔑 Login Credentials (all password: Password123):
   ├── admin@ksi.co.id       → SUPER_ADMIN
   ├── owner@ksi.co.id       → OWNER
@@ -1214,21 +1243,17 @@ async function seedFull() {
   └── client3@ksi.co.id     → CLIENT (Maya)
 `);
 }
-
 async function main() {
   console.log(
     `\n🚀 Smart Konstruksi Seed — Mode: ${isFullMode ? "FULL (dev)" : "MINIMAL (prod/staging)"}\n`,
   );
-
   await cleanup();
-
   if (isFullMode) {
     await seedFull();
   } else {
     await seedMinimal();
   }
 }
-
 main()
   .catch((e) => {
     console.error("❌ Seed failed:", e);

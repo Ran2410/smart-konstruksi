@@ -4,26 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  success: "#15803d",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,
@@ -40,7 +21,7 @@ const input: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}`,
   borderRadius: "12px",
-  fontFamily: T.fontBody,
+  fontFamily: FONT_BODY,
   fontSize: "14px",
   lineHeight: "1.5",
   color: T.onSurface,
@@ -50,7 +31,7 @@ const input: React.CSSProperties = {
 
 const label: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel,
+  fontFamily: FONT_LABEL,
   fontSize: "11px",
   fontWeight: 600,
   color: T.outline,
@@ -74,13 +55,13 @@ function Field({ label: lbl, required, hint, children, error }: {
       </label>
       {children}
       {error && (
-        <p style={{ margin: "6px 0 0", fontFamily: T.fontBody, fontSize: "12px", color: T.error, display: "flex", alignItems: "center", gap: "4px" }}>
+        <p style={{ margin: "6px 0 0", fontFamily: FONT_BODY, fontSize: "12px", color: T.error, display: "flex", alignItems: "center", gap: "4px" }}>
           <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>error</span>
           {error}
         </p>
       )}
       {!error && hint && (
-        <p style={{ margin: "6px 0 0", fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted }}>
+        <p style={{ margin: "6px 0 0", fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted }}>
           {hint}
         </p>
       )}
@@ -235,7 +216,7 @@ export default function NewInvoicePage() {
           alignItems: "center",
           gap: "8px",
           marginBottom: "24px",
-          fontFamily: T.fontLabel,
+          fontFamily: FONT_LABEL,
           fontSize: "12px",
           color: T.onSurfaceMuted,
         }}
@@ -255,7 +236,7 @@ export default function NewInvoicePage() {
       <div style={card}>
         <h2
           style={{
-            fontFamily: T.fontDisplay,
+            fontFamily: FONT_DISPLAY,
             fontSize: "22px",
             fontWeight: 700,
             color: T.onSurface,
@@ -266,7 +247,7 @@ export default function NewInvoicePage() {
         </h2>
         <p
           style={{
-            fontFamily: T.fontBody,
+            fontFamily: FONT_BODY,
             fontSize: "14px",
             color: T.onSurfaceMuted,
             margin: "0 0 32px",
@@ -282,7 +263,7 @@ export default function NewInvoicePage() {
               background: T.errorLight,
               borderRadius: "10px",
               color: T.error,
-              fontFamily: T.fontBody,
+              fontFamily: FONT_BODY,
               fontSize: "13px",
               marginBottom: "24px",
               display: "flex",
@@ -330,7 +311,7 @@ export default function NewInvoicePage() {
                 style={{
                   ...input,
                   borderColor: errors.amount ? T.error : T.outlineSoft,
-                  fontFamily: T.fontLabel,
+                  fontFamily: FONT_LABEL,
                 }}
               />
             </Field>
@@ -382,7 +363,7 @@ export default function NewInvoicePage() {
                 borderRadius: "10px",
                 background: "#fff",
                 color: T.onSurface,
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "14px",
                 fontWeight: 600,
                 textDecoration: "none",
@@ -399,7 +380,7 @@ export default function NewInvoicePage() {
                 color: "#fff",
                 border: "none",
                 borderRadius: "10px",
-                fontFamily: T.fontLabel,
+                fontFamily: FONT_LABEL,
                 fontSize: "14px",
                 fontWeight: 700,
                 cursor: submitting ? "not-allowed" : "pointer",

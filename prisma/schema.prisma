@@ -87,6 +87,12 @@ enum LeadStatus {
   LOST
 }
 
+enum DocumentStatus {
+  ACTIVE
+  ARCHIVED
+  DRAFT
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -125,6 +131,10 @@ model User {
   auditLogs          AuditLog[]
   activityLogs       ActivityLog[]
 
+  // Documents
+  documentsUploaded Document[] @relation("DocumentUploader")
+
+  // Assignments
   assignedLeads Lead[] @relation("LeadAssignee")
   createdLeads  Lead[] @relation("LeadCreator")
 
@@ -196,6 +206,7 @@ model Project {
   activityLogs    ActivityLog[]
   attendances     Attendance[]
   transactions    Transaction[]
+  documents       Document[]
 
   @@index([branchId])
   @@index([status])
@@ -711,3 +722,52 @@ model ActivityLog {
   @@index([createdAt])
   @@map("activity_logs")
 }
+
+model DocumentCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  documents Document[]
+
+  @@map("document_categories")
+}
+
+model Document {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  categoryId      String
+  projectId       String
+  uploaderId      String
+  status          DocumentStatus @default(ACTIVE)
+  expiryDate      DateTime?
+  isClientVisible Boolean        @default(false)
+  version         Int            @default(1)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  category DocumentCategory @relation(fields: [categoryId], references: [id])
+  project  Project          @relation(fields: [projectId], references: [id])
+  uploader User             @relation("DocumentUploader", fields: [uploaderId], references: [id])
+
+  @@index([categoryId])
+  @@index([projectId])
+  @@index([uploaderId])
+  @@index([status])
+  @@map("documents")
+}
+

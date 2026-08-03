@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 // Roles that can create projects
 const CAN_CREATE_PROJECT = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER"];
 
@@ -51,14 +52,14 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#3f4943",
+              color: T.onSurfaceVariant,
               borderRadius: "8px",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
               transition: "background 0.15s",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#eff4ff")}
+            onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
             onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
             aria-label="Toggle sidebar"
           >
@@ -77,7 +78,7 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
               left: "12px",
               top: "50%",
               transform: "translateY(-50%)",
-              color: "#6f7a72",
+              color: T.outline,
               fontSize: "20px",
               pointerEvents: "none",
             }}
@@ -95,20 +96,20 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
               paddingRight: "16px",
               paddingTop: "8px",
               paddingBottom: "8px",
-              background: "#eff4ff",
-              border: "1px solid #bec9c1",
+              background: T.surfaceContainerLow,
+              border: `1px solid ${T.outlineSoft}`,
               borderRadius: "8px",
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: FONT_BODY,
               fontSize: "14px",
-              color: "#0b1c30",
+              color: T.onSurface,
               outline: "none",
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = "#004f35";
+              e.target.style.borderColor = T.primary;
               e.target.style.boxShadow = "0 0 0 3px rgba(0,79,53,0.1)";
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = "#bec9c1";
+              e.target.style.borderColor = T.outlineSoft;
               e.target.style.boxShadow = "none";
             }}
           />
@@ -131,12 +132,12 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
                 key={tab.href}
                 href={tab.href}
                 style={{
-                  fontFamily: "'Geist', monospace",
+                  fontFamily: FONT_LABEL,
                   fontSize: "14px",
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#004f35" : "#3f4943",
+                  color: isActive ? T.primary : T.onSurfaceVariant,
                   textDecoration: "none",
-                  borderBottom: isActive ? "2px solid #004f35" : "2px solid transparent",
+                  borderBottom: isActive ? `2px solid ${T.primary}` : "2px solid transparent",
                   paddingBottom: "4px",
                   transition: "all 0.15s ease",
                   whiteSpace: "nowrap",
@@ -157,14 +158,14 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#3f4943",
+            color: T.onSurfaceVariant,
             borderRadius: "9999px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "background 0.15s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff4ff")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
           onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
           aria-label="Notifications"
         >
@@ -179,14 +180,14 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#3f4943",
+            color: T.onSurfaceVariant,
             borderRadius: "9999px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "background 0.15s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff4ff")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
           onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
           aria-label="Apps"
         >
@@ -199,12 +200,12 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
         {session?.user?.name && (
           <span
             style={{
-              fontFamily: "'Geist', monospace",
+              fontFamily: FONT_LABEL,
               fontSize: "13px",
               fontWeight: 500,
-              color: "#3f4943",
+              color: T.onSurfaceVariant,
               padding: "4px 10px",
-              background: "#eff4ff",
+              background: T.surfaceContainerLow,
               borderRadius: "6px",
               whiteSpace: "nowrap",
             }}

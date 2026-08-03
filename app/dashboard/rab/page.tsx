@@ -4,33 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryGlow: "rgba(0,79,53,0.12)",
-  secondary: "#565e74",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainer: "#e5eeff",
-  surfaceContainerLow: "#eff4ff",
-  error: "#ba1a1a",
-  errorLight: "rgba(186,26,26,0.08)",
-  success: "#15803d",
-  successBg: "rgba(220,252,231,0.6)",
-  warning: "#b76e00",
-  warningBg: "rgba(255,237,213,0.6)",
-  muted: "#6f7a72",
-  mutedBg: "rgba(111,122,114,0.1)",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,

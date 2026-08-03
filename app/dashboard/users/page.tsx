@@ -5,34 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryGlow: "rgba(0,79,53,0.12)",
-  secondary: "#565e74",
-  secondaryContainer: "#d7dff9",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainer: "#e5eeff",
-  surfaceContainerLow: "#eff4ff",
-  surfaceContainerHigh: "#dce9ff",
-  error: "#ba1a1a",
-  errorContainer: "rgba(255,218,214,0.2)",
-  errorLight: "rgba(186,26,26,0.08)",
-  success: "#15803d",
-  successBg: "rgba(220,252,231,0.6)",
-  tertiary: "#424545",
-  tertiaryFixed: "#e2e3e2",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,

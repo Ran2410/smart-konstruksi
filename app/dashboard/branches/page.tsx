@@ -5,33 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-const T = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryGlow: "rgba(0,79,53,0.12)",
-  secondary: "#565e74",
-  secondaryContainer: "#d7dff9",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainer: "#e5eeff",
-  surfaceContainerLow: "#eff4ff",
-  surfaceContainerHigh: "#dce9ff",
-  error: "#ba1a1a",
-  errorContainer: "rgba(255,218,214,0.2)",
-  errorLight: "rgba(186,26,26,0.08)",
-  success: "#15803d",
-  successBg: "rgba(220,252,231,0.6)",
-  tertiary: "#424545",
-  tertiaryFixed: "#e2e3e2",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
-
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 const card: React.CSSProperties = {
   background: T.surfaceCard,
   borderRadius: "16px",
@@ -68,8 +42,8 @@ function KpiCard({ icon, iconBg, iconColor, label, value }: {
           <span className="material-symbols-outlined" style={{ fontSize: "22px", color: iconColor, display: "block", fontVariationSettings: "'FILL' 1" }}>{icon}</span>
         </div>
       </div>
-      <p style={{ fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.onSurfaceMuted, margin: "0 0 4px" }}>{label}</p>
-      <h3 style={{ fontFamily: T.fontDisplay, fontSize: "28px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>{value}</h3>
+      <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.onSurfaceMuted, margin: "0 0 4px" }}>{label}</p>
+      <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "28px", fontWeight: 700, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>{value}</h3>
     </div>
   );
 }
@@ -121,13 +95,13 @@ function ActionDropdown({ branchId, branchName, router, onDeleted }: {
           <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 49 }} />
           <div style={{ position: "fixed", top: menuPos.top + "px", right: menuPos.right + "px", background: T.surfaceCard, border: `1px solid ${T.outlineSoft}`, borderRadius: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, minWidth: "160px", overflow: "hidden" }}>
             <button onClick={() => { setOpen(false); router.push(`/dashboard/branches/${branchId}`); }}
-              style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "10px 16px", background: "none", border: "none", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 400, color: T.onSurface, cursor: "pointer", transition: "background 0.12s ease" }}
+              style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "10px 16px", background: "none", border: "none", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 400, color: T.onSurface, cursor: "pointer", transition: "background 0.12s ease" }}
               onMouseEnter={e => (e.currentTarget.style.background = T.primaryLight)}
               onMouseLeave={e => (e.currentTarget.style.background = "none")}>
               <span className="material-symbols-outlined" style={{ fontSize: "18px", color: T.onSurfaceMuted }}>edit</span> Edit Branch
             </button>
             <button onClick={() => { setOpen(false); setShowDel(true); }}
-              style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "10px 16px", background: "none", border: "none", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 400, color: T.error, cursor: "pointer", transition: "background 0.12s ease" }}
+              style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "10px 16px", background: "none", border: "none", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 400, color: T.error, cursor: "pointer", transition: "background 0.12s ease" }}
               onMouseEnter={e => (e.currentTarget.style.background = T.errorContainer)}
               onMouseLeave={e => (e.currentTarget.style.background = "none")}>
               <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>delete</span> Delete Branch
@@ -144,21 +118,21 @@ function ActionDropdown({ branchId, branchName, router, onDeleted }: {
                 <span className="material-symbols-outlined" style={{ fontSize: "22px", color: T.error }}>delete_forever</span>
               </div>
               <div>
-                <h3 style={{ fontFamily: T.fontDisplay, fontSize: "17px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Delete Branch</h3>
-                <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>This cannot be undone.</p>
+                <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "17px", fontWeight: 700, color: T.onSurface, margin: 0 }}>Delete Branch</h3>
+                <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceMuted, margin: "2px 0 0" }}>This cannot be undone.</p>
               </div>
             </div>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceVariant, margin: "0 0 6px", lineHeight: 1.5 }}>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceVariant, margin: "0 0 6px", lineHeight: 1.5 }}>
               Remove <strong>{branchName}</strong> and all of its data permanently?
             </p>
-            {delError && <p style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.error, margin: "0 0 12px" }}>{delError}</p>}
+            {delError && <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.error, margin: "0 0 12px" }}>{delError}</p>}
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
               <button onClick={() => setShowDel(false)} disabled={deleting}
-                style={{ padding: "9px 18px", background: "transparent", border: `1px solid ${T.outlineSoft}`, borderRadius: "8px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: T.onSurface, cursor: deleting ? "not-allowed" : "pointer" }}>
+                style={{ padding: "9px 18px", background: "transparent", border: `1px solid ${T.outlineSoft}`, borderRadius: "8px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: T.onSurface, cursor: deleting ? "not-allowed" : "pointer" }}>
                 Cancel
               </button>
               <button onClick={handleDelete} disabled={deleting}
-                style={{ padding: "9px 18px", background: T.error, border: "none", borderRadius: "8px", fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600, color: "#fff", cursor: deleting ? "not-allowed" : "pointer", opacity: deleting ? 0.6 : 1 }}>
+                style={{ padding: "9px 18px", background: T.error, border: "none", borderRadius: "8px", fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: "#fff", cursor: deleting ? "not-allowed" : "pointer", opacity: deleting ? 0.6 : 1 }}>
                 {deleting ? "Deleting…" : "Delete"}
               </button>
             </div>
@@ -221,12 +195,12 @@ export default function BranchesPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <style>{`
         .sk-table { width: 100%; border-collapse: collapse; }
-        .sk-table th { text-align: left; padding: 12px 20px; font-family: ${T.fontLabel}; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: ${T.onSurfaceMuted}; background: ${T.surfaceContainerLow}; border-bottom: 1px solid ${T.outlineSoft}33; }
-        .sk-table td { padding: 14px 20px; font-family: ${T.fontBody}; font-size: 14px; color: ${T.onSurface}; border-bottom: 1px solid ${T.outlineSoft}22; vertical-align: middle; }
+        .sk-table th { text-align: left; padding: 12px 20px; font-family: ${FONT_LABEL}; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: ${T.onSurfaceMuted}; background: ${T.surfaceContainerLow}; border-bottom: 1px solid ${T.outlineSoft}33; }
+        .sk-table td { padding: 14px 20px; font-family: ${FONT_BODY}; font-size: 14px; color: ${T.onSurface}; border-bottom: 1px solid ${T.outlineSoft}22; vertical-align: middle; }
         .sk-table tbody tr { transition: background 0.12s ease; }
         .sk-table tbody tr:hover { background: ${T.surfaceContainerLow}; }
         .sk-table tbody tr:last-child td { border-bottom: none; }
-        .sk-page-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 8px; border: 1px solid ${T.outlineSoft}66; border-radius: 8px; background: ${T.surfaceCard}; color: ${T.onSurfaceVariant}; font-family: ${T.fontLabel}; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; line-height: 1; }
+        .sk-page-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 8px; border: 1px solid ${T.outlineSoft}66; border-radius: 8px; background: ${T.surfaceCard}; color: ${T.onSurfaceVariant}; font-family: ${FONT_LABEL}; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; line-height: 1; }
         .sk-page-btn:hover:not(:disabled) { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryLight}; }
         .sk-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .sk-page-btn.active { background: ${T.primary}; color: #fff; border-color: ${T.primary}; }
@@ -235,14 +209,14 @@ export default function BranchesPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h2 style={{ fontFamily: T.fontDisplay, fontSize: "30px", fontWeight: 700, letterSpacing: "-0.02em", color: T.onSurface, margin: 0 }}>Branches</h2>
-          <p style={{ fontFamily: T.fontBody, fontSize: "15px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
+          <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: "30px", fontWeight: 700, letterSpacing: "-0.02em", color: T.onSurface, margin: 0 }}>Branches</h2>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "15px", color: T.onSurfaceMuted, margin: "4px 0 0" }}>
             Manage company branches and locations.
           </p>
         </div>
         {canCreate && (
           <Link href="/dashboard/branches/new"
-            style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 2px 6px rgba(0,79,53,0.25)" }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 22px", background: T.primary, color: "#fff", border: "none", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 2px 6px rgba(0,79,53,0.25)" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>add</span> Add Branch
           </Link>
         )}
@@ -264,11 +238,11 @@ export default function BranchesPage() {
             <div style={{ position: "relative", flex: 1, maxWidth: "320px" }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "20px", color: T.onSurfaceMuted, pointerEvents: "none" }}>search</span>
               <input type="text" placeholder="Search branches…" value={searchInput} onChange={e => setSearchInput(e.target.value)}
-                style={{ width: "100%", padding: "9px 12px 9px 40px", background: T.surfaceContainerLow, border: `1px solid ${T.outlineSoft}44`, borderRadius: "10px", fontFamily: T.fontBody, fontSize: "14px", color: T.onSurface, outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "9px 12px 9px 40px", background: T.surfaceContainerLow, border: `1px solid ${T.outlineSoft}44`, borderRadius: "10px", fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, outline: "none", boxSizing: "border-box" }} />
             </div>
             {hasActiveFilters && (
               <button onClick={resetFilters}
-                style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 700, color: T.primary, background: T.primaryLight, border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: "8px" }}>
+                style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 700, color: T.primary, background: T.primaryLight, border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: "8px" }}>
                 Reset
               </button>
             )}
@@ -312,10 +286,10 @@ export default function BranchesPage() {
         ) : branches.length === 0 ? (
           <div style={{ padding: "64px", textAlign: "center" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "56px", color: T.outlineSoft, display: "block", marginBottom: "12px" }}>domain_off</span>
-            <h3 style={{ fontFamily: T.fontDisplay, fontSize: "18px", fontWeight: 600, color: T.onSurface, margin: "0 0 6px" }}>No branches found</h3>
-            <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 20px" }}>Get started by adding your first branch.</p>
+            <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "18px", fontWeight: 600, color: T.onSurface, margin: "0 0 6px" }}>No branches found</h3>
+            <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 20px" }}>Get started by adding your first branch.</p>
             {canCreate && (
-              <Link href="/dashboard/branches/new" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 24px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+              <Link href="/dashboard/branches/new" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 24px", background: T.primary, color: "#fff", borderRadius: "10px", fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>add</span> Add Branch
               </Link>
             )}
@@ -343,46 +317,46 @@ export default function BranchesPage() {
                         <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: T.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: "18px", color: T.primary, fontVariationSettings: "'FILL' 1" }}>domain</span>
                         </div>
-                        <span style={{ fontFamily: T.fontLabel, fontSize: "14px", fontWeight: 600, color: T.onSurface }}>{b.name}</span>
+                        <span style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 600, color: T.onSurface }}>{b.name}</span>
                       </div>
                     </td>
                     <td>
-                      <span style={{ fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceVariant, maxWidth: "200px", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceVariant, maxWidth: "200px", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {b.address || "—"}
                       </span>
                     </td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                         {b.phone ? (
-                          <span style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceVariant }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceVariant }}>
                             <span className="material-symbols-outlined" style={{ fontSize: "14px", color: T.onSurfaceMuted }}>call</span> {b.phone}
                           </span>
                         ) : null}
                         {b.email ? (
-                          <span style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: T.fontBody, fontSize: "13px", color: T.onSurfaceVariant }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceVariant }}>
                             <span className="material-symbols-outlined" style={{ fontSize: "14px", color: T.onSurfaceMuted }}>mail</span> {b.email}
                           </span>
                         ) : null}
-                        {!b.phone && !b.email && <span style={{ color: T.outline, fontFamily: T.fontBody, fontSize: "13px" }}>—</span>}
+                        {!b.phone && !b.email && <span style={{ color: T.outline, fontFamily: FONT_BODY, fontSize: "13px" }}>—</span>}
                       </div>
                     </td>
                     <td style={{ textAlign: "center" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "28px", height: "28px", padding: "0 8px", borderRadius: "9999px", background: T.primaryLight, fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.primary }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "28px", height: "28px", padding: "0 8px", borderRadius: "9999px", background: T.primaryLight, fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 700, color: T.primary }}>
                         {b._count?.users || 0}
                       </span>
                     </td>
                     <td style={{ textAlign: "center" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "28px", height: "28px", padding: "0 8px", borderRadius: "9999px", background: T.surfaceContainerHigh, fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 700, color: T.onSurfaceVariant }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "28px", height: "28px", padding: "0 8px", borderRadius: "9999px", background: T.surfaceContainerHigh, fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 700, color: T.onSurfaceVariant }}>
                         {b._count?.projects || 0}
                       </span>
                     </td>
                     <td>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "3px 10px", borderRadius: "9999px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 700, color: b.isActive !== false ? T.primary : T.error, background: b.isActive !== false ? T.primaryLight : T.errorContainer, whiteSpace: "nowrap" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "3px 10px", borderRadius: "9999px", fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 700, color: b.isActive !== false ? T.primary : T.error, background: b.isActive !== false ? T.primaryLight : T.errorContainer, whiteSpace: "nowrap" }}>
                         <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: b.isActive !== false ? T.primary : T.error, flexShrink: 0 }} />
                         {b.isActive !== false ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td style={{ fontFamily: T.fontLabel, fontSize: "13px", color: T.onSurfaceMuted }}>{fmtDate(b.createdAt)}</td>
+                    <td style={{ fontFamily: FONT_LABEL, fontSize: "13px", color: T.onSurfaceMuted }}>{fmtDate(b.createdAt)}</td>
                     <td style={{ textAlign: "right" }}>
                       <ActionDropdown branchId={b.id} branchName={b.name} router={router} onDeleted={() => fetchBranches()} />
                     </td>
@@ -396,7 +370,7 @@ export default function BranchesPage() {
         {/* Pagination */}
         {totalPages > 1 && branches.length > 0 && (
           <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.outlineSoft}22`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-            <p style={{ fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
+            <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted, margin: 0 }}>
               Showing {Math.min((page - 1) * limit + 1, total || 0)}–{Math.min(page * limit, total || 0)} of {total || 0}
             </p>
             <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>

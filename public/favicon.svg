@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    @keyframes sk-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .sk-logo {
+      animation: sk-spin 10s linear infinite;
+      transform-origin: 16px 16px;
+    }
+  </style>
+  <rect class="sk-logo" x="1" y="1" width="30" height="30" rx="7" fill="#004f35" stroke="#003d29" stroke-width="0.5"/>
+  <text x="16" y="21" text-anchor="middle" font-size="14" font-weight="800" fill="white" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" letter-spacing="0.5">SK</text>
+</svg>

@@ -3,29 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// ── Design Tokens ─────────────────────────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#6f7a72",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainer: "#e5eeff",
-  surfaceContainerLow: "#eff4ff",
-  surfaceContainerHigh: "#dce9ff",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.3)",
-  errorContainer: "rgba(255,218,214,0.2)",
-  success: "#0d7a3f",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card: React.CSSProperties = {
   background: T.surfaceCard,
@@ -41,14 +19,14 @@ const input: React.CSSProperties = {
   background: T.surfaceContainerLow,
   border: `1.5px solid ${T.outlineSoft}66`,
   borderRadius: "10px",
-  fontFamily: T.fontBody, fontSize: "14px", lineHeight: "1.5",
+  fontFamily: FONT_BODY, fontSize: "14px", lineHeight: "1.5",
   color: T.onSurface, outline: "none",
   transition: "all 0.2s ease",
 };
 
 const label: React.CSSProperties = {
   display: "block",
-  fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 600,
+  fontFamily: FONT_LABEL, fontSize: "11px", fontWeight: 600,
   color: T.outline, letterSpacing: "0.06em", textTransform: "uppercase",
   marginBottom: "8px",
 };
@@ -60,7 +38,7 @@ function Field({ label: lbl, required, hint, children }: {
     <div>
       <label style={label}>{lbl}{required && <span style={{ color: T.error, marginLeft: "4px" }}>*</span>}</label>
       {children}
-      {hint && <p style={{ margin: "6px 0 0", fontFamily: T.fontBody, fontSize: "12px", color: T.onSurfaceMuted }}>{hint}</p>}
+      {hint && <p style={{ margin: "6px 0 0", fontFamily: FONT_BODY, fontSize: "12px", color: T.onSurfaceMuted }}>{hint}</p>}
     </div>
   );
 }
@@ -115,7 +93,7 @@ export default function NewClientPage() {
   return (
     <div style={{ padding: "28px 32px", maxWidth: "860px", margin: "0 auto" }}>
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px", fontFamily: T.fontLabel, fontSize: "12px", color: T.onSurfaceMuted }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px", fontFamily: FONT_LABEL, fontSize: "12px", color: T.onSurfaceMuted }}>
         <Link href="/dashboard/clients" style={{ color: T.onSurfaceMuted, textDecoration: "none", transition: "color 0.15s" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = T.primary)}
           onMouseLeave={(e) => (e.currentTarget.style.color = T.onSurfaceMuted)}>Clients</Link>
@@ -124,15 +102,15 @@ export default function NewClientPage() {
       </div>
 
       <div style={card}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: "0 0 4px" }}>
+        <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: "22px", fontWeight: 700, color: T.onSurface, margin: "0 0 4px" }}>
           Register New Client
         </h2>
-        <p style={{ fontFamily: T.fontBody, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 32px" }}>
+        <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurfaceMuted, margin: "0 0 32px" }}>
           Create a new client account. A user account with the <strong style={{ color: T.onSurface }}>CLIENT</strong> role will be created automatically.
         </p>
 
         {error && (
-          <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: T.fontBody, fontSize: "13px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ padding: "12px 16px", background: T.errorLight, borderRadius: "10px", color: T.error, fontFamily: FONT_BODY, fontSize: "13px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>error</span>
             {error}
           </div>
@@ -140,7 +118,7 @@ export default function NewClientPage() {
 
         <form onSubmit={handleSubmit}>
           {/* Section: Company */}
-          <h3 style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 600, color: T.primary, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 20px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <h3 style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.primary, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 20px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>business</span>
             Company Information
           </h3>
@@ -154,7 +132,7 @@ export default function NewClientPage() {
           </div>
 
           {/* Section: PIC */}
-          <h3 style={{ fontFamily: T.fontLabel, fontSize: "12px", fontWeight: 600, color: T.primary, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 20px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <h3 style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.primary, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 20px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>contact_mail</span>
             Person in Charge
           </h3>
@@ -181,7 +159,7 @@ export default function NewClientPage() {
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "10px 20px", borderRadius: "10px", background: "transparent",
               color: T.onSurfaceMuted, textDecoration: "none",
-              fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
+              fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600,
               border: `1.5px solid ${T.outlineSoft}66`, cursor: "pointer", transition: "all 0.15s",
             }}
               onMouseEnter={(e) => { e.currentTarget.style.background = T.surfaceContainerLow; e.currentTarget.style.borderColor = T.outline; }}
@@ -193,7 +171,7 @@ export default function NewClientPage() {
               padding: "10px 20px", borderRadius: "10px",
               background: submitting ? T.outlineSoft : T.primary,
               color: submitting ? T.onSurfaceMuted : "#fff", border: "none",
-              fontFamily: T.fontLabel, fontSize: "13px", fontWeight: 600,
+              fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600,
               cursor: submitting ? "not-allowed" : "pointer", transition: "all 0.15s",
               opacity: submitting ? 0.7 : 1,
             }}>

@@ -4,37 +4,19 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { RevenueTrendChart, WeeklyProfitChart } from "@/components/charts/dashboard-charts";
 import Link from "next/link";
-
-// ── Shared style tokens ──────────────────────────────────────────────────────
-const TOKEN = {
-  primary: "#004f35",
-  primaryLight: "rgba(0,79,53,0.08)",
-  secondary: "#565e74",
-  secondaryLight: "#dce9ff",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#eff4ff",
-  error: "#ba1a1a",
-  warning: "#b45309",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 const card = {
-  background: TOKEN.surfaceCard,
+  background: T.surfaceCard,
   borderRadius: "16px",
-  border: `1px solid ${TOKEN.outlineSoft}`,
+  border: `1px solid ${T.outlineSoft}`,
   boxShadow: "0 8px 32px rgba(31,38,135,0.07)",
   padding: "24px",
 };
 
 // ── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ icon, value, label, change, up, color }) {
-  const accentColor = color || TOKEN.primary;
+  const accentColor = color || T.primary;
   return (
     <div style={card}>
       <div
@@ -55,15 +37,15 @@ function StatCard({ icon, value, label, change, up, color }) {
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "24px", fontWeight: 600, color: TOKEN.onSurface, margin: 0, lineHeight: 1.2 }}>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "24px", fontWeight: 600, color: T.onSurface, margin: 0, lineHeight: 1.2 }}>
             {value}
           </h3>
-          <p style={{ fontFamily: TOKEN.fontLabel, fontSize: "14px", fontWeight: 500, color: TOKEN.onSurfaceVariant, margin: "4px 0 0" }}>
+          <p style={{ fontFamily: FONT_LABEL, fontSize: "14px", fontWeight: 500, color: T.onSurfaceVariant, margin: "4px 0 0" }}>
             {label}
           </p>
         </div>
         {change && (
-          <div style={{ display: "flex", alignItems: "center", gap: "2px", color: up !== false ? TOKEN.primary : TOKEN.error, fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 600, marginBottom: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", color: up !== false ? T.primary : T.error, fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, marginBottom: "2px" }}>
             {change}
             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
               {up !== false ? "arrow_upward" : "arrow_downward"}
@@ -79,25 +61,25 @@ function StatCard({ icon, value, label, change, up, color }) {
 function ActivityList({ items }) {
   return (
     <div style={{ ...card, padding: "32px" }}>
-      <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "20px", fontWeight: 600, color: TOKEN.onSurface, margin: "0 0 24px" }}>
+      <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 600, color: T.onSurface, margin: "0 0 24px" }}>
         Recent Activity
       </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {items.length === 0 && (
-          <p style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.outline, margin: 0 }}>Belum ada aktivitas.</p>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: 0 }}>Belum ada aktivitas.</p>
         )}
         {items.map((item, i) => (
           <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "9999px", background: `${item.color || TOKEN.primary}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "2px" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "16px", color: item.color || TOKEN.primary }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "9999px", background: `${item.color || T.primary}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "2px" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "16px", color: item.color || T.primary }}>
                 {item.icon}
               </span>
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.onSurface, margin: 0, lineHeight: 1.5 }}>
+              <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface, margin: 0, lineHeight: 1.5 }}>
                 {item.text}
               </p>
-              <p style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", color: TOKEN.outline, margin: "2px 0 0" }}>
+              <p style={{ fontFamily: FONT_LABEL, fontSize: "12px", color: T.outline, margin: "2px 0 0" }}>
                 {item.time}
               </p>
             </div>
@@ -113,27 +95,27 @@ function QuickList({ title, items, badge }) {
   return (
     <div style={{ ...card, padding: "32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "20px", fontWeight: 600, color: TOKEN.onSurface, margin: 0 }}>
+        <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 600, color: T.onSurface, margin: 0 }}>
           {title}
         </h3>
         {badge && (
-          <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "12px", fontWeight: 600, color: TOKEN.primary, background: TOKEN.primaryLight, padding: "4px 10px", borderRadius: "9999px" }}>
+          <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.primary, background: T.primaryLight, padding: "4px 10px", borderRadius: "9999px" }}>
             {badge}
           </span>
         )}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {items.map((item, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: TOKEN.surfaceContainerLow, borderRadius: "10px" }}>
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: T.surfaceContainerLow, borderRadius: "10px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "18px", color: item.color || TOKEN.primary }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "18px", color: item.color || T.primary }}>
                 {item.icon}
               </span>
-              <span style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.onSurface }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface }}>
                 {item.label}
               </span>
             </div>
-            <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "13px", fontWeight: 600, color: item.statusColor || TOKEN.outline }}>
+            <span style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: item.statusColor || T.outline }}>
               {item.status}
             </span>
           </div>
@@ -147,21 +129,21 @@ function QuickList({ title, items, badge }) {
 function ProgressCard({ title, items }) {
   return (
     <div style={{ ...card, padding: "32px" }}>
-      <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "20px", fontWeight: 600, color: TOKEN.onSurface, margin: "0 0 24px" }}>
+      <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 600, color: T.onSurface, margin: "0 0 24px" }}>
         {title}
       </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         {items.length === 0 && (
-          <p style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.outline, margin: 0 }}>Belum ada data progress.</p>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: 0 }}>Belum ada data progress.</p>
         )}
         {items.map((item, i) => (
           <div key={i}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <span style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.onSurface }}>{item.label}</span>
-              <span style={{ fontFamily: TOKEN.fontLabel, fontSize: "13px", fontWeight: 600, color: TOKEN.primary }}>{item.value}%</span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.onSurface }}>{item.label}</span>
+              <span style={{ fontFamily: FONT_LABEL, fontSize: "13px", fontWeight: 600, color: T.primary }}>{item.value}%</span>
             </div>
-            <div style={{ height: "8px", background: TOKEN.surfaceContainerLow, borderRadius: "9999px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${item.value}%`, background: item.color || TOKEN.primary, borderRadius: "9999px", transition: "width 0.5s ease" }} />
+            <div style={{ height: "8px", background: T.surfaceContainerLow, borderRadius: "9999px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${item.value}%`, background: item.color || T.primary, borderRadius: "9999px", transition: "width 0.5s ease" }} />
             </div>
           </div>
         ))}
@@ -283,9 +265,9 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div style={{ ...card, padding: "48px", textAlign: "center" }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "48px", color: TOKEN.error, marginBottom: "16px", display: "block" }}>error</span>
-        <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "20px", color: TOKEN.onSurface, margin: "0 0 8px" }}>Gagal memuat dashboard</h3>
-        <p style={{ fontFamily: TOKEN.fontBody, fontSize: "14px", color: TOKEN.outline, margin: 0 }}>{error}</p>
+        <span className="material-symbols-outlined" style={{ fontSize: "48px", color: T.error, marginBottom: "16px", display: "block" }}>error</span>
+        <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", color: T.onSurface, margin: "0 0 8px" }}>Gagal memuat dashboard</h3>
+        <p style={{ fontFamily: FONT_BODY, fontSize: "14px", color: T.outline, margin: 0 }}>{error}</p>
       </div>
     );
   }
@@ -318,10 +300,10 @@ export default function DashboardPage() {
       `}</style>
       {/* Greeting */}
       <div>
-        <h2 className="sk-dash-title" style={{ fontFamily: TOKEN.fontDisplay, fontWeight: 700, color: TOKEN.onSurface, margin: 0 }}>
+        <h2 className="sk-dash-title" style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, color: T.onSurface, margin: 0 }}>
           {config.greeting}
         </h2>
-        <p className="sk-dash-subtitle" style={{ fontFamily: TOKEN.fontBody, color: TOKEN.onSurfaceVariant, margin: "4px 0 0" }}>
+        <p className="sk-dash-subtitle" style={{ fontFamily: FONT_BODY, color: T.onSurfaceVariant, margin: "4px 0 0" }}>
           Welcome back, {session?.user?.name || "User"} — {config.subtitle || "here's what's happening today."}
         </p>
       </div>
@@ -358,7 +340,7 @@ export default function DashboardPage() {
       <section className="sk-dash-grid-bottom">
         <ProgressCard title="Project Progress" items={config.progress || []} />
         <div style={{ ...card, padding: "32px", display: "flex", flexDirection: "column" }}>
-          <h3 style={{ fontFamily: TOKEN.fontDisplay, fontSize: "20px", fontWeight: 600, color: TOKEN.onSurface, margin: "0 0 24px" }}>
+          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: "20px", fontWeight: 600, color: T.onSurface, margin: "0 0 24px" }}>
             Quick Actions
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
@@ -402,7 +384,7 @@ function StockAlertSection() {
   return (
     <Link href="/dashboard/materials" style={{ textDecoration: "none", display: "block" }}>
       <div style={{
-        background: outCount > 0 ? "#fef2f2" : TOKEN.warningBg,
+        background: outCount > 0 ? "#fef2f2" : T.warningBg,
         borderRadius: "14px", border: `1px solid ${outCount > 0 ? "#fecaca" : "#fed7aa"}`,
         padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px",
         cursor: "pointer", transition: "all 0.15s",
@@ -415,20 +397,20 @@ function StockAlertSection() {
           background: outCount > 0 ? "#fecaca" : "#fed7aa",
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
-          <span className="material-symbols-outlined" style={{ fontSize: "22px", color: outCount > 0 ? TOKEN.error : TOKEN.warning }}>inventory</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "22px", color: outCount > 0 ? T.error : T.warning }}>inventory</span>
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontFamily: TOKEN.fontDisplay, fontSize: "15px", fontWeight: 700, color: TOKEN.onSurface, margin: 0 }}>
+          <p style={{ fontFamily: FONT_DISPLAY, fontSize: "15px", fontWeight: 700, color: T.onSurface, margin: 0 }}>
             Stock Alert{outCount + lowCount > 1 ? "s" : ""}
           </p>
-          <p style={{ fontFamily: TOKEN.fontBody, fontSize: "13px", color: TOKEN.onSurfaceVariant, margin: "2px 0 0" }}>
-            {outCount > 0 && <span style={{ fontWeight: 600, color: TOKEN.error }}>{outCount} out of stock</span>}
+          <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.onSurfaceVariant, margin: "2px 0 0" }}>
+            {outCount > 0 && <span style={{ fontWeight: 600, color: T.error }}>{outCount} out of stock</span>}
             {outCount > 0 && lowCount > 0 && <span> • </span>}
-            {lowCount > 0 && <span style={{ fontWeight: 600, color: TOKEN.warning }}>{lowCount} low stock</span>}
+            {lowCount > 0 && <span style={{ fontWeight: 600, color: T.warning }}>{lowCount} low stock</span>}
             <span> — click to view inventory</span>
           </p>
         </div>
-        <span className="material-symbols-outlined" style={{ fontSize: "20px", color: TOKEN.outline }}>chevron_right</span>
+        <span className="material-symbols-outlined" style={{ fontSize: "20px", color: T.outline }}>chevron_right</span>
       </div>
     </Link>
   );
@@ -442,20 +424,20 @@ function ActionBtn({ icon, label }) {
         alignItems: "center",
         gap: "12px",
         padding: "12px 16px",
-        background: TOKEN.surfaceContainerLow,
+        background: T.surfaceContainerLow,
         border: "none",
         borderRadius: "10px",
         cursor: "pointer",
-        fontFamily: TOKEN.fontBody,
+        fontFamily: FONT_BODY,
         fontSize: "14px",
         fontWeight: 500,
-        color: TOKEN.onSurface,
+        color: T.onSurface,
         width: "100%",
         textAlign: "left",
         transition: "all 0.15s",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = TOKEN.primaryLight; e.currentTarget.style.color = TOKEN.primary; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = TOKEN.surfaceContainerLow; e.currentTarget.style.color = TOKEN.onSurface; }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = T.primaryLight; e.currentTarget.style.color = T.primary; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = T.surfaceContainerLow; e.currentTarget.style.color = T.onSurface; }}
     >
       <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>{icon}</span>
       {label}

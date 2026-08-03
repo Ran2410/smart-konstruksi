@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useMemo } from "react";
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
 // All available navigation items
 const allNavItems = [
@@ -14,7 +15,7 @@ const allNavItems = [
   { href: "/dashboard/rab", label: "RAB", icon: "request_quote", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "ADMIN_KANTOR", "SURVEYOR", "KONSULTAN", "ARSITEK"] },
   { href: "/dashboard/materials", label: "Materials", icon: "trolley", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK", "MANDOR", "SURVEYOR", "VENDOR"] },
   { href: "/dashboard/transactions", label: "Transactions", icon: "swap_horiz", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK", "MANDOR"] },
-  { href: "/dashboard/documents", label: "Documents", icon: "description", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN"] },
+  { href: "/dashboard/documents", label: "Documents", icon: "description", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN", "CLIENT"] },
   { href: "/dashboard/invoices", label: "Invoices", icon: "receipt_long", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE", "CLIENT"] },
   { href: "/dashboard/reports", label: "Reports", icon: "bar_chart", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR", "FINANCE"] },
   { href: "/dashboard/settings", label: "Settings", icon: "settings", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER"] },
@@ -50,21 +51,21 @@ export function Sidebar({ onClose }) {
     padding: "10px 16px",
     borderRadius: "0",
     textDecoration: "none",
-    fontFamily: "'Geist', monospace",
+    fontFamily: FONT_LABEL,
     fontSize: "14px",
     fontWeight: isActive ? 700 : 500,
     letterSpacing: "0.02em",
-    color: isActive ? "#004f35" : "#5a6278",
-    backgroundColor: isActive ? "#eff4ff" : "transparent",
-    borderRight: isActive ? "3px solid #004f35" : "3px solid transparent",
+    color: isActive ? T.primary : "#5a6278",
+    backgroundColor: isActive ? T.surfaceContainerLow : "transparent",
+    borderRight: isActive ? `3px solid ${T.primary}` : "3px solid transparent",
     transition: "all 0.15s ease",
   });
 
   const hoverHandlers = (isActive) => ({
     onMouseEnter: (e) => {
       if (!isActive) {
-        e.currentTarget.style.backgroundColor = "#eff4ff";
-        e.currentTarget.style.color = "#004f35";
+        e.currentTarget.style.backgroundColor = T.surfaceContainerLow;
+        e.currentTarget.style.color = T.primary;
       }
     },
     onMouseLeave: (e) => {
@@ -86,8 +87,8 @@ export function Sidebar({ onClose }) {
         top: 0,
         left: 0,
         overflowY: "auto",
-        backgroundColor: "#ffffff",
-        borderRight: "1px solid #bec9c1",
+        backgroundColor: T.surfaceCard,
+        borderRight: `1px solid ${T.outlineSoft}`,
         width: "256px",
         flexShrink: 0,
         zIndex: 40,
@@ -100,6 +101,7 @@ export function Sidebar({ onClose }) {
           <img
             src="/smartkonstrunksi.jpeg"
             alt="Smart Konstruksi"
+            className="sk-logo-spin"
             style={{
               width: "40px",
               height: "40px",
@@ -112,10 +114,10 @@ export function Sidebar({ onClose }) {
           <div>
             <h1
               style={{
-                fontFamily: "'Hanken Grotesk', sans-serif",
+                fontFamily: FONT_DISPLAY,
                 fontSize: "18px",
                 fontWeight: 700,
-                color: "#004f35",
+                color: T.primary,
                 margin: 0,
                 lineHeight: 1.2,
               }}
@@ -124,12 +126,12 @@ export function Sidebar({ onClose }) {
             </h1>
             <p
               style={{
-                fontFamily: "'Geist', monospace",
+                fontFamily: FONT_LABEL,
                 fontSize: "11px",
                 fontWeight: 600,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: "#6f7a72",
+                color: T.outline,
                 margin: 0,
                 marginTop: "2px",
               }}
@@ -153,8 +155,8 @@ export function Sidebar({ onClose }) {
               display: "none", /* shown via CSS media query */
               alignItems: "center",
               justifyContent: "center",
-              background: "#eff4ff",
-              border: "1px solid #bec9c1",
+              background: T.surfaceContainerLow,
+              border: `1px solid ${T.outlineSoft}`,
               borderRadius: "8px",
               cursor: "pointer",
               color: "#5a6278",
@@ -194,7 +196,7 @@ export function Sidebar({ onClose }) {
           <>
             <p
               style={{
-                fontFamily: "'Geist', monospace",
+                fontFamily: FONT_LABEL,
                 fontSize: "11px",
                 fontWeight: 600,
                 letterSpacing: "0.08em",
@@ -231,7 +233,7 @@ export function Sidebar({ onClose }) {
       <div
         style={{
           padding: "16px",
-          borderTop: "1px solid #bec9c1",
+          borderTop: `1px solid ${T.outlineSoft}`,
           display: "flex",
           flexDirection: "column",
           gap: "2px",
@@ -239,26 +241,8 @@ export function Sidebar({ onClose }) {
       >
         <Link
           href="/dashboard/profile"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "10px 16px",
-            textDecoration: "none",
-            fontFamily: "'Geist', monospace",
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "#5a6278",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#eff4ff";
-            e.currentTarget.style.color = "#004f35";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "#5a6278";
-          }}
+          style={linkStyle(pathname === "/dashboard/profile")}
+          {...hoverHandlers(pathname === "/dashboard/profile")}
           onClick={onClose}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
@@ -276,7 +260,7 @@ export function Sidebar({ onClose }) {
             background: "none",
             border: "none",
             cursor: "pointer",
-            fontFamily: "'Geist', monospace",
+            fontFamily: FONT_LABEL,
             fontSize: "14px",
             fontWeight: 500,
             color: "#5a6278",
@@ -285,8 +269,8 @@ export function Sidebar({ onClose }) {
             transition: "all 0.15s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#eff4ff";
-            e.currentTarget.style.color = "#004f35";
+            e.currentTarget.style.backgroundColor = T.surfaceContainerLow;
+            e.currentTarget.style.color = T.primary;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = "transparent";

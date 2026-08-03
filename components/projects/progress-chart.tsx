@@ -1,5 +1,6 @@
 "use client";
 
+import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 import {
   LineChart,
   Line,
@@ -9,28 +10,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
-// ── Design Tokens ───────────────────────────────────────
-const T = {
-  primary: "#004f35",
-  primaryHover: "#003d29",
-  primaryLight: "rgba(0,79,53,0.08)",
-  primaryMedium: "rgba(0,79,53,0.15)",
-  onSurface: "#0b1c30",
-  onSurfaceVariant: "#3f4943",
-  onSurfaceMuted: "#5a6560",
-  outline: "#6f7a72",
-  outlineSoft: "#bec9c1",
-  surfaceCard: "#ffffff",
-  surfaceContainerLow: "#f5f8f6",
-  surfaceContainerHigh: "#eef2ef",
-  error: "#ba1a1a",
-  errorLight: "rgba(255,218,214,0.4)",
-  success: "#15803d",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
-};
 
 const cardStyle: React.CSSProperties = {
   background: T.surfaceCard,

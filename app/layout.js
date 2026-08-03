@@ -16,7 +16,10 @@ export const metadata = {
   title: "Smart Konstruksi",
   description: "Construction Management Platform - PT. Kita Satu Intersolusi",
   icons: {
-    icon: "/smartkonstrunksi.jpeg",
+    icon: [
+      { url: "/smartkonstrunksi.svg", type: "image/svg+xml" },
+      { url: "/smartkonstrunksi.jpeg", type: "image/jpeg" },
+    ],
     apple: "/smartkonstrunksi.jpeg",
   },
 };
