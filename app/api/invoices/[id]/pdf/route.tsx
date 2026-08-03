@@ -6,7 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { withPermission } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
-import InvoiceDocument from "@/lib/invoice-pdf";
+import InvoiceDocument from "@/components/ui/invoice-pdf";
 import { renderToStream } from "@react-pdf/renderer";
 import fs from "fs";
 import path from "path";

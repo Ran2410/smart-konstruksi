@@ -360,7 +360,7 @@ export default function InventoryPage() {
                     </td>
                     <td style={{ ...tdStyle, textAlign: "right" }}>
                       {canManage && (
-                        <div style={{ display: "flex", gap: "4px", justifyContent: "flex-end", position: "relative" }}>
+                        <div style={{ display: "flex", gap: "4px", justifyContent: "flex-end", alignItems: "center" }}>
                           <button onClick={() => { setShowStockIn(m); setTxForm({ qty: 1, price: 0, projectId: "", notes: "" }); }} style={{
                             background: T.successBg, border: `1px solid ${T.success}44`, borderRadius: "8px",
                             padding: "6px 10px", fontFamily: "'Geist', monospace", fontSize: "11px", fontWeight: 600,
@@ -374,7 +374,7 @@ export default function InventoryPage() {
                           }} onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
                             onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>-OUT</button>
                           {/* Kebab menu */}
-                          <div style={{ position: "relative" }}>
+                          <div style={{ position: "relative", display: "inline-block" }}>
                             <button onClick={() => setOpenMenu(openMenu === m.id ? null : m.id)} style={{
                               background: "none", border: "none", cursor: "pointer",
                               padding: "6px", borderRadius: "8px", color: T.onSurfaceMuted,
@@ -384,11 +384,18 @@ export default function InventoryPage() {
                             ><span className="material-symbols-outlined" style={{ fontSize: "20px" }}>more_vert</span></button>
                             {openMenu === m.id && (
                               <>
-                                <div style={{ position: "fixed", inset: 0, zIndex: 50 }} onClick={() => setOpenMenu(null)} />
+                                <div style={{ position: "fixed", inset: 0, zIndex: 9999 }} onClick={() => setOpenMenu(null)} />
                                 <div style={{
-                                  position: "absolute", right: 0, top: "100%", marginTop: "4px", zIndex: 51,
-                                  background: "#fff", borderRadius: "12px", border: `1px solid ${T.outlineSoft}`,
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: "160px", overflow: "hidden",
+                                  position: "fixed",
+                                  right: "auto",
+                                  top: "auto",
+                                  zIndex: 10000,
+                                  background: "#fff",
+                                  borderRadius: "12px",
+                                  border: `1px solid ${T.outlineSoft}`,
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                                  minWidth: "160px",
+                                  overflow: "hidden",
                                 }}>
                                   <button onClick={() => { openEdit(m); setOpenMenu(null); }} style={{
                                     display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "10px 16px",

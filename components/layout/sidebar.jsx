@@ -15,7 +15,7 @@ const allNavItems = [
   { href: "/dashboard/rab", label: "RAB", icon: "request_quote", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "ADMIN_KANTOR", "SURVEYOR", "KONSULTAN", "ARSITEK"] },
   { href: "/dashboard/materials", label: "Materials", icon: "trolley", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK", "MANDOR", "SURVEYOR", "VENDOR"] },
   { href: "/dashboard/transactions", label: "Transactions", icon: "swap_horiz", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK", "MANDOR"] },
-  { href: "/dashboard/documents", label: "Documents", icon: "description", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN"] },
+  { href: "/dashboard/documents", label: "Documents", icon: "description", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK", "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN", "CLIENT"] },
   { href: "/dashboard/invoices", label: "Invoices", icon: "receipt_long", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE", "CLIENT"] },
   { href: "/dashboard/reports", label: "Reports", icon: "bar_chart", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR", "FINANCE"] },
   { href: "/dashboard/settings", label: "Settings", icon: "settings", roles: ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER"] },
