@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
+import { NotificationBell } from "@/components/layout/notification-bell";
 // Roles that can create projects
 const CAN_CREATE_PROJECT = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER"];
 
@@ -152,27 +153,7 @@ export function Topbar({ onToggleSidebar, sidebarOpen }) {
 
       {/* Right: icon buttons + divider + Create Project (role-gated) */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-        <button
-          style={{
-            padding: "8px",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: T.onSurfaceVariant,
-            borderRadius: "9999px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = T.surfaceContainerLow)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
-          aria-label="Notifications"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>
-            notifications
-          </span>
-        </button>
+        <NotificationBell />
         <button
           className="sk-apps-btn"
           style={{

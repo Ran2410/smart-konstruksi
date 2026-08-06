@@ -16,6 +16,7 @@ import {
 import { apiError } from "@/lib/rbac/guard";
 import { createPaymentSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { notifyMany } from "@/lib/notify";
 
 // ==================== SCOPE FILTER ====================
 
@@ -233,6 +234,30 @@ export const POST = withPermission(
           metadata: { paymentId: payment.id, invoiceId, amount },
         },
       });
+
+      // Notify the project manager + client that a payment was recorded
+      const projectBrief = await prisma.project.findUnique({
+        where: { id: invoice.project.id },
+        select: {
+          projectManagerId: true,
+          client: { select: { userId: true } },
+        },
+      });
+
+      const recipients = [
+        projectBrief?.projectManagerId,
+        projectBrief?.client?.userId,
+      ].filter((rid): rid is string => !!rid && rid !== user.id);
+
+      await notifyMany(
+        recipients.map((rid) => ({
+          userId: rid,
+          type: "PAYMENT",
+          title: "Payment Recorded",
+          message: `Payment for ${payment.invoice.invoiceNo} — ${payment.invoice.project.name}`,
+          link: `/dashboard/invoices/${invoiceId}`,
+        }))
+      );
 
       return apiCreated(payment);
     } catch (error) {

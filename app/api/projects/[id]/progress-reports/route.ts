@@ -10,6 +10,7 @@ import {
   apiSuccess,
 } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { notifyMany } from "@/lib/notify";
 
 // Helper: extract projectId from URL path /api/projects/[id]/progress-reports
 function extractProjectId(url: string): string {
@@ -152,6 +153,28 @@ export const POST = withPermission(
           updatedBy: user.id,
         },
       });
+
+      // Notify project stakeholders (PM, site manager, client) about the new report
+      const clientInfo = await prisma.client.findUnique({
+        where: { id: project.clientId },
+        select: { userId: true },
+      });
+
+      const recipients = [
+        project.projectManagerId,
+        project.siteManagerId,
+        clientInfo?.userId,
+      ].filter((rid): rid is string => !!rid && rid !== user.id);
+
+      await notifyMany(
+        recipients.map((rid) => ({
+          userId: rid,
+          type: "PROGRESS",
+          title: "Progress Report Submitted",
+          message: `${project.name} — progress is now ${percentageVal}%`,
+          link: `/dashboard/projects/${projectId}`,
+        }))
+      );
 
       return apiSuccess(report);
     } catch (error) {
