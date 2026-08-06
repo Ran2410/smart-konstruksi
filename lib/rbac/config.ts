@@ -92,7 +92,7 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
   // ==================== ATTENDANCE ====================
   "/dashboard/attendance": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
-    "SITE_MANAGER",
+    "SITE_MANAGER", "MANDOR",
   ],
 
   // ==================== QC ====================

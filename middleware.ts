@@ -109,6 +109,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     "BRANCH_MANAGER",
     "PROJECT_MANAGER",
     "SITE_MANAGER",
+    "MANDOR",
   ],
   "/dashboard/qc": [
     "SUPER_ADMIN",

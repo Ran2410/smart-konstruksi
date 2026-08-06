@@ -13,6 +13,7 @@ export type NotificationType =
   | "PAYMENT"
   | "APPROVAL"
   | "DOCUMENT"
+  | "COMMENT"
   | "SYSTEM";
 
 export type NotificationInput = {
@@ -62,5 +63,6 @@ export const NOTIFICATION_META: Record<string, { icon: string; color: string }> 
   PAYMENT: { icon: "payments", color: "#0d9488" },
   APPROVAL: { icon: "fact_check", color: "#b45309" },
   DOCUMENT: { icon: "description", color: "#4f46e5" },
+  COMMENT: { icon: "chat_bubble", color: "#4f46e5" },
   SYSTEM: { icon: "notifications", color: "#6f7a72" },
 };

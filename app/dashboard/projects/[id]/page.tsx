@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { UserPicker } from "@/components/projects/user-picker";
 import { TasksBoard } from "@/components/projects/tasks-board";
+import { DiscussionTab } from "@/components/projects/discussion-tab";
 import { PhotoUpload } from "@/components/projects/photo-upload";
 import { ProgressChart } from "@/components/projects/progress-chart";
 import { ReportDetail } from "@/components/projects/report-detail";
@@ -529,7 +530,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "tasks" | "reports" | "invoices">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "tasks" | "reports" | "discussion" | "invoices">("overview");
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
@@ -1392,6 +1393,7 @@ export default function ProjectDetailPage() {
             { key: "overview", label: "Overview", icon: "dashboard" },
             { key: "tasks", label: "Tasks", icon: "task_alt" },
             { key: "reports", label: "Reports", icon: "monitoring" },
+            { key: "discussion", label: "Discussion", icon: "chat_bubble" },
             { key: "invoices", label: "Invoices", icon: "receipt_long" },
           ].filter((t) => {
             // Hide Tasks from client-facing roles
@@ -1669,6 +1671,11 @@ export default function ProjectDetailPage() {
             onTaskChange={() => fetchProject()}
           />
         </div>
+      )}
+
+      {/* ═══ DISCUSSION TAB ═══ */}
+      {!editMode && activeTab === "discussion" && (
+        <DiscussionTab projectId={projectId} />
       )}
 
       {/* ═══ REPORTS TAB ═══ */}

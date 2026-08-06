@@ -62,6 +62,10 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "branch:create", "branch:read", "branch:update",
     // Settings & Audit
     "settings:read", "settings:manage", "audit:read",
+    // Comment
+    "comment:create", "comment:read", "comment:delete",
+    // Attendance
+    "attendance:read",
     // Lead
     "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project
@@ -98,6 +102,10 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "user:create", "user:read", "user:update",
     // Settings & Audit
     "settings:read", "settings:manage", "audit:read",
+    // Comment
+    "comment:create", "comment:read", "comment:delete",
+    // Attendance
+    "attendance:read",
     // Lead
     "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project

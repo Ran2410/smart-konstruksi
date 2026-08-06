@@ -5,6 +5,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const authConfig = {
+  // Trust any Host header (dev via localhost, testing via ngrok tunnel).
+  // For production, replace with trustedHosts: ["app.domain.com"] for tighter security.
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
