@@ -66,6 +66,43 @@ export const createBranchSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+// ==================== SETTINGS / COMPANY PROFILE ====================
+
+const emptyToNull = (v: string | null | undefined) =>
+  v === undefined || v === null ? null : v.trim() === "" ? null : v.trim();
+
+const companyProfileFields = {
+  companyName: z.string().min(1, "Company name is required").max(200),
+  tagline: z.string().max(300).nullable().optional(),
+  address: z.string().max(500).nullable().optional(),
+  phone: z.string().max(50).nullable().optional(),
+  email: z.string().email("Invalid email").max(100).nullable().optional().or(z.literal("")),
+  taxId: z.string().max(50).nullable().optional(),
+  website: z.string().max(200).nullable().optional(),
+  logoUrl: z.string().max(500).nullable().optional(),
+  currency: z.string().min(1).max(10).default("IDR"),
+  invoicePrefix: z.string().min(1, "Invoice prefix is required").max(10).toUpperCase(),
+  taxRate: z.coerce.number().min(0).max(100).default(11),
+};
+
+const applyEmptyToNull = <T extends Record<string, unknown>>(v: T) => ({
+  ...v,
+  tagline: emptyToNull(v.tagline as string | null | undefined),
+  address: emptyToNull(v.address as string | null | undefined),
+  phone: emptyToNull(v.phone as string | null | undefined),
+  email: emptyToNull(v.email as string | null | undefined),
+  taxId: emptyToNull(v.taxId as string | null | undefined),
+  website: emptyToNull(v.website as string | null | undefined),
+  logoUrl: emptyToNull(v.logoUrl as string | null | undefined),
+});
+
+export const companyProfileSchema = z.object(companyProfileFields).transform(applyEmptyToNull);
+
+export const updateCompanyProfileSchema = z
+  .object(companyProfileFields)
+  .partial()
+  .transform(applyEmptyToNull);
+
 // ==================== PROJECT ====================
 
 export const createProjectSchema = z.object({

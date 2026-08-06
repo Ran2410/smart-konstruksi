@@ -166,6 +166,29 @@ model Branch {
   @@map("branches")
 }
 
+// ============================================================
+// Company Profile — singleton row (id = "company")
+// Settings module: company identity + financial defaults
+// ============================================================
+model CompanyProfile {
+  id            String   @id @default("company")
+  companyName   String   @default("Smart Konstruksi")
+  tagline       String?
+  address       String?
+  phone         String?
+  email         String?
+  taxId         String?
+  website       String?
+  logoUrl       String?
+  currency      String   @default("IDR")
+  invoicePrefix String   @default("INV")
+  taxRate       Decimal  @default(11)
+  updatedBy     String?
+  updatedAt     DateTime @updatedAt
+
+  @@map("company_profiles")
+}
+
 model Project {
   id          String        @id @default(cuid())
   code        String        @unique

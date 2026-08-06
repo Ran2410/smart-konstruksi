@@ -120,7 +120,7 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
 
   // ==================== SETTINGS ====================
   "/dashboard/settings": [
-    "SUPER_ADMIN", "OWNER",
+    "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER",
   ],
 
   // ==================== CLIENT PORTAL ====================
