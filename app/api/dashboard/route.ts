@@ -224,8 +224,9 @@ async function buildBranchManagerDashboard(userId) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { branchId: true } });
   const branchFilter = user?.branchId ? { branchId: user.branchId } : {};
 
-  const [projects, team, pendingApprovals, branchRevenue, recentActivity, projectProgress] = await Promise.all([
+  const [projects, activeBranchProjects, team, pendingApprovals, branchRevenue, recentActivity, projectProgress] = await Promise.all([
     prisma.project.count({ where: { ...branchFilter, deletedAt: null } }),
+    prisma.project.count({ where: { ...branchFilter, deletedAt: null, status: "IN_PROGRESS" } }),
     prisma.user.count({ where: { ...branchFilter, isActive: true } }),
     prisma.approval.count({ where: { status: "PENDING", project: branchFilter } }),
     prisma.payment.aggregate({ where: { invoice: { project: branchFilter } }, _sum: { amount: true } }),
@@ -244,12 +245,12 @@ async function buildBranchManagerDashboard(userId) {
 
   return {
     greeting: "Branch Dashboard",
-    subtitle: `Overview cabang Anda.`,
+    subtitle: `Ringkasan cabang Anda.`,
     stats: [
-      { icon: "apartment", value: String(projects), label: "My Projects", change: "semua aktif", up: true },
-      { icon: "paid", value: formatRupiah(branchRevenue._sum.amount || 0), label: "Branch Revenue", change: "+8.3%", up: true },
+      { icon: "apartment", value: String(projects), label: "My Projects", change: `${activeBranchProjects} active`, up: true },
+      { icon: "paid", value: formatRupiah(branchRevenue._sum.amount || 0), label: "Branch Revenue", change: `${pendingApprovals} pending approval`, up: true },
       { icon: "pending_actions", value: String(pendingApprovals), label: "Pending Approvals", change: pendingApprovals > 0 ? "perlu review" : "all clear", up: pendingApprovals === 0 },
-      { icon: "group", value: String(team), label: "Branch Team", change: "stable", up: true },
+      { icon: "group", value: String(team), label: "Branch Team", change: `${team} active users`, up: true },
     ],
     quickStats: [
       { icon: "task_alt", label: "Total Projects", status: String(projects), color: "#22C55E", statusColor: "#22C55E" },
@@ -306,10 +307,10 @@ async function buildProjectManagerDashboard(userId) {
     greeting: "My Projects",
     subtitle: `Manage your projects.`,
     stats: [
-      { icon: "apartment", value: String(myProjects), label: "My Projects", change: "all active", up: true },
-      { icon: "task_alt", value: String(openTasks), label: "Open Tasks", change: "terbuka", up: true },
-      { icon: "group", value: String(teamMembers), label: "Team Members", change: "stable", up: true },
-      { icon: "calendar_today", value: typeof daysUntilDeadline === "number" ? `${daysUntilDeadline}d` : "-", label: "Next Deadline", change: "on track", up: true },
+      { icon: "apartment", value: String(myProjects), label: "My Projects", change: `${myProjects} total`, up: true },
+      { icon: "task_alt", value: String(openTasks), label: "Open Tasks", change: `${openTasks} open`, up: true },
+      { icon: "group", value: String(teamMembers), label: "Team Members", change: `${teamMembers} members`, up: true },
+      { icon: "calendar_today", value: typeof daysUntilDeadline === "number" ? `${daysUntilDeadline}d` : "-", label: "Next Deadline", change: typeof daysUntilDeadline === "number" ? (daysUntilDeadline <= 3 ? "due soon" : "on track") : "no tasks", up: typeof daysUntilDeadline === "number" ? daysUntilDeadline <= 3 : false },
     ],
     quickStats: [
       { icon: "check_circle", label: "Completed Today", status: `${completedToday} tasks`, color: "#22C55E", statusColor: "#22C55E" },
@@ -333,7 +334,7 @@ async function buildProjectManagerDashboard(userId) {
 // SITE_MANAGER / MANDOR
 // ═══════════════════════════════════════════════════════════════
 async function buildSiteManagerDashboard(userId) {
-  const [todayTasks, workersPresent, recentActivity, projectProgress] = await Promise.all([
+  const [todayTasks, workersPresent, recentActivity, projectProgress, todayReports, projectMaterials] = await Promise.all([
     prisma.task.count({ where: { assigneeId: userId, startDate: { lte: new Date() }, dueDate: { gte: startOfDay() } } }),
     prisma.attendance.count({ where: { userId, checkIn: { gte: startOfDay() } } }),
     prisma.activityLog.findMany({
@@ -348,16 +349,20 @@ async function buildSiteManagerDashboard(userId) {
       orderBy: { updatedAt: "desc" },
       take: 5,
     }),
+    prisma.progressReport.count({
+      where: { reporterId: userId, reportDate: { gte: startOfDay() } },
+    }),
+    prisma.material.count({ where: { deletedAt: null } }),
   ]);
 
   return {
     greeting: "Today's Field Work",
-    subtitle: `Overview lapangan hari ini.`,
+    subtitle: `Ringkasan aktivitas lapangan hari ini.`,
     stats: [
-      { icon: "task_alt", value: String(todayTasks), label: "Today's Tasks", change: "hari ini", up: true },
-      { icon: "groups", value: String(workersPresent), label: "Workers Present", change: "hadir", up: true },
-      { icon: "inventory_2", value: "—", label: "Materials", change: "via inventory", up: true },
-      { icon: "description", value: "1", label: "Report Due", change: "daily report", up: true },
+      { icon: "task_alt", value: String(todayTasks), label: "Today's Tasks", change: todayTasks > 0 ? `${todayTasks} open` : "no open tasks", up: todayTasks > 0 },
+      { icon: "groups", value: String(workersPresent), label: "Workers Present", change: workersPresent > 0 ? "checked in" : "no check-in yet", up: workersPresent > 0 },
+      { icon: "description", value: String(todayReports), label: "Reports Submitted", change: todayReports > 0 ? "today" : "belum ada", up: todayReports > 0 },
+      { icon: "inventory_2", value: String(projectMaterials), label: "Materials Available", change: "total items", up: true },
     ],
     quickStats: [],
     activity: recentActivity.map((a) => ({
@@ -413,12 +418,23 @@ async function buildClientDashboard(userId) {
     ? Math.round(projectProgress.reduce((sum, p) => sum + p.progress, 0) / projectProgress.length)
     : 0;
 
+  // Progress delta — perbandingan laporan terakhir vs sebelumnya (real)
+  let progressDelta = "on track";
+  if (recentReports.length >= 2) {
+    const latest = recentReports[0].percentage;
+    const previous = recentReports[1].percentage;
+    const diff = latest - previous;
+    progressDelta = diff > 0 ? `+${diff}% vs last report` : diff < 0 ? `${diff}% vs last report` : "no change";
+  } else if (recentReports.length === 1) {
+    progressDelta = `${recentReports[0].percentage}% latest report`;
+  }
+
   return {
     greeting: "My Projects",
-    subtitle: `Overview proyek Anda.`,
+    subtitle: `Ringkasan proyek Anda.`,
     stats: [
-      { icon: "apartment", value: String(myProjects), label: "Active Project", change: "on track", up: true },
-      { icon: "timeline", value: `${overallProgress}%`, label: "Overall Progress", change: "+5% this month", up: true },
+      { icon: "apartment", value: String(myProjects), label: "Active Projects", change: `${myProjects} total`, up: true },
+      { icon: "timeline", value: `${overallProgress}%`, label: "Overall Progress", change: progressDelta, up: true },
       { icon: "description", value: String(docs), label: "Documents", change: docs > 0 ? `${docs} docs` : "no docs", up: true },
       { icon: "chat", value: String(messages), label: "Messages", change: messages > 0 ? "unread" : "empty", up: true },
     ],
@@ -467,11 +483,11 @@ async function buildFinanceDashboard(userId) {
 
   return {
     greeting: "Financial Overview",
-    subtitle: `Overview keuangan.`,
+    subtitle: `Ringkasan keuangan.`,
     stats: [
       { icon: "paid", value: formatRupiah(totalRevenue._sum.amount || 0), label: "Total Revenue", change: `${paidInvoices} paid`, up: true },
       { icon: "receipt_long", value: String(pendingInvoices + overdueInvoices), label: "Pending Invoices", change: formatRupiah(outstanding._sum.amount || 0), up: false },
-      { icon: "account_balance", value: formatRupiah(totalRevenue._sum.amount || 0), label: "Payments Received", change: `${paidInvoices} paid`, up: true },
+      { icon: "account_balance", value: formatRupiah(totalBudget._sum.budget || 0), label: "Total Budget", change: "all projects", up: true },
       { icon: "warning", value: String(overdueInvoices), label: "Overdue Invoices", change: overdueInvoices > 0 ? "perlu follow up" : "all clear", up: overdueInvoices === 0 },
     ],
     quickStats: [
@@ -509,7 +525,7 @@ async function buildAdminKantorDashboard(userId) {
     greeting: "Office Operations",
     subtitle: `Overview operasional kantor.`,
     stats: [
-      { icon: "apartment", value: String(activeProjects), label: "Active Projects", change: "semua aktif", up: true },
+      { icon: "apartment", value: String(activeProjects), label: "Active Projects", change: `${activeProjects} active`, up: true },
       { icon: "description", value: String(totalDocs), label: "Documents", change: `${totalDocs} docs`, up: true },
       { icon: "receipt_long", value: String(totalInvoices), label: "Invoices", change: `${totalInvoices} total`, up: true },
     ],
@@ -521,6 +537,7 @@ async function buildAdminKantorDashboard(userId) {
       color: "#6B7280",
     })),
     progress: [],
+    chartData: await buildChartData(),
   };
 }
 
@@ -591,8 +608,8 @@ async function buildQCInspectorDashboard(userId) {
     greeting: "Quality Control",
     subtitle: `Overview inspeksi.`,
     stats: [
-      { icon: "fact_check", value: String(pendingApprovals), label: "Pending Inspections", change: `${pendingApprovals} today`, up: true },
-      { icon: "check_circle", value: String(approvedApprovals), label: "Approved", change: "this month", up: true },
+      { icon: "fact_check", value: String(pendingApprovals), label: "Pending Inspections", change: pendingApprovals > 0 ? "perlu review" : "all clear", up: pendingApprovals > 0 },
+      { icon: "check_circle", value: String(approvedApprovals), label: "Approved", change: `${approvedApprovals} total`, up: true },
       { icon: "warning", value: String(rejectedApprovals), label: "Rejected", change: rejectedApprovals > 0 ? "perlu tindak lanjut" : "all clear", up: rejectedApprovals === 0 },
     ],
     quickStats: [],
@@ -635,7 +652,7 @@ async function buildK3Dashboard(userId) {
     greeting: "Safety Dashboard",
     subtitle: `Overview keselamatan.`,
     stats: [
-      { icon: "health_and_safety", value: String(completedTasks), label: "Tasks Completed", change: "this month", up: true },
+      { icon: "health_and_safety", value: String(completedTasks), label: "Tasks Completed", change: `${completedTasks} total`, up: true },
       { icon: "task_alt", value: String(totalTasks), label: "Total Tasks", change: "all projects", up: true },
     ],
     quickStats: [],
@@ -661,22 +678,27 @@ async function buildVendorDashboard(userId) {
   const vendor = await prisma.vendor.findFirst({ where: { email: { not: null } }, select: { id: true } });
   const vendorId = vendor?.id || "__none__";
 
-  const [materialsCount, recentActivity] = await Promise.all([
+  const [materialsCount, recentActivity, materialValue, pendingCount] = await Promise.all([
     prisma.material.count({ where: { vendorId, deletedAt: null } }),
     prisma.activityLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { user: { select: { name: true } } },
     }),
+    prisma.material.aggregate({
+      where: { vendorId, deletedAt: null },
+      _sum: { stock: true },
+    }),
+    prisma.material.count({ where: { vendorId, deletedAt: null, stock: { lte: 0 } } }),
   ]);
 
   return {
     greeting: "My Orders",
-    subtitle: `Overview pesanan Anda.`,
+    subtitle: `Ringkasan material yang Anda supply.`,
     stats: [
-      { icon: "inventory_2", value: String(materialsCount), label: "Materials Supplied", change: "total items", up: true },
-      { icon: "check_circle", value: "—", label: "Status", change: "via inventory", up: true },
-      { icon: "payments", value: "—", label: "Payments", change: "see invoices", up: true },
+      { icon: "inventory_2", value: String(materialsCount), label: "Materials Supplied", change: `${materialsCount} items`, up: true },
+      { icon: "layers", value: String(materialValue._sum.stock || 0), label: "Total Stock Units", change: "across items", up: true },
+      { icon: "warning", value: String(pendingCount), label: "Out of Stock", change: pendingCount > 0 ? "perlu restock" : "all clear", up: pendingCount === 0 },
     ],
     quickStats: [],
     activity: recentActivity.map((a) => ({
@@ -693,7 +715,7 @@ async function buildVendorDashboard(userId) {
 // ESTIMATOR
 // ═══════════════════════════════════════════════════════════════
 async function buildEstimatorDashboard(userId) {
-  const [totalProjects, recentActivity, projectProgress] = await Promise.all([
+  const [totalProjects, recentActivity, projectProgress, draftRAB, approvedRAB] = await Promise.all([
     prisma.project.count({ where: { deletedAt: null } }),
     prisma.activityLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -706,13 +728,17 @@ async function buildEstimatorDashboard(userId) {
       orderBy: { updatedAt: "desc" },
       take: 5,
     }),
+    prisma.rAB.count({ where: { status: { in: ["DRAFT", "PENDING_APPROVAL"] } } }),
+    prisma.rAB.count({ where: { status: "APPROVED" } }),
   ]);
 
   return {
     greeting: "Estimation Dashboard",
-    subtitle: `Overview estimasi.`,
+    subtitle: `Ringkasan estimasi & RAB.`,
     stats: [
       { icon: "calculate", value: String(totalProjects), label: "Projects to Estimate", change: `${totalProjects} total`, up: true },
+      { icon: "request_quote", value: String(draftRAB), label: "RAB Draft / Pending", change: "perlu disusun", up: true },
+      { icon: "check_circle", value: String(approvedRAB), label: "RAB Approved", change: "disetujui", up: true },
     ],
     quickStats: [],
     activity: recentActivity.map((a) => ({
@@ -748,6 +774,37 @@ async function buildChartData(projectFilter: { projectId?: string; branchId?: st
 }
 
 /**
+ * Revenue trend — monthly aggregation from real payments + invoices.
+ * No mock fallback: empty periods return 0.
+ */
+async function buildRevenueTrendData(projectFilter: { projectId?: string; branchId?: string } = {}) {
+  const now = new Date();
+  const months = [];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Get last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      name: monthNames[d.getMonth()],
+      startDate: new Date(d.getFullYear(), d.getMonth(), 1),
+      endDate: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
+    });
+  }
+
+  // Query real payments + invoices per month (parallel)
+  const results = await Promise.all(
+    months.map(async (m) => aggPaymentAndInvoice(projectFilter, m.startDate, m.endDate))
+  );
+
+  return months.map((m, i) => ({
+    name: m.name,
+    revenue: results[i].payments,
+    sales: results[i].invoices,
+  }));
+}
+
+/**
  * Revenue trend — weekly aggregation (last 12 weeks).
  */
 async function buildRevenueTrendWeeklyData(projectFilter: { projectId?: string; branchId?: string } = {}) {
@@ -766,30 +823,13 @@ async function buildRevenueTrendWeeklyData(projectFilter: { projectId?: string; 
   }
 
   const results = await Promise.all(
-    weeks.map(async (w) => {
-      const where = {
-        paidAt: { gte: w.startDate, lte: w.endDate },
-        ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
-        ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
-      };
-      const agg = await prisma.payment.aggregate({ where, _sum: { amount: true } });
-      return Number(agg._sum.amount || 0);
-    })
+    weeks.map(async (w) => aggPaymentAndInvoice(projectFilter, w.startDate, w.endDate))
   );
-
-  const hasRealData = results.some((v) => v > 0);
-  if (!hasRealData) {
-    return weeks.map((w, i) => ({
-      name: w.name,
-      revenue: Math.floor(20 + Math.random() * 30 + i * 2),
-      sales: Math.floor(15 + Math.random() * 25 + i * 2),
-    }));
-  }
 
   return weeks.map((w, i) => ({
     name: w.name,
-    revenue: Math.round(results[i] / 1_000_000),
-    sales: Math.round(results[i] * 0.85 / 1_000_000),
+    revenue: results[i].payments,
+    sales: results[i].invoices,
   }));
 }
 
@@ -812,30 +852,13 @@ async function buildRevenueTrendDailyData(projectFilter: { projectId?: string; b
   }
 
   const results = await Promise.all(
-    days.map(async (d) => {
-      const where = {
-        paidAt: { gte: d.startDate, lte: d.endDate },
-        ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
-        ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
-      };
-      const agg = await prisma.payment.aggregate({ where, _sum: { amount: true } });
-      return Number(agg._sum.amount || 0);
-    })
+    days.map(async (d) => aggPaymentAndInvoice(projectFilter, d.startDate, d.endDate))
   );
-
-  const hasRealData = results.some((v) => v > 0);
-  if (!hasRealData) {
-    return days.map((d, i) => ({
-      name: d.name,
-      revenue: Math.floor(5 + Math.random() * 15 + i),
-      sales: Math.floor(3 + Math.random() * 12 + i),
-    }));
-  }
 
   return days.map((d, i) => ({
     name: d.name,
-    revenue: Math.round(results[i] / 1_000_000),
-    sales: Math.round(results[i] * 0.85 / 1_000_000),
+    revenue: results[i].payments,
+    sales: results[i].invoices,
   }));
 }
 
@@ -848,65 +871,46 @@ function startOfDay() {
   return d;
 }
 
+/**
+ * Aggregate real payments (uang masuk) + invoices (tagihan terbit)
+ * for a date range. No mock/random — returns 0 when empty.
+ */
+async function aggPaymentAndInvoice(
+  projectFilter: { projectId?: string; branchId?: string },
+  startDate: Date,
+  endDate: Date
+) {
+  const [payments, invoices] = await Promise.all([
+    prisma.payment.aggregate({
+      where: {
+        paidAt: { gte: startDate, lte: endDate },
+        ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
+        ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
+      },
+      _sum: { amount: true },
+    }),
+    prisma.invoice.aggregate({
+      where: {
+        deletedAt: null,
+        issuedAt: { gte: startDate, lte: endDate },
+        ...(projectFilter.projectId ? { projectId: projectFilter.projectId } : {}),
+        ...(projectFilter.branchId ? { project: { branchId: projectFilter.branchId } } : {}),
+      },
+      _sum: { amount: true },
+    }),
+  ]);
+  return {
+    payments: Number(payments._sum.amount || 0),
+    invoices: Number(invoices._sum.amount || 0),
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CHART DATA BUILDERS
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Revenue trend — monthly aggregation from real payments.
- * Falls back to mock if no payments exist.
- */
-async function buildRevenueTrendData(projectFilter: { projectId?: string; branchId?: string } = {}) {
-  const now = new Date();
-  const months = [];
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  // Get last 12 months
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({
-      name: monthNames[d.getMonth()],
-      startDate: new Date(d.getFullYear(), d.getMonth(), 1),
-      endDate: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
-    });
-  }
-
-  // Query real payments per month
-  const results = await Promise.all(
-    months.map(async (m) => {
-      const where = {
-        paidAt: { gte: m.startDate, lte: m.endDate },
-        ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
-        ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
-      };
-      const agg = await prisma.payment.aggregate({
-        where,
-        _sum: { amount: true },
-      });
-      return Number(agg._sum.amount || 0);
-    })
-  );
-
-  const hasRealData = results.some((v) => v > 0);
-
-  if (!hasRealData) {
-    // Mock fallback
-    return months.map((m, i) => ({
-      name: m.name,
-      revenue: Math.floor(40 + Math.random() * 60 + i * 5),
-      sales: Math.floor(30 + Math.random() * 50 + i * 4),
-    }));
-  }
-
-  return months.map((m, i) => ({
-    name: m.name,
-    revenue: Math.round(results[i] / 1_000_000), // in millions
-    sales: Math.round(results[i] * 0.85 / 1_000_000), // estimated sales = 85% of revenue
-  }));
-}
-
-/**
- * Weekly profit — daily aggregation from real payments for a specific week.
+ * Weekly payments — daily aggregation from real payments for a specific week.
  * weekOffset: 0 = this week, -1 = last week, etc.
  */
 async function buildWeeklyProfitData(projectFilter: { projectId?: string; branchId?: string } = {}, weekOffset: number = 0) {
@@ -924,30 +928,18 @@ async function buildWeeklyProfitData(projectFilter: { projectId?: string; branch
     dayStart.setDate(startOfWeek.getDate() + i);
     const dayEnd = new Date(dayStart);
     dayEnd.setHours(23, 59, 59);
-
-    const where = {
-      paidAt: { gte: dayStart, lte: dayEnd },
-      ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
-      ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
-    };
-    const agg = await prisma.payment.aggregate({
-      where,
-      _sum: { amount: true },
-    });
-    results.push(Number(agg._sum.amount || 0));
+    results.push(await aggPaymentAndInvoice(projectFilter, dayStart, dayEnd));
   }
-
-  const hasRealData = results.some((v) => v > 0);
 
   return dayNames.map((d, i) => ({
     name: d,
-    sales: hasRealData ? Math.round(results[i] / 1_000_000) : 0,
-    revenue: hasRealData ? Math.round(results[i] * 1.1 / 1_000_000) : 0,
+    sales: results[i].payments,
+    revenue: results[i].invoices,
   }));
 }
 
 /**
- * Weekly profit — aggregated by week of the current month (W1-W5).
+ * Weekly payments — aggregated by week of the current month (W1-W5).
  */
 async function buildWeeklyProfitDataThisMonth(projectFilter: { projectId?: string; branchId?: string } = {}) {
   const now = new Date();
@@ -973,22 +965,12 @@ async function buildWeeklyProfitDataThisMonth(projectFilter: { projectId?: strin
   }
 
   const monthResults = await Promise.all(
-    weeks.map(async (w) => {
-      const where = {
-        paidAt: { gte: w.startDate, lte: w.endDate },
-        ...(projectFilter.projectId ? { invoice: { projectId: projectFilter.projectId } } : {}),
-        ...(projectFilter.branchId ? { invoice: { project: { branchId: projectFilter.branchId } } } : {}),
-      };
-      const agg = await prisma.payment.aggregate({ where, _sum: { amount: true } });
-      return Number(agg._sum.amount || 0);
-    })
+    weeks.map(async (w) => aggPaymentAndInvoice(projectFilter, w.startDate, w.endDate))
   );
-
-  const hasMonthData = monthResults.some((v) => v > 0);
 
   return weeks.map((w, i) => ({
     name: w.name,
-    sales: hasMonthData ? Math.round(monthResults[i] / 1_000_000) : 0,
-    revenue: hasMonthData ? Math.round(monthResults[i] * 1.1 / 1_000_000) : 0,
+    sales: monthResults[i].payments,
+    revenue: monthResults[i].invoices,
   }));
 }
