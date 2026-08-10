@@ -19,6 +19,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "user:create", "user:read", "user:update", "user:delete",
     // Branch Management
     "branch:create", "branch:read", "branch:update", "branch:delete",
+    // Settings & Audit
+    "settings:read", "settings:manage", "audit:read",
     // Project
     "project:create", "project:read", "project:update", "project:delete",
     // Material
@@ -58,6 +60,12 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "user:create", "user:read", "user:update",
     // Branch
     "branch:create", "branch:read", "branch:update",
+    // Settings & Audit
+    "settings:read", "settings:manage", "audit:read",
+    // Comment
+    "comment:create", "comment:read", "comment:delete",
+    // Attendance
+    "attendance:read",
     // Lead
     "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project
@@ -92,6 +100,12 @@ export const PERMISSIONS: Record<Role, string[]> = {
   BRANCH_MANAGER: [
     // User (di branch sendiri)
     "user:create", "user:read", "user:update",
+    // Settings & Audit
+    "settings:read", "settings:manage", "audit:read",
+    // Comment
+    "comment:create", "comment:read", "comment:delete",
+    // Attendance
+    "attendance:read",
     // Lead
     "lead:create", "lead:read", "lead:update", "lead:delete",
     // Project

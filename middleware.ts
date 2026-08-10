@@ -109,6 +109,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     "BRANCH_MANAGER",
     "PROJECT_MANAGER",
     "SITE_MANAGER",
+    "MANDOR",
   ],
   "/dashboard/qc": [
     "SUPER_ADMIN",
@@ -139,7 +140,7 @@ const ROLE_ACCESS: Record<string, string[]> = {
     "ARSITEK",
     "CLIENT",
   ],
-  "/dashboard/settings": ["SUPER_ADMIN", "OWNER"],
+  "/dashboard/settings": ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER"],
   "/dashboard/client-portal": ["CLIENT"],
   "/dashboard/vendor-portal": ["VENDOR"],
   "/dashboard/warranty": [

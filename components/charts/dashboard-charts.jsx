@@ -15,38 +15,20 @@ import {
   Legend,
 } from "recharts";
 
-// Fallback generators (used when no prop data at all)
-function generateMonthlyData() {
-  const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
-  return months.map((m, i) => ({
-    name: m,
-    revenue: Math.floor(40 + Math.random() * 60 + i * 5),
-    sales: Math.floor(30 + Math.random() * 50 + i * 4),
-  }));
+function formatRupiahCompact(val) {
+  const num = Number(val) || 0;
+  if (num >= 1_000_000_000) return `Rp ${(num / 1_000_000_000).toFixed(1)}B`;
+  if (num >= 1_000_000) return `Rp ${(num / 1_000_000).toFixed(1)}M`;
+  if (num >= 1_000) return `Rp ${(num / 1_000).toFixed(0)}K`;
+  return `Rp ${num}`;
 }
 
-function generateWeeklyData() {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  return days.map((d) => ({
-    name: d,
-    sales: Math.floor(10 + Math.random() * 40),
-    revenue: Math.floor(15 + Math.random() * 45),
-  }));
-}
-
-function generateDailyData() {
-  const now = new Date();
-  const days = [];
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(now.getDate() - i);
-    days.push(d.toLocaleDateString("en-US", { day: "2-digit", month: "short" }));
-  }
-  return days.map((name, i) => ({
-    name,
-    sales: Math.floor(5 + Math.random() * 15 + i),
-    revenue: Math.floor(8 + Math.random() * 20 + i),
-  }));
+function formatRupiahFull(val) {
+  return (Number(val) || 0).toLocaleString("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  });
 }
 
 function CustomTooltip({ active, payload, label }) {
@@ -66,7 +48,7 @@ function CustomTooltip({ active, payload, label }) {
       <p style={{ margin: "0 0 8px", fontWeight: 600, color: T.onSurface }}>{label}</p>
       {payload.map((entry, i) => (
         <p key={i} style={{ margin: "2px 0", color: entry.color }}>
-          {entry.name}: <strong>{entry.value}</strong>
+          {entry.name}: <strong>{formatRupiahFull(entry.value)}</strong>
         </p>
       ))}
     </div>
@@ -74,18 +56,19 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// REVENUE TREND (Line Chart)
+// REVENUE TREND (Line Chart) — Payments vs Invoices
 // ═══════════════════════════════════════════════════════════════
 export function RevenueTrendChart({ data: propData }) {
   const [period, setPeriod] = useState("Month");
 
   const trendData = propData || {};
   const dataMap = {
-    Day: trendData.daily || generateDailyData(),
-    Week: trendData.weekly || generateWeeklyData(),
-    Month: trendData.monthly || generateMonthlyData(),
+    Day: trendData.daily || [],
+    Week: trendData.weekly || [],
+    Month: trendData.monthly || [],
   };
   const data = dataMap[period] || dataMap.Month;
+  const hasData = Array.isArray(data) && data.some((d) => (d?.revenue || 0) > 0 || (d?.sales || 0) > 0);
 
   const periods = ["Day", "Week", "Month"];
 
@@ -116,18 +99,18 @@ export function RevenueTrendChart({ data: propData }) {
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.primary }} />
               <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.onSurface }}>
-                Total Revenue
+                Payments
               </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#1a1a2e" }} />
               <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 600, color: T.onSurface }}>
-                Total Sales
+                Invoices
               </span>
             </div>
           </div>
           <p style={{ fontFamily: FONT_LABEL, fontSize: "11px", color: T.outline, margin: 0 }}>
-            {period === "Day" ? "Last 14 days" : period === "Week" ? "Last 12 weeks" : "01.01.2025 - 12.05.2025"}
+            {period === "Day" ? "Last 14 days" : period === "Week" ? "Last 12 weeks" : "Last 12 months"}
           </p>
         </div>
 
@@ -165,61 +148,70 @@ export function RevenueTrendChart({ data: propData }) {
       </div>
 
       {/* Chart */}
-      <div style={{ width: "100%", height: "220px" }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="revenue"
-              name="Revenue"
-              stroke={T.primary}
-              strokeWidth={2.5}
-              dot={false}
-              activeDot={{ r: 5, fill: T.primary, stroke: "#fff", strokeWidth: 2 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="sales"
-              name="Sales"
-              stroke="#1a1a2e"
-              strokeWidth={2.5}
-              dot={false}
-              activeDot={{ r: 5, fill: "#1a1a2e", stroke: "#fff", strokeWidth: 2 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {!hasData ? (
+        <div style={{ height: "220px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.outlineSoft }}>monitoring</span>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.outline, margin: 0 }}>Belum ada data pembayaran / invoice pada periode ini.</p>
+        </div>
+      ) : (
+        <div style={{ width: "100%", height: "220px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
+                tickFormatter={formatRupiahCompact}
+                width={80}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                name="Payments"
+                stroke={T.primary}
+                strokeWidth={2.5}
+                dot={false}
+                activeDot={{ r: 5, fill: T.primary, stroke: "#fff", strokeWidth: 2 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                name="Invoices"
+                stroke="#1a1a2e"
+                strokeWidth={2.5}
+                dot={false}
+                activeDot={{ r: 5, fill: "#1a1a2e", stroke: "#fff", strokeWidth: 2 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WEEKLY PROFIT (Bar Chart)
+// WEEKLY PROFIT (Bar Chart) — Payments vs Invoices per day/week
 // ═══════════════════════════════════════════════════════════════
 export function WeeklyProfitChart({ data: propData }) {
   const [week, setWeek] = useState("This Week");
 
-  // propData now comes as { thisWeek: [...], lastWeek: [...], thisMonth: [...] }
   const profitData = propData || {};
   const dataMap = {
-    "This Week": profitData.thisWeek || generateWeeklyData(),
-    "Last Week": profitData.lastWeek || generateWeeklyData(),
-    "This Month": profitData.thisMonth || generateWeeklyData(),
+    "This Week": profitData.thisWeek || [],
+    "Last Week": profitData.lastWeek || [],
+    "This Month": profitData.thisMonth || [],
   };
   const data = dataMap[week] || dataMap["This Week"];
+  const hasData = Array.isArray(data) && data.some((d) => (d?.sales || 0) > 0 || (d?.revenue || 0) > 0);
 
   return (
     <div
@@ -249,7 +241,7 @@ export function WeeklyProfitChart({ data: propData }) {
             margin: 0,
           }}
         >
-          Profit this week
+          Payments Overview
         </h3>
 
         {/* Week selector */}
@@ -297,39 +289,48 @@ export function WeeklyProfitChart({ data: propData }) {
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.primary }} />
           <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 500, color: T.onSurfaceVariant }}>
-            Sales
+            Payments
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#1a1a2e" }} />
           <span style={{ fontFamily: FONT_LABEL, fontSize: "12px", fontWeight: 500, color: T.onSurfaceVariant }}>
-            Revenue
+            Invoices
           </span>
         </div>
       </div>
 
       {/* Chart */}
-      <div style={{ width: "100%", height: "200px" }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="sales" name="Sales" fill={T.primary} radius={[4, 4, 0, 0]} barSize={20} />
-            <Bar dataKey="revenue" name="Revenue" fill="#1a1a2e" radius={[4, 4, 0, 0]} barSize={20} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {!hasData ? (
+        <div style={{ height: "200px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "40px", color: T.outlineSoft }}>bar_chart</span>
+          <p style={{ fontFamily: FONT_BODY, fontSize: "13px", color: T.outline, margin: 0 }}>Belum ada data pada periode ini.</p>
+        </div>
+      ) : (
+        <div style={{ width: "100%", height: "200px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: T.outline, fontSize: 12, fontFamily: FONT_LABEL }}
+                tickFormatter={formatRupiahCompact}
+                width={80}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="sales" name="Payments" fill={T.primary} radius={[4, 4, 0, 0]} barSize={20} />
+              <Bar dataKey="revenue" name="Invoices" fill="#1a1a2e" radius={[4, 4, 0, 0]} barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
+import { ReportComments } from "@/components/projects/report-comments";
 
 // ── Helpers ─────────────────────────────────────────────
 function getProgressColor(val: number): string {
@@ -406,6 +407,11 @@ export function ReportDetail({
               })}
             </div>
           </div>
+        )}
+
+        {/* ── Report comments ── */}
+        {report?.id && report?.projectId && (
+          <ReportComments projectId={report.projectId} reportId={report.id} />
         )}
 
         {/* ── Actions ── */}

@@ -17,6 +17,7 @@ import { apiError } from "@/lib/rbac/guard";
 import { createInvoiceSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 import { logAudit, pickAuditFields } from "@/lib/audit-log";
+import { createNotification } from "@/lib/notify";
 
 /**
  * Auto-generate invoice number: INV + YYYYMMDD + 6-digit daily sequence
@@ -171,6 +172,21 @@ export const POST = withPermission("invoice:create", async (request, { user }) =
     });
 
     await logAudit(user.id, "CREATE", "Invoice", invoice.id, null, pickAuditFields(invoice, ['invoiceNo', 'amount', 'status', 'projectId']));
+
+    // Notify the project client about the new invoice
+    const clientInfo = await prisma.client.findUnique({
+      where: { id: project.clientId },
+      select: { userId: true },
+    });
+    if (clientInfo?.userId && clientInfo.userId !== user.id) {
+      await createNotification({
+        userId: clientInfo.userId,
+        type: "INVOICE",
+        title: "New Invoice Issued",
+        message: `Invoice ${invoiceNo} — ${invoice.project.name}`,
+        link: `/dashboard/invoices/${invoice.id}`,
+      });
+    }
 
     return apiCreated({ data: invoice });
   } catch (error) {

@@ -19,6 +19,7 @@ import { apiError } from "@/lib/rbac/guard";
 import { ForbiddenError } from "@/lib/rbac/guard";
 import { createTaskSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
+import { createNotification } from "@/lib/notify";
 
 // ==================== CONSTANTS ====================
 
@@ -244,6 +245,17 @@ export const POST = withAuth(
           metadata: { taskId: task.id, title },
         },
       });
+
+      // Notify the assignee about their new task
+      if (task.assigneeId && task.assigneeId !== user.id) {
+        await createNotification({
+          userId: task.assigneeId,
+          type: "TASK",
+          title: "New Task Assigned",
+          message: `"${task.title}" — ${project.name}`,
+          link: `/dashboard/projects/${projectId}`,
+        });
+      }
 
       return apiCreated(task);
     } catch (error) {
