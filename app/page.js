@@ -1,13 +1,14 @@
 import LandingNav from "@/components/landing/navbar";
 import Hero from "@/components/landing/hero";
 import {
-  StatsBar,
+
   About,
   Services,
   Projects,
-  WhyUs,
+  Platform,
+  HowItWorks,
 } from "@/components/landing/sections";
-import { ContactCta, Footer } from "@/components/landing/contact";
+import { ContactCta, FinalCta, Footer } from "@/components/landing/contact";
 import { T, SHADOWS } from "@/lib/design-tokens";
 
 export const metadata = {
@@ -83,9 +84,15 @@ export default function LandingPage() {
 
         /* ── Sections ─────────────────────────────────── */
         .ks-section { padding: 110px 0; scroll-margin-top: 72px; }
+        .ks-section:last-of-type { padding-bottom: 96px; }
         .ks-section-sand { background: var(--ks-sand); }
         .ks-section-dark { background: var(--ks-dark); }
         @media (max-width: 768px) { .ks-section { padding: 76px 0; } }
+
+        /* ── Section dividers & transitions ───────────── */
+        .ks-divider { display: flex; align-items: center; justify-content: center; padding: 32px 0 0; }
+        .ks-divider-line { width: 56px; height: 1px; background: var(--ks-border); }
+        .ks-divider-light .ks-divider-line { background: rgba(255,255,255,0.12); }
 
         /* ── Typography ───────────────────────────────── */
         .ks-eyebrow {
@@ -207,34 +214,6 @@ export default function LandingPage() {
         }
         .ks-hero-trust .material-symbols-outlined { color: var(--ks-gold); font-size: 18px; }
 
-        /* ── Stats bar ────────────────────────────────── */
-        .ks-stats { background: var(--ks-bg); padding: 0 0 110px; }
-        .ks-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .ks-stat-card {
-          background: var(--ks-card); border: 1px solid var(--ks-border);
-          border-radius: 20px; padding: 26px 24px; box-shadow: var(--ks-shadow-card);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .ks-stat-card:hover { transform: translateY(-3px); box-shadow: var(--ks-shadow-elevated); }
-        .ks-stat-icon {
-          width: 44px; height: 44px; border-radius: 12px;
-          background: var(--ks-sand); color: var(--ks-accent);
-          display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
-        }
-        .ks-stat-value {
-          font-family: 'Hanken Grotesk', sans-serif; font-size: 26px; font-weight: 800;
-          letter-spacing: -0.01em; line-height: 1.1; color: var(--ks-ink);
-        }
-        .ks-stat-label {
-          font-family: 'Geist', monospace; font-size: 12px; font-weight: 600;
-          letter-spacing: 0.08em; text-transform: uppercase; color: var(--ks-accent);
-          margin-top: 8px;
-        }
-        .ks-stat-note { font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; color: var(--ks-muted); margin-top: 8px; }
-        .ks-stats-foot {
-          text-align: center; margin-top: 30px;
-          font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ks-muted);
-        }
 
         /* ── About ────────────────────────────────────── */
         .ks-about-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 72px; align-items: center; }
@@ -263,23 +242,24 @@ export default function LandingPage() {
         }
         .ks-about-value .material-symbols-outlined { color: var(--ks-primary); font-size: 18px; }
 
-        /* ── Services ─────────────────────────────────── */
-        .ks-services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-        .ks-service-card {
-          background: var(--ks-card); border: 1px solid var(--ks-border);
-          border-radius: 22px; padding: 30px 28px; box-shadow: var(--ks-shadow-card);
-          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        /* ── Services (editorial grid) ──────────────── */
+        .ks-services-list {
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          column-gap: 48px; row-gap: 56px; margin-top: 60px;
         }
-        .ks-service-card:hover {
-          transform: translateY(-5px); box-shadow: var(--ks-shadow-elevated); border-color: #d9d1c0;
+        .ks-service-row {
+          border-top: 1px solid var(--ks-border); padding-top: 26px;
+          transition: background 0.2s ease;
         }
-        .ks-service-icon {
-          width: 50px; height: 50px; border-radius: 14px;
-          background: var(--ks-sand); color: var(--ks-accent);
-          display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+        .ks-service-num {
+          font-family: 'Hanken Grotesk', sans-serif;
+          font-size: 42px; font-weight: 800; letter-spacing: -0.02em;
+          line-height: 1; color: var(--ks-border);
+          transition: color 0.2s ease;
         }
-        .ks-service-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: var(--ks-ink); }
-        .ks-service-desc { font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; color: var(--ks-muted); margin: 10px 0 0; }
+        .ks-service-row:hover .ks-service-num { color: var(--ks-accent); }
+        .ks-service-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: var(--ks-ink); margin-top: 18px; }
+        .ks-service-desc { font-family: 'Inter', sans-serif; font-size: 14.5px; line-height: 1.6; color: var(--ks-muted); margin: 10px 0 0; max-width: 340px; }
 
         /* ── Projects ─────────────────────────────────── */
         .ks-projects-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -298,26 +278,41 @@ export default function LandingPage() {
         .ks-project-item:hover img { transform: scale(1.06); }
         .ks-project-overlay {
           position: absolute; inset: 0;
-          background: linear-gradient(180deg, rgba(15,12,8,0) 38%, rgba(15,12,8,0.72) 100%);
-          display: flex; align-items: flex-end; padding: 24px;
+          background: linear-gradient(180deg, rgba(15,12,8,0) 35%, rgba(15,12,8,0.82) 100%);
+          display: flex; align-items: flex-end; padding: 22px;
         }
+        .ks-project-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .ks-project-tag {
           font-family: 'Geist', monospace; font-size: 10.5px; font-weight: 600;
           letter-spacing: 0.12em; text-transform: uppercase; color: var(--ks-gold);
         }
+        .ks-project-chip {
+          font-family: 'Geist', monospace; font-size: 10px; font-weight: 600;
+          letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.9);
+          border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
+          padding: 4px 10px; background: rgba(15,12,8,0.4);
+        }
         .ks-project-label { font-family: 'Hanken Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: #ffffff; margin-top: 5px; }
+        .ks-project-meta {
+          font-family: 'Geist', monospace; font-size: 11px; font-weight: 500;
+          letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.62);
+          margin-top: 6px;
+        }
 
-        /* ── Why Us ───────────────────────────────────── */
+        /* ── Platform ─────────────────────────────────── */
         .ks-why-grid { display: grid; grid-template-columns: 1fr 0.85fr; gap: 72px; align-items: center; }
-        .ks-why-features { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 32px; margin-top: 40px; }
-        .ks-why-feature { display: flex; gap: 14px; align-items: flex-start; }
-        .ks-why-feature-icon {
-          width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+        .ks-platform-features { display: flex; flex-direction: column; margin-top: 44px; }
+        .ks-platform-feature {
+          display: flex; gap: 16px; align-items: center;
+          padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .ks-platform-feature-icon {
+          width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
           background: rgba(189,150,59,0.14); color: var(--ks-gold);
           display: flex; align-items: center; justify-content: center;
         }
-        .ks-why-feature-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #ffffff; }
-        .ks-why-feature-desc { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.66); margin: 6px 0 0; }
+        .ks-platform-feature-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; }
+        .ks-platform-feature-desc { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.62); margin: 3px 0 0; }
         .ks-why-frame {
           border-radius: 22px; overflow: hidden;
           border: 1px solid rgba(255,255,255,0.12); background: #100e0b;
@@ -331,9 +326,29 @@ export default function LandingPage() {
         .ks-why-frame-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(16,14,11,0), #100e0b); pointer-events: none; }
         .ks-why-caption { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 14px; text-align: center; }
 
+        /* ── How It Works ─────────────────────────────── */
+        .ks-workflow-steps {
+          position: relative; display: grid; grid-template-columns: repeat(5, 1fr);
+          gap: 28px; margin-top: 72px;
+        }
+        .ks-workflow-steps::before {
+          content: ""; position: absolute; top: 24px; left: 10%; right: 10%;
+          height: 1px; background: var(--ks-border);
+        }
+        .ks-workflow-step { position: relative; text-align: center; }
+        .ks-workflow-num {
+          width: 48px; height: 48px; margin: 0 auto; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--ks-card); border: 1px solid var(--ks-border);
+          color: var(--ks-accent); font-family: 'Geist', monospace;
+          font-size: 13px; font-weight: 600; position: relative; z-index: 1;
+        }
+        .ks-workflow-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: var(--ks-ink); margin-top: 20px; }
+        .ks-workflow-desc { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: var(--ks-muted); margin: 8px auto 0; max-width: 190px; }
+
         /* ── Contact ──────────────────────────────────── */
         .ks-contact { background: var(--ks-sand); scroll-margin-top: 72px; }
-        .ks-contact-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: center; }
+        .ks-contact-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 72px; align-items: start; }
         .ks-contact-title {
           font-family: 'Hanken Grotesk', sans-serif;
           font-size: clamp(30px, 4vw, 44px); font-weight: 800;
@@ -357,11 +372,36 @@ export default function LandingPage() {
         .ks-contact-detail-value { font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; color: var(--ks-ink); }
         a.ks-contact-detail-value { text-decoration: none; }
         a.ks-contact-detail-value:hover { color: var(--ks-primary); text-decoration: underline; }
-        .ks-contact-media { position: relative; }
-        .ks-contact-media img {
-          width: 100%; display: block; object-fit: cover;
-          aspect-ratio: 1.18 / 1; border-radius: 24px; box-shadow: var(--ks-shadow-modal);
+        /* ── Contact form ─────────────────────────────── */
+        .ks-form {
+          background: var(--ks-card); border: 1px solid var(--ks-border);
+          border-radius: 24px; padding: 36px; box-shadow: var(--ks-shadow-elevated);
         }
+        .ks-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .ks-form-field { display: flex; flex-direction: column; gap: 8px; }
+        .ks-form-field--full { grid-column: 1 / -1; }
+        .ks-form-label {
+          font-family: 'Geist', monospace; font-size: 11px; font-weight: 600;
+          letter-spacing: 0.12em; text-transform: uppercase; color: var(--ks-muted);
+        }
+        .ks-form-input, .ks-form-select, .ks-form-textarea {
+          width: 100%; font-family: 'Inter', sans-serif; font-size: 15px; color: var(--ks-ink);
+          background: #ffffff; border: 1px solid var(--ks-border); border-radius: 12px;
+          padding: 13px 16px; transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .ks-form-input::placeholder, .ks-form-textarea::placeholder { color: #a49c8d; }
+        .ks-form-input:focus, .ks-form-select:focus, .ks-form-textarea:focus {
+          outline: none; border-color: var(--ks-primary);
+          box-shadow: 0 0 0 3px rgba(0,79,53,0.12);
+        }
+        .ks-form-textarea { min-height: 120px; resize: vertical; }
+        .ks-form-submit { margin-top: 24px; width: 100%; }
+
+        /* ── Final CTA ────────────────────────────────── */
+        .ks-final-cta { background: var(--ks-dark); text-align: center; }
+        .ks-final-cta .ks-eyebrow { justify-content: center; }
+        .ks-final-cta .ks-eyebrow::before { display: none; }
+        .ks-final-cta-cta { margin-top: 36px; }
 
         /* ── Footer ───────────────────────────────────── */
         .ks-footer { background: var(--ks-dark-2); color: rgba(255,255,255,0.78); }
@@ -401,28 +441,41 @@ export default function LandingPage() {
           .ks-about-grid { grid-template-columns: 1fr; gap: 48px; }
           .ks-why-grid { grid-template-columns: 1fr; gap: 56px; }
           .ks-contact-grid { grid-template-columns: 1fr; gap: 48px; }
-          .ks-contact-media { max-width: 560px; }
           .ks-why-visual { max-width: 560px; }
-          .ks-services-grid { grid-template-columns: repeat(2, 1fr); }
+          .ks-projects-grid { columns: 2; }
+          .ks-services-list { grid-template-columns: repeat(2, 1fr); column-gap: 40px; }
+          .ks-workflow-steps { gap: 18px; margin-top: 60px; }
         }
         @media (max-width: 768px) {
           .ks-nav-cta { display: none; }
           .ks-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
           .ks-about-values { grid-template-columns: 1fr; }
-          .ks-why-features { grid-template-columns: 1fr; gap: 22px; }
-          .ks-projects-grid { columns: 2; }
           .ks-footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
           .ks-footer-brand { grid-column: 1 / -1; }
+          .ks-workflow-steps {
+            grid-template-columns: 1fr; gap: 0; margin-top: 48px;
+          }
+          .ks-workflow-steps::before {
+            top: 0; bottom: 0; left: 24px; right: auto; width: 1px; height: auto;
+          }
+          .ks-workflow-step {
+            display: grid; grid-template-columns: 48px 1fr; gap: 18px;
+            text-align: left; padding: 18px 0; align-items: start;
+          }
+          .ks-workflow-num { margin: 0; }
+          .ks-workflow-title { margin-top: 2px; }
+          .ks-workflow-desc { max-width: none; margin-left: 0; margin-right: 0; }
         }
         @media (max-width: 640px) {
           .ks-hero { padding: 150px 0 96px; min-height: auto; }
           .ks-hero-title { font-size: clamp(36px, 10.5vw, 48px); }
           .ks-hero-sub { font-size: 16px; }
           .ks-section { padding: 64px 0; }
-          .ks-stats { padding: 0 0 64px; }
-          .ks-services-grid { grid-template-columns: 1fr; }
+          .ks-stats { padding: 40px 0 64px; }
+          .ks-services-list { grid-template-columns: 1fr; row-gap: 44px; }
           .ks-projects-grid { columns: 1; }
           .ks-contact-details { flex-direction: column; align-items: stretch; }
+          .ks-form-grid { grid-template-columns: 1fr; }
           .ks-footer-grid { grid-template-columns: 1fr; }
           .ks-brand-name { font-size: 15px; }
         }
@@ -432,12 +485,16 @@ export default function LandingPage() {
         <LandingNav />
         <main>
           <Hero />
-          <StatsBar />
           <About />
           <Services />
           <Projects />
-          <WhyUs />
+          <Platform />
+          <HowItWorks />
+            <div className="ks-divider ks-divider-light">
+            <div className="ks-divider-line" />
+          </div>
           <ContactCta />
+          <FinalCta />
         </main>
         <Footer />
       </div>

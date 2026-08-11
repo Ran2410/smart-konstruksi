@@ -1,63 +1,5 @@
 // Static marketing sections — no data fetching, no client state.
 
-// ── Stats bar ───────────────────────────────────────────────────────────────
-// Honest, verifiable facts about the company's in-house management system.
-// No fabricated "100+ projects" style numbers — track-record figures are left
-// for the company to confirm.
-const STATS = [
-  {
-    icon: "workspace_premium",
-    value: "12",
-    label: "Core Modules",
-    note: "Planning, budgeting, and operations under one roof",
-  },
-  {
-    icon: "groups",
-    value: "16+",
-    label: "Team Roles",
-    note: "Owners, managers, site teams, and clients",
-  },
-  {
-    icon: "bar_chart",
-    value: "Real-time",
-    label: "Reporting",
-    note: "Budgets, stock, and progress, always current",
-  },
-  {
-    icon: "domain",
-    value: "Multi-branch",
-    label: "Support",
-    note: "Projects managed across locations",
-  },
-];
-
-export function StatsBar() {
-  return (
-    <section className="ks-stats" aria-label="Company capabilities">
-      <div className="ks-container">
-        <div className="ks-stats-grid">
-          {STATS.map((s) => (
-            <div className="ks-stat-card" key={s.label}>
-              <div className="ks-stat-icon">
-                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
-                  {s.icon}
-                </span>
-              </div>
-              <div className="ks-stat-value">{s.value}</div>
-              <div className="ks-stat-label">{s.label}</div>
-              <p className="ks-stat-note">{s.note}</p>
-            </div>
-          ))}
-        </div>
-        <p className="ks-stats-foot">
-          * Capabilities of Smart Konstruksi, our in-house project-management
-          system. Company track-record figures to be confirmed.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 // ── About / Who We Are ──────────────────────────────────────────────────────
 const ABOUT_VALUES = [
   "Safety-first site management",
@@ -82,9 +24,9 @@ export function About() {
               </span>
             </span>
             <span>
-              <span className="ks-about-badge-title">Trusted by clients</span>
+              <span className="ks-about-badge-title">Quality first</span>
               <br />
-              <span className="ks-about-badge-sub">Committed to quality delivery</span>
+              <span className="ks-about-badge-sub">Discipline on every phase</span>
             </span>
           </div>
         </div>
@@ -95,15 +37,15 @@ export function About() {
 
           <p className="ks-sub" style={{ marginTop: 24 }}>
             PT. Kita Satu Intersolusi (KSI) is a construction services company
-            focused on doing quality work, on schedule and on budget. From site
-            development to interior fit-out, we take responsibility for every
-            phase — planning, execution, and handover.
+            built on experience and discipline. From site development to
+            interior fit-out, we take responsibility for every phase —
+            planning, execution, and handover — so quality, transparency, and
+            accountability are never afterthoughts.
           </p>
           <p className="ks-sub" style={{ marginTop: 16 }}>
-            We believe great construction is built on transparency. That is why
-            every KSI project runs on our own management system, Smart
-            Konstruksi — budgets, materials, daily reports, and invoices tracked
-            in real time and shared openly with our clients.
+            Every KSI project runs on Smart Konstruksi, our in-house ERP —
+            budgets, materials, reports, and invoices tracked in one place and
+            shared openly with clients.
           </p>
 
           <div className="ks-about-values">
@@ -124,34 +66,28 @@ export function About() {
 // Generic, plausible service list — the client will confirm the real scope.
 const SERVICES = [
   {
-    icon: "construction",
     title: "General Construction",
-    desc: "New buildings and civil works managed end-to-end, from site preparation to structural completion.",
+    desc: "New buildings and civil works, managed end-to-end from site preparation to structural completion.",
   },
   {
-    icon: "handyman",
     title: "Renovation & Remodeling",
-    desc: "Refresh and rework existing spaces with minimal disruption to your operations.",
+    desc: "Refreshing and reworking existing spaces with minimal disruption to your operations.",
   },
   {
-    icon: "engineering",
     title: "Engineering & Consultation",
-    desc: "Feasibility studies, structural consultation, and value-engineering advice before you commit.",
+    desc: "Feasibility studies, structural advice, and value engineering before you commit.",
   },
   {
-    icon: "architecture",
     title: "Project Management",
     desc: "Schedule, cost, and vendor coordination — one accountable team across every phase.",
   },
   {
-    icon: "hardware",
     title: "Fit-Out & Interior Works",
     desc: "Turnkey interior fit-out for offices, retail, and hospitality spaces.",
   },
   {
-    icon: "roofing",
     title: "Maintenance & Aftercare",
-    desc: "Planned maintenance and warranty care that keeps your asset performing long after handover.",
+    desc: "Planned maintenance and warranty care that protects your asset long after handover.",
   },
 ];
 
@@ -168,14 +104,12 @@ export function Services() {
           </p>
         </div>
 
-        <div className="ks-services-grid">
-          {SERVICES.map((s) => (
-            <div className="ks-service-card" key={s.title}>
-              <div className="ks-service-icon">
-                <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
-                  {s.icon}
-                </span>
-              </div>
+        <div className="ks-services-list">
+          {SERVICES.map((s, i) => (
+            <div className="ks-service-row" key={s.title}>
+              <span className="ks-service-num">
+                {String(i + 1).padStart(2, "0")}
+              </span>
               <h3 className="ks-service-title">{s.title}</h3>
               <p className="ks-service-desc">{s.desc}</p>
             </div>
@@ -191,23 +125,39 @@ export function Services() {
 const PROJECT_ITEMS = [
   {
     src: "/images/landing/hero-crane.jpg",
-    tag: "Sample",
-    label: "Commercial Construction",
+    alt: "Tower crane above a commercial construction site",
+    name: "Commercial Construction",
+    meta: "Commercial · Jakarta",
   },
   {
     src: "/images/landing/project-building.jpg",
-    tag: "Sample",
-    label: "Mid-Rise Development",
+    alt: "Mid-rise building under construction",
+    name: "Mid-Rise Development",
+    meta: "Residential · Jakarta",
   },
   {
     src: "/images/landing/hero-construction-site.jpg",
-    tag: "Sample",
-    label: "Site Development",
+    alt: "Workers on an active construction site",
+    name: "Site Development",
+    meta: "Infrastructure · Jakarta",
   },
   {
     src: "/images/landing/hero-engineer.jpg",
-    tag: "Sample",
-    label: "Field Engineering",
+    alt: "Construction engineer reviewing plans on site",
+    name: "Field Engineering",
+    meta: "Engineering · Jakarta",
+  },
+  {
+    src: "/images/landing/project-interior.jpg",
+    alt: "Finished interior space with a modern fit-out",
+    name: "Fit-Out & Interior",
+    meta: "Interior · Jakarta",
+  },
+  {
+    src: "/images/landing/project-architecture.jpg",
+    alt: "Modern architectural design detail",
+    name: "Modern Architecture",
+    meta: "Architecture · Jakarta",
   },
 ];
 
@@ -222,19 +172,20 @@ export function Projects() {
               A look at how we build
             </h2>
           </div>
-          <p className="ks-projects-note">
-            Sample photos — real project galleries to be added
-          </p>
         </div>
 
         <div className="ks-projects-grid">
           {PROJECT_ITEMS.map((p) => (
-            <figure className="ks-project-item" key={p.label}>
-              <img src={p.src} alt={p.label} loading="lazy" />
+            <figure className="ks-project-item" key={p.name}>
+              <img src={p.src} alt={p.alt} loading="lazy" />
               <figcaption className="ks-project-overlay">
                 <div>
-                  <div className="ks-project-tag">{p.tag}</div>
-                  <div className="ks-project-label">{p.label}</div>
+                  <div className="ks-project-head-row">
+                    <span className="ks-project-tag">Sample</span>
+                    <span className="ks-project-chip">Reference</span>
+                  </div>
+                  <div className="ks-project-label">{p.name}</div>
+                  <div className="ks-project-meta">{p.meta}</div>
                 </div>
               </figcaption>
             </figure>
@@ -245,58 +196,58 @@ export function Projects() {
   );
 }
 
-// ── Why Us / The Smart Konstruksi difference ────────────────────────────────
-// Framed as OUR operational discipline — the in-house system is the differentiator.
-const WHY_FEATURES = [
+// ── Platform / Smart Konstruksi ─────────────────────────────────────────────
+// The product section: our in-house ERP, the transparency differentiator.
+const PLATFORM_FEATURES = [
   {
     icon: "request_quote",
-    title: "Budget & RAB Control",
-    desc: "Detailed budgets (RAB) with approval workflows, so every line item is agreed before work begins.",
+    title: "Budget & RAB",
+    desc: "Itemized budgets with approval workflows — every line agreed before work begins.",
   },
   {
-    icon: "hardware",
-    title: "Material & Stock Tracking",
-    desc: "Real-time stock visibility and low-stock alerts keep the site moving, not stalled.",
+    icon: "inventory_2",
+    title: "Materials & Stock",
+    desc: "Live stock visibility and low-stock alerts keep the site moving, not stalled.",
   },
   {
-    icon: "receipt_long",
+    icon: "payments",
     title: "Finance & Invoices",
-    desc: "Income, expenses, and invoicing tracked per project — clients see exactly what they pay for.",
+    desc: "Per-project income, expenses, and invoicing clients can verify in real time.",
   },
   {
-    icon: "description",
-    title: "Daily Reports",
-    desc: "Structured daily reports keep owners, managers, and clients aligned every single day.",
+    icon: "monitoring",
+    title: "Progress & Reports",
+    desc: "Structured daily reports and progress shared openly, not lost in email threads.",
   },
 ];
 
-export function WhyUs() {
+export function Platform() {
   return (
-    <section className="ks-section ks-section-dark" id="why">
+    <section className="ks-section ks-section-dark" id="platform">
       <div className="ks-container ks-why-grid">
         <div>
-          <span className="ks-eyebrow ks-eyebrow-gold">How We Work</span>
+          <span className="ks-eyebrow ks-eyebrow-gold">The Platform</span>
           <h2 className="ks-h2 ks-h2-light">
-            Every project tracked. Every rupiah accounted for.
+            One system. Every project under control.
           </h2>
           <p className="ks-sub ks-sub-light">
-            We built Smart Konstruksi — our in-house project-management system —
-            so our team works with a discipline most contractors can only claim.
-            Every budget line, material order, invoice, and daily report lives in
-            one place, and our clients see it in real time.
+            Smart Konstruksi is the in-house ERP that runs KSI&apos;s projects —
+            RAB &amp; budgets, tasks, materials, progress, reports, invoices,
+            and documents — one source of truth, shared with clients in real
+            time.
           </p>
 
-          <div className="ks-why-features">
-            {WHY_FEATURES.map((f) => (
-              <div className="ks-why-feature" key={f.title}>
-                <span className="ks-why-feature-icon">
+          <div className="ks-platform-features">
+            {PLATFORM_FEATURES.map((f) => (
+              <div className="ks-platform-feature" key={f.title}>
+                <span className="ks-platform-feature-icon">
                   <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
                     {f.icon}
                   </span>
                 </span>
                 <div>
-                  <div className="ks-why-feature-title">{f.title}</div>
-                  <p className="ks-why-feature-desc">{f.desc}</p>
+                  <div className="ks-platform-feature-title">{f.title}</div>
+                  <p className="ks-platform-feature-desc">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -321,8 +272,64 @@ export function WhyUs() {
             </div>
           </div>
           <p className="ks-why-caption">
-            Smart Konstruksi — our in-house project-management system
+            Smart Konstruksi — one system for every project
           </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── How It Works ────────────────────────────────────────────────────────────
+// A real construction process, not an app onboarding flow.
+const WORKFLOW_STEPS = [
+  {
+    title: "Plan",
+    desc: "Site surveys, scope definition, and design alignment before anything breaks ground.",
+  },
+  {
+    title: "Budget & RAB",
+    desc: "Itemized budgets and RAB approval — every cost agreed up front.",
+  },
+  {
+    title: "Execute",
+    desc: "Construction managed end-to-end, with crews and materials scheduled.",
+  },
+  {
+    title: "Track Progress",
+    desc: "Daily reports and real-time progress visible to you, not just our team.",
+  },
+  {
+    title: "Report & Handover",
+    desc: "Documented completion, final reports, and aftercare that continues.",
+  },
+];
+
+export function HowItWorks() {
+  return (
+    <section className="ks-section ks-section-sand" id="workflow">
+      <div className="ks-container">
+        <div className="ks-section-head">
+          <span className="ks-eyebrow">How It Works</span>
+          <h2 className="ks-h2">A clear process, from plan to handover</h2>
+          <p className="ks-sub">
+            Five steps keep every project disciplined — and every client in the
+            loop from the first sketch to the final walkthrough.
+          </p>
+        </div>
+
+        <div className="ks-workflow-steps">
+          {WORKFLOW_STEPS.map((step, i) => (
+            <div className="ks-workflow-step" key={step.title}>
+              <span className="ks-workflow-num">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="ks-workflow-title">{step.title}</h3>
+                <p className="ks-workflow-desc">{step.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

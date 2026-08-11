@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ContactForm from "./contact-form";
 
 const CONTACT_DETAILS = [
   {
@@ -45,9 +45,9 @@ export function ContactCta() {
                 mail
               </span>
             </a>
-            <Link href="/login" className="ks-btn ks-btn-ghost ks-btn-lg">
-              Sign In
-            </Link>
+            <a href="#contact-form" className="ks-btn ks-btn-ghost ks-btn-lg">
+              Request a Consultation
+            </a>
           </div>
 
           <div className="ks-contact-details">
@@ -74,12 +74,35 @@ export function ContactCta() {
           </div>
         </div>
 
-        <div className="ks-contact-media">
-          <img
-            src="/images/landing/project-handshake.jpg"
-            alt="A handshake sealing a construction partnership"
-            loading="lazy"
-          />
+        <ContactForm />
+      </div>
+    </section>
+  );
+}
+
+// ── Final CTA band ───────────────────────────────────────────────────────────
+export function FinalCta() {
+  return (
+    <section className="ks-section ks-final-cta">
+      <div className="ks-container">
+        <span className="ks-eyebrow ks-eyebrow-gold">Smart Konstruksi</span>
+        <h2
+          className="ks-h2 ks-h2-light"
+          style={{ maxWidth: 620, margin: "18px auto 0" }}
+        >
+          Ready to build with better control?
+        </h2>
+        <p
+          className="ks-sub ks-sub-light"
+          style={{ maxWidth: 560, margin: "20px auto 0" }}
+        >
+          From planning and budgeting to execution and reporting, keep your
+          construction project under control with Smart Konstruksi.
+        </p>
+        <div className="ks-final-cta-cta">
+          <a href="#contact" className="ks-btn ks-btn-white ks-btn-lg">
+            Request a Consultation
+          </a>
         </div>
       </div>
     </section>
@@ -101,7 +124,8 @@ const FOOTER_COLS = [
     links: [
       { label: "About Us", href: "#about" },
       { label: "Our Work", href: "#projects" },
-      { label: "How We Work", href: "#why" },
+      { label: "Platform", href: "#platform" },
+      { label: "How It Works", href: "#workflow" },
       { label: "Contact", href: "#contact" },
     ],
   },

@@ -7,7 +7,7 @@ import { FONT_LABEL, SHADOWS } from "@/lib/design-tokens";
 const LINKS = [
   { href: "#services", label: "Services" },
   { href: "#projects", label: "Projects" },
-  { href: "#about", label: "About" },
+  { href: "#platform", label: "Platform" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -113,7 +113,7 @@ export default function MobileMenu({ scrolled = false }) {
               onClick={() => setOpen(false)}
               className="ks-btn ks-btn-primary"
             >
-              Start a Project
+              Contact Us
             </a>
           </div>
         </>

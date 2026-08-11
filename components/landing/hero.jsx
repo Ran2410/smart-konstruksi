@@ -16,14 +16,14 @@ export default function Hero() {
         </span>
 
         <h1 className="ks-hero-title ks-anim" style={{ animationDelay: "0.06s" }}>
-          We build structures that stand the test of time.
+          Construction projects, fully under control.
         </h1>
 
         <p className="ks-hero-sub ks-anim" style={{ animationDelay: "0.12s" }}>
-          A construction services company built on quality, transparency, and
-          discipline. From site preparation to final handover, we deliver
-          projects on schedule and on budget — with reporting you can actually
-          see.
+          PT. Kita Satu Intersolusi is a construction services company backed
+          by Smart Konstruksi — our in-house ERP for RAB budgets, progress, and
+          reporting. You see the numbers in real time, from site prep to
+          handover.
         </p>
 
         <div
@@ -36,15 +36,14 @@ export default function Hero() {
               arrow_forward
             </span>
           </a>
-          <a href="#projects" className="ks-btn ks-btn-ghost-white ks-btn-lg">
-            View Our Work
+          <a href="#platform" className="ks-btn ks-btn-ghost-white ks-btn-lg">
+            View Platform
           </a>
         </div>
 
         <p className="ks-hero-trust ks-anim" style={{ animationDelay: "0.24s" }}>
           <span className="material-symbols-outlined">check_circle</span>
-          Transparent project reporting — budgets, progress, and invoices,
-          always visible
+          Real-time reporting — budgets, progress, and invoices, always visible
         </p>
       </div>
     </section>
