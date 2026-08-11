@@ -11,9 +11,9 @@ const LINKS = [
   { href: "#contact", label: "Contact" },
 ];
 
-export default function MobileMenu({ scrolled = false }) {
+export default function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const iconColor = scrolled ? "var(--ks-ink)" : "#ffffff";
+  const iconColor = "#ffffff";
 
   return (
     <div className="ks-mobile-menu" style={{ position: "relative" }}>
@@ -29,14 +29,10 @@ export default function MobileMenu({ scrolled = false }) {
           width: 40,
           height: 40,
           borderRadius: 10,
-          background: open
-            ? scrolled
-              ? "var(--ks-sand)"
-              : "rgba(255,255,255,0.16)"
-            : "transparent",
-          border: scrolled
-            ? `1px solid ${open ? "var(--ks-ink)" : "var(--ks-border)"}`
-            : `1px solid ${open ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.4)"}`,
+          background: open ? "rgba(255,255,255,0.16)" : "transparent",
+          border: `1px solid ${
+            open ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.4)"
+          }`,
           cursor: "pointer",
           color: iconColor,
           transition: "all 0.15s ease",

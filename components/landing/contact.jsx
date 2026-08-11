@@ -1,28 +1,31 @@
 import ContactForm from "./contact-form";
 
-const CONTACT_DETAILS = [
-  {
-    icon: "mail",
-    label: "Email",
-    value: "info@ksi.co.id",
-    href: "mailto:info@ksi.co.id",
-  },
-  {
-    icon: "call",
-    label: "Phone",
-    // Placeholder on purpose — the real number is to be confirmed by the company.
-    value: "+62 21 0000 0000",
-    href: null,
-  },
-  {
-    icon: "domain",
-    label: "Company",
-    value: "PT. Kita Satu Intersolusi",
-    href: null,
-  },
-];
+export function ContactCta({ profile }) {
+  const companyName = profile?.companyName || "PT. Kita Satu Intersolusi";
+  const email = profile?.email || "info@ksi.co.id";
+  const phone = profile?.phone || "+62 21 0000 0000";
 
-export function ContactCta() {
+  const CONTACT_DETAILS = [
+    {
+      icon: "mail",
+      label: "Email",
+      value: email,
+      href: email ? `mailto:${email}` : null,
+    },
+    {
+      icon: "call",
+      label: "Phone",
+      value: phone || "+62 21 0000 0000",
+      href: null,
+    },
+    {
+      icon: "domain",
+      label: "Company",
+      value: companyName,
+      href: null,
+    },
+  ];
+
   return (
     <section className="ks-section ks-contact" id="contact">
       <div className="ks-container ks-contact-grid">
@@ -37,7 +40,7 @@ export function ContactCta() {
 
           <div className="ks-contact-cta">
             <a
-              href="mailto:info@ksi.co.id"
+              href={email ? `mailto:${email}` : "#contact"}
               className="ks-btn ks-btn-primary ks-btn-lg"
             >
               Contact Us
@@ -74,7 +77,7 @@ export function ContactCta() {
           </div>
         </div>
 
-        <ContactForm />
+        <ContactForm email={email} />
       </div>
     </section>
   );
@@ -139,7 +142,13 @@ const FOOTER_COLS = [
   },
 ];
 
-export function Footer() {
+export function Footer({ profile }) {
+  const companyName = profile?.companyName || "PT. Kita Satu Intersolusi";
+  const tagline =
+    profile?.tagline ||
+    "Quality construction, delivered with transparency and discipline — on schedule, on budget.";
+  const shortName = companyName.replace(/^PT\.?\s+/i, "");
+
   return (
     <footer className="ks-footer">
       <div className="ks-container" style={{ paddingTop: 72, paddingBottom: 40 }}>
@@ -148,11 +157,8 @@ export function Footer() {
             <span className="ks-brand-mark">
               <img src="/smartkonstrunksi.svg" alt="" width={40} height={40} />
             </span>
-            <span className="ks-footer-name">Kita Satu Intersolusi</span>
-            <p className="ks-footer-tagline">
-              Quality construction, delivered with transparency and discipline —
-              on schedule, on budget.
-            </p>
+            <span className="ks-footer-name">{shortName}</span>
+            <p className="ks-footer-tagline">{tagline}</p>
           </div>
 
           {FOOTER_COLS.map((col) => (
@@ -172,7 +178,7 @@ export function Footer() {
         </div>
 
         <div className="ks-footer-bottom">
-          <span>© 2026 PT. Kita Satu Intersolusi. All rights reserved.</span>
+          <span>© 2026 {companyName}. All rights reserved.</span>
           <span>Smart Konstruksi — in-house project management</span>
         </div>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
 // UI-only contact form. On submit it opens the visitor's mail client with a
-// pre-filled message to info@ksi.co.id — no backend, no fake "sent" state.
+// pre-filled message to the company email (from CompanyProfile settings) —
+// no backend, no fake "sent" state.
 const PROJECT_TYPES = [
   "General Construction",
   "Renovation & Remodeling",
@@ -12,14 +13,14 @@ const PROJECT_TYPES = [
   "Other",
 ];
 
-export default function ContactForm() {
+export default function ContactForm({ email = "info@ksi.co.id" }) {
   function handleSubmit(e) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
     const fullName = String(data.get("fullName") || "").trim();
     const company = String(data.get("company") || "").trim();
-    const email = String(data.get("email") || "").trim();
+    const formEmail = String(data.get("email") || "").trim();
     const phone = String(data.get("phone") || "").trim();
     const projectType = String(data.get("projectType") || "").trim();
     const message = String(data.get("message") || "").trim();
@@ -28,7 +29,7 @@ export default function ContactForm() {
     const body = [
       `Name: ${fullName}`,
       `Company: ${company || "—"}`,
-      `Email: ${email}`,
+      `Email: ${formEmail}`,
       `Phone: ${phone || "—"}`,
       `Project type: ${projectType}`,
       "",
@@ -36,7 +37,7 @@ export default function ContactForm() {
       message,
     ].join("\n");
 
-    window.location.href = `mailto:info@ksi.co.id?subject=${encodeURIComponent(
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
   }

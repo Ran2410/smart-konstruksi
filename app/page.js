@@ -1,7 +1,7 @@
 import LandingNav from "@/components/landing/navbar";
 import Hero from "@/components/landing/hero";
 import {
-
+  StatsBar,
   About,
   Services,
   Projects,
@@ -10,6 +10,36 @@ import {
 } from "@/components/landing/sections";
 import { ContactCta, FinalCta, Footer } from "@/components/landing/contact";
 import { T, SHADOWS } from "@/lib/design-tokens";
+import { prisma } from "@/lib/prisma";
+
+// Revalidate the landing page periodically so company-profile changes made
+// in /dashboard/settings appear without a full redeploy.
+export const revalidate = 60;
+
+// Shown only until the CompanyProfile row exists (or DB is unreachable) —
+// the values are also what prisma seeds as schema defaults.
+const PROFILE_FALLBACK = {
+  companyName: "PT. Kita Satu Intersolusi",
+  tagline:
+    "Quality construction, delivered with transparency and discipline — on schedule, on budget.",
+  address: null,
+  phone: "+62 21 0000 0000",
+  email: "info@ksi.co.id",
+  website: null,
+  logoUrl: null,
+};
+
+async function getCompanyProfile() {
+  try {
+    const profile = await prisma.companyProfile.findUnique({
+      where: { id: "company" },
+    });
+    return { ...PROFILE_FALLBACK, ...(profile ?? {}) };
+  } catch {
+    // Never let a DB hiccup take down the public landing page.
+    return PROFILE_FALLBACK;
+  }
+}
 
 export const metadata = {
   title: "PT. Kita Satu Intersolusi — Construction Services",
@@ -22,22 +52,24 @@ export const metadata = {
 const THEME_VARS = {
   "--ks-primary": T.primary,
   "--ks-primary-hover": T.primaryHover,
-  "--ks-ink": "#1B1813", // warm near-black headings
-  "--ks-muted": "#5F5A52", // warm gray body text
-  "--ks-bg": "#F7F5F0", // warm off-white page background
-  "--ks-card": "#FFFFFF", // card surface
-  "--ks-border": "#E9E4DA", // warm border
-  "--ks-sand": "#EFEBE2", // section alt background
-  "--ks-dark": "#1B1813", // dark section background
-  "--ks-dark-2": "#131110", // footer background
-  "--ks-accent": "#B3522F", // burnt orange
-  "--ks-gold": "#BD963B", // gold (sparingly)
+  "--ks-ink": T.onSurface, // #0B1C30 navy — dashboard text
+  "--ks-muted": T.onSurfaceMuted, // #6F7A72 — dashboard muted
+  "--ks-bg": T.surfaceContainerLow, // #EFF4FF — dashboard background
+  "--ks-card": T.surfaceCard, // #FFFFFF
+  "--ks-border": T.outlineVariant, // #DCE9FF — dashboard border
+  "--ks-sand": T.surfaceContainer, // #E5EEFF — section alt background
+  "--ks-dark": T.onSurface, // #0B1C30 — dark section background
+  "--ks-dark-2": "#0A1520", // footer background (navy, darker)
+  "--ks-accent": T.primary, // #004F35 green — dashboard primary
+  "--ks-gold": T.tertiaryFixed, // #D4E8DC sage — dark-section accent
   "--ks-shadow-card": SHADOWS.card,
   "--ks-shadow-elevated": SHADOWS.elevated,
   "--ks-shadow-modal": SHADOWS.modal,
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const profile = await getCompanyProfile();
+
   return (
     <>
       <style>{`
@@ -144,7 +176,7 @@ export default function LandingPage() {
           background: #ffffff; color: var(--ks-ink); border-color: #ffffff;
           box-shadow: 0 6px 20px rgba(0,0,0,0.18);
         }
-        .ks-btn-white:hover { background: #f5f1e8; transform: translateY(-1px); }
+        .ks-btn-white:hover { background: var(--ks-sand); transform: translateY(-1px); }
         .ks-btn-ghost-white { background: transparent; color: #ffffff; border-color: rgba(255,255,255,0.55); }
         .ks-btn-ghost-white:hover { background: rgba(255,255,255,0.1); border-color: #ffffff; }
         .ks-btn-ghost { background: transparent; color: var(--ks-ink); border-color: var(--ks-border); }
@@ -152,8 +184,8 @@ export default function LandingPage() {
 
         /* ── Navbar ───────────────────────────────────── */
         .ks-nav {
-          position: sticky; top: 0; z-index: 50;
-          height: 76px; transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+          position: absolute; top: 0; left: 0; right: 0; z-index: 50;
+          height: 76px;
         }
         .ks-nav-inner { display: flex; align-items: center; justify-content: space-between; height: 100%; }
         .ks-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
@@ -182,8 +214,6 @@ export default function LandingPage() {
           position: relative; min-height: min(92vh, 860px);
           display: flex; align-items: center;
           padding: 160px 0 130px; overflow: hidden;
-          /* Pull the hero up under the transparent sticky navbar */
-          margin-top: -76px;
         }
         .ks-hero-media { position: absolute; inset: 0; }
         .ks-hero-media img {
@@ -193,8 +223,8 @@ export default function LandingPage() {
         .ks-hero-overlay {
           position: absolute; inset: 0;
           background:
-            linear-gradient(75deg, rgba(15,12,8,0.88) 0%, rgba(15,12,8,0.55) 45%, rgba(15,12,8,0.18) 78%),
-            linear-gradient(180deg, rgba(15,12,8,0.5) 0%, rgba(15,12,8,0) 32%, rgba(15,12,8,0.72) 100%);
+            linear-gradient(75deg, rgba(11,28,48,0.88) 0%, rgba(11,28,48,0.55) 45%, rgba(11,28,48,0.18) 78%),
+            linear-gradient(180deg, rgba(11,28,48,0.5) 0%, rgba(11,28,48,0) 32%, rgba(11,28,48,0.72) 100%);
         }
         .ks-hero-inner { position: relative; z-index: 1; max-width: 680px; }
         .ks-hero-title {
@@ -254,10 +284,8 @@ export default function LandingPage() {
         .ks-service-num {
           font-family: 'Hanken Grotesk', sans-serif;
           font-size: 42px; font-weight: 800; letter-spacing: -0.02em;
-          line-height: 1; color: var(--ks-border);
-          transition: color 0.2s ease;
+          line-height: 1; color: var(--ks-primary);
         }
-        .ks-service-row:hover .ks-service-num { color: var(--ks-accent); }
         .ks-service-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: var(--ks-ink); margin-top: 18px; }
         .ks-service-desc { font-family: 'Inter', sans-serif; font-size: 14.5px; line-height: 1.6; color: var(--ks-muted); margin: 10px 0 0; max-width: 340px; }
 
@@ -278,7 +306,7 @@ export default function LandingPage() {
         .ks-project-item:hover img { transform: scale(1.06); }
         .ks-project-overlay {
           position: absolute; inset: 0;
-          background: linear-gradient(180deg, rgba(15,12,8,0) 35%, rgba(15,12,8,0.82) 100%);
+          background: linear-gradient(180deg, rgba(11,28,48,0) 35%, rgba(11,28,48,0.82) 100%);
           display: flex; align-items: flex-end; padding: 22px;
         }
         .ks-project-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -290,7 +318,7 @@ export default function LandingPage() {
           font-family: 'Geist', monospace; font-size: 10px; font-weight: 600;
           letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.9);
           border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
-          padding: 4px 10px; background: rgba(15,12,8,0.4);
+          padding: 4px 10px; background: rgba(11,28,48,0.4);
         }
         .ks-project-label { font-family: 'Hanken Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: #ffffff; margin-top: 5px; }
         .ks-project-meta {
@@ -308,22 +336,22 @@ export default function LandingPage() {
         }
         .ks-platform-feature-icon {
           width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-          background: rgba(189,150,59,0.14); color: var(--ks-gold);
+          background: rgba(212,232,220,0.16); color: var(--ks-gold);
           display: flex; align-items: center; justify-content: center;
         }
         .ks-platform-feature-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; }
         .ks-platform-feature-desc { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.62); margin: 3px 0 0; }
         .ks-why-frame {
           border-radius: 22px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.12); background: #100e0b;
+          border: 1px solid rgba(255,255,255,0.12); background: #0B1C30;
           box-shadow: 0 34px 60px -24px rgba(0,0,0,0.65);
         }
-        .ks-why-frame-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #221e18; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .ks-why-frame-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #16273D; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .ks-why-frame-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
         .ks-why-frame-url { flex: 1; text-align: center; font-family: 'Geist', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
         .ks-why-frame-body { position: relative; max-height: 460px; overflow: hidden; }
         .ks-why-frame-body img { width: 100%; display: block; }
-        .ks-why-frame-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(16,14,11,0), #100e0b); pointer-events: none; }
+        .ks-why-frame-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(11,28,48,0), #0B1C30); pointer-events: none; }
         .ks-why-caption { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 14px; text-align: center; }
 
         /* ── How It Works ─────────────────────────────── */
@@ -493,10 +521,10 @@ export default function LandingPage() {
             <div className="ks-divider ks-divider-light">
             <div className="ks-divider-line" />
           </div>
-          <ContactCta />
+          <ContactCta profile={profile} />
           <FinalCta />
         </main>
-        <Footer />
+        <Footer profile={profile} />
       </div>
     </>
   );
