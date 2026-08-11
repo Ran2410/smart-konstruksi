@@ -10,7 +10,7 @@ import {
   API_CONFIG,
 } from "@/lib/rate-limiter";
 
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+const PUBLIC_ROUTES = ["/", "/login", "/register", "/forgot-password"];
 
 const SKIP_PATTERNS = ["/_next", "/api", "/favicon.ico", "/public"];
 
