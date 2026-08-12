@@ -14,7 +14,7 @@ import { apiError } from "@/lib/rbac/guard";
 
 // GET /api/settings/audit-logs — audit:read
 // SUPER_ADMIN / OWNER / BRANCH_MANAGER
-export const GET = withPermission("audit:read", async (request) => {
+export const GET = withPermission("audit:read", async (request, { user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = parsePagination(searchParams);
@@ -42,6 +42,14 @@ export const GET = withPermission("audit:read", async (request) => {
       where.createdAt = {
         ...(from && !isNaN(Date.parse(from)) ? { gte: new Date(from) } : {}),
         ...(to && !isNaN(Date.parse(to)) ? { lte: new Date(to) } : {}),
+      };
+    }
+
+    // Branch-scope the audit trail so scoped roles only see their own branch
+    if (user.role !== "SUPER_ADMIN" && user.role !== "OWNER") {
+      where.user = {
+        ...((where.user as Record<string, unknown>) || {}),
+        branchId: user.branchId,
       };
     }
 

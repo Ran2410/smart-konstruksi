@@ -103,6 +103,15 @@ export const POST = withPermission(
 
       const { email, name, password, role, branchId, phone, avatar } = parsed;
 
+      // Only SUPER_ADMIN/OWNER can create accounts with a global role
+      if (role === "SUPER_ADMIN" || role === "OWNER") {
+        if (user.role !== "SUPER_ADMIN" && user.role !== "OWNER") {
+          return apiError(
+            new Error("Only SUPER_ADMIN or OWNER can create global-role accounts")
+          );
+        }
+      }
+
       // Check email uniqueness
       const existingUser = await prisma.user.findFirst({
         where: {

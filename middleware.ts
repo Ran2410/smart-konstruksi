@@ -204,6 +204,11 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
+    // Over HTTPS (production, tunnels) Auth.js names the cookie
+    // `__Secure-authjs.session-token`; on plain HTTP it is
+    // `authjs.session-token`. getToken defaults to secureCookie:false,
+    // which breaks sessions behind HTTPS tunnels (login -> back to /login).
+    secureCookie: request.nextUrl.protocol === "https:",
   });
 
   const isAuthenticated = !!token;

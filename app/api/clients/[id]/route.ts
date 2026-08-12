@@ -18,7 +18,7 @@ function extractIdFromPath(url: string): string {
 }
 
 // GET /api/clients/[id] — Get client detail
-export const GET = withPermission("project:read", async (request) => {
+export const GET = withPermission("project:read", async (request, { user }) => {
   try {
     const clientId = extractIdFromPath(request.url);
 
@@ -72,6 +72,18 @@ export const GET = withPermission("project:read", async (request) => {
 
     if (!client) {
       return apiError(new Error("Client not found"));
+    }
+
+    // Enforce object-level access control.
+    // CLIENT / HOME_OWNER roles are "own-scoped": they may only ever read
+    // their own client profile. All other roles with "project:read"
+    // (branch / project / global) are entitled to client records.
+    if (user.role === "CLIENT" || user.role === "HOME_OWNER") {
+      if (client.user.id !== user.id) {
+        return apiError(
+          new Error("You don't have permission to access this client")
+        );
+      }
     }
 
     return apiSuccess(client);

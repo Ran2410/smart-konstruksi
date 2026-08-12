@@ -10,7 +10,7 @@ import {
   apiSuccess,
   apiNoContent,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessInvoice, ForbiddenError } from "@/lib/rbac/guard";
 import { logAudit, pickAuditFields } from "@/lib/audit-log";
 
 /**
@@ -59,6 +59,7 @@ export const GET = withPermission("invoice:read", async (request, { user }) => {
             branchId: true,
             branch: { select: { id: true, name: true } },
             projectManager: { select: { id: true, name: true, email: true } },
+            client: { select: { userId: true } },
           },
         },
         payments: {
@@ -78,6 +79,22 @@ export const GET = withPermission("invoice:read", async (request, { user }) => {
 
     if (!invoice) {
       return apiError(new Error("Invoice not found"));
+    }
+
+    // Enforce object-level access control (branch / own-scoped roles)
+    if (
+      !canAccessInvoice(
+        user.role,
+        user.branchId,
+        invoice.project.branchId,
+        user.role === "CLIENT" && invoice.project.client?.userId === user.id
+      )
+    ) {
+      return apiError(
+        new ForbiddenError(
+          "You don't have permission to access this invoice"
+        )
+      );
     }
 
     // Calculate total paid amount
@@ -105,13 +122,37 @@ export const PUT = withPermission("invoice:update", async (request, { user }) =>
       return apiError(new Error("Invoice ID is required"));
     }
 
-    // Check invoice exists
+    // Check invoice exists (fetch branch + owner linkage for access control)
     const existing = await prisma.invoice.findFirst({
       where: { id, deletedAt: null },
+      include: {
+        project: {
+          select: {
+            branchId: true,
+            client: { select: { userId: true } },
+          },
+        },
+      },
     });
 
     if (!existing) {
       return apiError(new Error("Invoice not found"));
+    }
+
+    // Enforce object-level access control (branch / own-scoped roles)
+    if (
+      !canAccessInvoice(
+        user.role,
+        user.branchId,
+        existing.project.branchId,
+        user.role === "CLIENT" && existing.project.client?.userId === user.id
+      )
+    ) {
+      return apiError(
+        new ForbiddenError(
+          "You don't have permission to modify this invoice"
+        )
+      );
     }
 
     const body = await request.json();
@@ -175,10 +216,34 @@ export const DELETE = withPermission("invoice:update", async (request, { user })
 
     const existing = await prisma.invoice.findFirst({
       where: { id, deletedAt: null },
+      include: {
+        project: {
+          select: {
+            branchId: true,
+            client: { select: { userId: true } },
+          },
+        },
+      },
     });
 
     if (!existing) {
       return apiError(new Error("Invoice not found"));
+    }
+
+    // Enforce object-level access control (branch / own-scoped roles)
+    if (
+      !canAccessInvoice(
+        user.role,
+        user.branchId,
+        existing.project.branchId,
+        user.role === "CLIENT" && existing.project.client?.userId === user.id
+      )
+    ) {
+      return apiError(
+        new ForbiddenError(
+          "You don't have permission to delete this invoice"
+        )
+      );
     }
 
     // Soft delete

@@ -7,8 +7,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
-import { unlink } from "fs/promises";
+import { apiError, canAccessProject } from "@/lib/rbac/guard";
+import { readFile } from "fs/promises";
 import path from "path";
 
 // Helper: extract [id] from URL path
@@ -60,6 +60,85 @@ export const GET = withPermission("file:read", async (request, { user }) => {
         { error: "Document not found" },
         { status: 404 }
       );
+    }
+
+    // ── File download (`?download=1`) ─────────────────────
+    // Serve the stored file only after verifying the caller can access
+    // the document's project (or is the uploader / a global role).
+    if (new URL(request.url).searchParams.get("download") === "1") {
+      const isGlobal = user.role === "SUPER_ADMIN" || user.role === "OWNER";
+      const isUploader = document.uploaderId === user.id;
+
+      let allowed = isGlobal || isUploader;
+      if (!allowed && document.projectId) {
+        const project = await prisma.project.findUnique({
+          where: { id: document.projectId },
+          select: { branchId: true, clientId: true },
+        });
+        if (project) {
+          const isMember = Boolean(
+            await prisma.projectMember.findUnique({
+              where: {
+                projectId_userId: {
+                  projectId: document.projectId,
+                  userId: user.id,
+                },
+              },
+              select: { id: true },
+            })
+          );
+          let isOwnProject = false;
+          if (project.clientId) {
+            const client = await prisma.client.findUnique({
+              where: { id: project.clientId },
+              select: { userId: true },
+            });
+            isOwnProject = client?.userId === user.id;
+          }
+          allowed = canAccessProject(
+            user.role,
+            user.branchId,
+            project.branchId,
+            isMember,
+            isOwnProject
+          );
+        }
+      }
+
+      if (!allowed) {
+        return apiError(new Error("Forbidden"));
+      }
+
+      const filename = document.fileUrl.split("/").pop() || "";
+      const dirs = [
+        path.join(process.cwd(), "uploads", "documents"),
+        path.join(process.cwd(), "public", "uploads", "documents"),
+      ];
+      let buffer: Buffer | null = null;
+      for (const dir of dirs) {
+        try {
+          buffer = await readFile(path.join(dir, filename));
+          break;
+        } catch {
+          // try next directory
+        }
+      }
+      if (!buffer) {
+        return apiError(new Error("File not found on disk"));
+      }
+
+      return new Response(new Uint8Array(buffer), {
+        status: 200,
+        headers: {
+          "Content-Type": document.fileType
+            ? `application/${document.fileType === "pdf" ? "pdf" : "octet-stream"}`
+            : "application/octet-stream",
+          "Content-Disposition": `inline; filename="${encodeURIComponent(
+            document.name || filename
+          )}"`,
+          "Cache-Control": "private, no-store",
+        },
+      });
     }
 
     return Response.json({ data: document });

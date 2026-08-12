@@ -371,7 +371,11 @@ export function ReportDetail({
                 const src =
                   typeof photo === "string"
                     ? photo
-                    : photo.url || (photo.id ? `/api/files/${photo.id}` : "");
+                    : photo.url?.startsWith("http")
+                      ? photo.url
+                      : photo.id
+                        ? `/api/files/${photo.id}`
+                        : "";
                 return (
                   <div
                     key={idx}
@@ -662,8 +666,11 @@ export function ReportDetail({
               const src =
                 typeof photo === "string"
                   ? photo
-                  : photo.url ||
-                    (photo.id ? `/api/files/${photo.id}` : "");
+                  : photo.url?.startsWith("http")
+                    ? photo.url
+                    : photo.id
+                      ? `/api/files/${photo.id}`
+                      : "";
               return (
                 <img
                   src={src}

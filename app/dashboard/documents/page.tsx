@@ -488,7 +488,7 @@ export default function DocumentsPage() {
                           </span>
                           <div>
                             <a
-                              href={doc.fileUrl}
+                              href={`/api/documents/${doc.id}?download=1`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
@@ -590,7 +590,7 @@ export default function DocumentsPage() {
                       <td style={{ ...tdStyle, textAlign: "right" }}>
                         <div style={{ display: "flex", gap: "4px", justifyContent: "flex-end", position: "relative" }}>
                           <a
-                            href={doc.fileUrl}
+                            href={`/api/documents/${doc.id}?download=1`}
                             download
                             style={{
                               display: "inline-flex",

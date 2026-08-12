@@ -80,8 +80,10 @@ export const POST = withPermission("file:upload", async (request, { user }) => {
       );
     }
 
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "reports");
+    // Ensure upload directory exists. Files are stored OUTSIDE public/ so
+    // Next.js never serves them statically — access goes through the
+    // authenticated, authorization-checked /api/files/[id] handler.
+    const uploadDir = path.join(process.cwd(), "uploads", "reports");
     await mkdir(uploadDir, { recursive: true });
 
     const uploadedFiles: Array<{

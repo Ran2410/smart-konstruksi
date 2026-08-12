@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { withPermission, apiSuccess } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
 
-export const GET = withPermission("material:read", async (request) => {
+export const GET = withPermission("material:read", async (request, { user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const from = searchParams.get("from");
@@ -22,6 +22,11 @@ export const GET = withPermission("material:read", async (request) => {
 
     const txWhere: Record<string, unknown> = {};
     if (from || to) txWhere.date = dateFilter;
+
+    // Branch-scope movement data so scoped roles only see their own branch
+    if (user.role !== "SUPER_ADMIN" && user.role !== "OWNER") {
+      if (user.branchId) txWhere.project = { branchId: user.branchId };
+    }
 
     // ── All materials with category + vendor ───────────────
     const materials = await prisma.material.findMany({

@@ -94,6 +94,35 @@ export const PUT = withPermission(
 
       const { name, email, password, role, branchId, phone, avatar, isActive } = parsed;
 
+      // ── Authorization: branch scope ─────────────────────
+      // BRANCH_MANAGER may only update users in their own branch
+      if (user.role === "BRANCH_MANAGER") {
+        if (existing.branchId !== user.branchId) {
+          return apiError(new Error("Access denied to this user"));
+        }
+      }
+
+      // Only SUPER_ADMIN can modify a SUPER_ADMIN account
+      if (existing.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN") {
+        return apiError(new Error("Cannot modify a SUPER_ADMIN account"));
+      }
+
+      // Only SUPER_ADMIN / OWNER may change role or branch;
+      // assigning a global (SUPER_ADMIN/OWNER) role is reserved for SUPER_ADMIN
+      const isGlobalRole = (r: string) => r === "SUPER_ADMIN" || r === "OWNER";
+      const roleChanged = role !== undefined && role !== existing.role;
+      const branchChanged = branchId !== undefined && branchId !== existing.branchId;
+      if (roleChanged || branchChanged) {
+        if (!isGlobalRole(user.role)) {
+          return apiError(
+            new Error("Only SUPER_ADMIN or OWNER can change roles or branches")
+          );
+        }
+        if (isGlobalRole(role as string) && user.role !== "SUPER_ADMIN") {
+          return apiError(new Error("Only SUPER_ADMIN can assign global roles"));
+        }
+      }
+
       // Check email uniqueness if changed
       if (email && email.trim().toLowerCase() !== existing.email) {
         const duplicate = await prisma.user.findFirst({
@@ -176,6 +205,18 @@ export const DELETE = withPermission(
 
       if (!existing) {
         return apiError(new Error("User not found"));
+      }
+
+      // Only SUPER_ADMIN can delete a SUPER_ADMIN account
+      if (existing.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN") {
+        return apiError(new Error("Cannot delete a SUPER_ADMIN account"));
+      }
+
+      // BRANCH_MANAGER may only delete users in their own branch
+      if (user.role === "BRANCH_MANAGER") {
+        if (existing.branchId !== user.branchId) {
+          return apiError(new Error("Access denied to this user"));
+        }
       }
 
       await prisma.user.update({

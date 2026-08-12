@@ -68,8 +68,10 @@ export const POST = withPermission("file:upload", async (request, { user }) => {
       );
     }
 
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "documents");
+    // Ensure upload directory exists. Files are stored OUTSIDE public/ so
+    // Next.js never serves them statically — access goes through the
+    // authenticated, authorization-checked download handler.
+    const uploadDir = path.join(process.cwd(), "uploads", "documents");
     await mkdir(uploadDir, { recursive: true });
 
     // Generate unique filename

@@ -52,6 +52,8 @@ Thumbs.db
 # Uploads / user content (runtime data)
 public/uploads/
 public/files/
+uploads/
+strix_runs/
 
 # Vercel
 .vercel/

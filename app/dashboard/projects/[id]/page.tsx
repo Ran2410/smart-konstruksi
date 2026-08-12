@@ -1865,7 +1865,7 @@ export default function ProjectDetailPage() {
                             overflow: "hidden", border: `1px solid ${T.outlineSoft}33`,
                             flexShrink: 0,
                           }}>
-                            <img src={p.url || `/api/files/${p.id}`} alt=""
+                            <img src={p.url?.startsWith("http") ? p.url : `/api/files/${p.id}`} alt=""
                               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                             />

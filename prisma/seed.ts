@@ -4,9 +4,27 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { randomBytes } from "crypto";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 const isFullMode = process.argv.includes("--full");
+
+// Default admin password — never hardcode a fixed secret for privileged
+// accounts. Use SEED_ADMIN_PASSWORD env var, otherwise generate a random
+// one and print it once (capture it from the console output).
+const seedPassword =
+  process.env.SEED_ADMIN_PASSWORD ??
+  (() => {
+    const random = randomBytes(18).toString("base64url");
+    console.log(
+      `⚠️  No SEED_ADMIN_PASSWORD set — using a random password: ${random}`
+    );
+    return random;
+  })();
+const seedPasswordLabel = process.env.SEED_ADMIN_PASSWORD
+  ? "(from SEED_ADMIN_PASSWORD env)"
+  : "(random — see console output above)";
+
 function daysAgo(n: number): Date {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -43,7 +61,7 @@ async function cleanup() {
   console.log("🧹 Cleanup done\n");
 }
 async function seedMinimal() {
-  const password = await bcrypt.hash("Password123", 10);
+  const password = await bcrypt.hash(seedPassword, 12);
   const branch = await prisma.branch.upsert({
     where: { id: "branch-ksipusat" },
     update: {},
@@ -90,7 +108,7 @@ async function seedMinimal() {
     "═══════════════════════════════════════════════════════════════",
   );
   console.log(`
-  🔑 Login Credentials (password: Password123):
+  🔑 Login Credentials ${seedPasswordLabel}:
   ├── owner@ksi.co.id   → OWNER
   └── admin@ksi.co.id   → SUPER_ADMIN
   ℹ️  Run with --full flag for dev data:
@@ -174,7 +192,7 @@ async function seedDocuments() {
   console.log(`✅ Documents: ${created} created (total: ${total})`);
 }
 async function seedFull() {
-  const password = await bcrypt.hash("Password123", 10);
+  const password = await bcrypt.hash(seedPassword, 12);
   const branch1 = await prisma.branch.upsert({
     where: { id: "branch-ksipusat" },
     update: {},
@@ -1212,7 +1230,7 @@ async function seedFull() {
   ├── ${notifData.length} notifications
   ├── ${activityData.length} activity logs
   └── documents (15 seeded with dummy files)
-  🔑 Login Credentials (all password: Password123):
+  🔑 Login Credentials ${seedPasswordLabel}:
   ├── admin@ksi.co.id       → SUPER_ADMIN
   ├── owner@ksi.co.id       → OWNER
   ├── bm@ksi.co.id          → BRANCH_MANAGER
