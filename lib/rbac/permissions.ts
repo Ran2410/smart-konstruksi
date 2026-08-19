@@ -76,7 +76,7 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "invoice:create", "invoice:read", "invoice:update", "invoice:verify",
     "payment:create", "payment:read", "payment:verify",
     // Approval
-    "approval:read", "approval:approve",  // Deal nominal besar
+    "approval:read", "approval:approve", "approval:reject",  // Deal nominal besar
     // Report
     "report:read",
     // Task
@@ -98,6 +98,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   // ========== TIER 2: BRANCH ==========
 
   BRANCH_MANAGER: [
+    // Branch
+    "branch:read",
     // User (di branch sendiri)
     "user:create", "user:read", "user:update",
     // Settings & Audit
@@ -111,11 +113,11 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Project
     "project:create", "project:read", "project:update",
     // Material
-    "material:read",
+    "material:read", "material:confirm",
     // Financial
     "invoice:create", "invoice:read", "invoice:update",
     // Approval
-    "approval:read", "approval:approve",  // RAB + Design + Deal nominal tertentu
+    "approval:read", "approval:approve", "approval:reject",  // RAB + Design + Deal nominal tertentu
     // Report
     "report:read", "report:approve",
     // Task
@@ -143,12 +145,14 @@ export const PERMISSIONS: Record<Role, string[]> = {
     "material:create", "material:read", "material:update",
     // Approval
     "approval:create", "approval:read",  // Progress report
+    // RAB
+    "rab:read",
     // Report
     "report:create", "report:read", "report:approve",
     // Task
     "task:create", "task:read", "task:update", "task:delete",
     // File
-    "file:upload", "file:read",
+    "file:upload", "file:read", "file:delete",
     // Attendance
     "attendance:read",
     // Design
@@ -160,6 +164,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   ],
 
   ESTIMATOR: [
+    // Lead
+    "lead:read",  // Needed to select lead when creating RAB
     // Project
     "project:read",
     // Material
@@ -188,8 +194,12 @@ export const PERMISSIONS: Record<Role, string[]> = {
   ],
 
   ADMIN_KANTOR: [
+    // Branch
+    "branch:read",
     // Lead
-    "lead:create", "lead:read", "lead:update",
+    "lead:create", "lead:read", "lead:update", "lead:delete",
+    // RAB
+    "rab:read",
     // Project
     "project:read",
     // Material
@@ -293,8 +303,8 @@ export const PERMISSIONS: Record<Role, string[]> = {
   ],
 
   VENDOR: [
-    // Material (task-scoped)
-    "material:read", "material:update",
+    // Material
+    "material:read",
     // PO
     "po:read",
   ],
@@ -314,7 +324,7 @@ export const PERMISSIONS: Record<Role, string[]> = {
     // Task
     "task:read", "task:update",
     // Material
-    "material:read",
+    "material:create", "material:read",
     // Transaction
     "transaction:read",
     // Attendance

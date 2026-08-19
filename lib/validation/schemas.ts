@@ -241,6 +241,7 @@ export const createTransactionSchema = z.object({
   date: dateString.optional(),
   notes: z.string().nullable().optional(),
   purpose: z.enum(["MATERIAL_PURCHASE", "OPERATIONAL", "PROJECT_USAGE", "WASTE", "RETURN", "ADJUSTMENT"]).optional().default("OPERATIONAL"),
+  confirmed: z.boolean().optional().default(false),
 });
 
 // ==================== TASK ====================

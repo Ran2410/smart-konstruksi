@@ -519,20 +519,6 @@ export default function LoginPage() {
           color: var(--color-on-surface);
         }
 
-        .sk-forgot {
-          font-family: 'Geist', monospace;
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          color: var(--color-primary);
-          text-decoration: none;
-          transition: opacity 0.2s;
-        }
-
-        .sk-forgot:hover {
-          text-decoration: underline;
-        }
-
         .sk-input-wrap {
           position: relative;
         }
@@ -917,9 +903,6 @@ export default function LoginPage() {
                       <label htmlFor="password" className="sk-label">
                         Password
                       </label>
-                      <a href="#" className="sk-forgot">
-                        Forgot Password?
-                      </a>
                     </div>
                     <div className="sk-input-wrap">
                       <span className="material-symbols-outlined">

@@ -81,6 +81,10 @@ export const PUT = withPermission(
 
       const { name, company, phone, email, source, status, type, budgetMin, budgetMax, location, notes, assignedTo, branchId } = parsed;
 
+      // PM cannot reassign leads — assignment stays locked to them
+      const finalAssignedTo =
+        user.role === "PROJECT_MANAGER" ? user.id : assignedTo;
+
       // Build update data — only include fields that are provided
       const updateData: Record<string, unknown> = {
         updatedBy: user.id,
@@ -97,8 +101,9 @@ export const PUT = withPermission(
       if (budgetMax !== undefined) updateData.budgetMax = new Prisma.Decimal(budgetMax);
       if (location !== undefined) updateData.location = location || null;
       if (notes !== undefined) updateData.notes = notes || null;
-      if (assignedTo !== undefined) updateData.assignedTo = assignedTo || null;
-      if (branchId !== undefined) updateData.branchId = branchId || null;
+      if (assignedTo !== undefined || user.role === "PROJECT_MANAGER") updateData.assignedTo = finalAssignedTo || null;
+      // PM cannot move lead to another branch
+      if (branchId !== undefined && user.role !== "PROJECT_MANAGER") updateData.branchId = branchId || null;
 
       const lead = await prisma.lead.update({
         where: { id: leadId },

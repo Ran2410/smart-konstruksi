@@ -13,7 +13,7 @@ import {
   apiCreated,
   apiPaginated,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, checkPermission } from "@/lib/rbac/guard";
 import { createTransactionSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -70,6 +70,14 @@ export const POST = withPermission("material:create", async (request, { user }) 
     const body = await request.json();
     const parsed = validateOrRespond(createTransactionSchema, body);
     if (parsed instanceof Response) return parsed;
+
+    // Confirming material receipt requires material:confirm permission
+    if (parsed.confirmed && !checkPermission(user.role, "material:confirm")) {
+      return Response.json(
+        { error: "Not authorized to confirm material", code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
 
     const material = await prisma.material.findFirst({
       where: { id: parsed.materialId, deletedAt: null },

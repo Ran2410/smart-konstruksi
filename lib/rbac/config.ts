@@ -23,6 +23,7 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
     "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK",
     "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN",
     "FINANCE", "CLIENT", "VENDOR", "HOME_OWNER",
+    "LOGISTIK", "MANDOR", "SURVEYOR",
   ],
 
   // ==================== USER MANAGEMENT ====================
@@ -42,7 +43,8 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
   "/dashboard/projects": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
     "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK",
-    "QC_INSPECTOR", "K3_OFFICER", "FINANCE", "CLIENT",
+    "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN",
+    "CLIENT", "HOME_OWNER",
   ],
 
   // ==================== LEADS ====================
@@ -50,15 +52,28 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR",
   ],
 
+  // ==================== CLIENTS ====================
+  "/dashboard/clients": [
+    "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR",
+  ],
+
   // ==================== MATERIALS ====================
   "/dashboard/materials": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
-    "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "VENDOR",
+    "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK",
+    "MANDOR", "SURVEYOR", "VENDOR",
+  ],
+
+  // ==================== TRANSACTIONS ====================
+  "/dashboard/transactions": [
+    "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
+    "ESTIMATOR", "SITE_MANAGER", "ADMIN_KANTOR", "LOGISTIK", "MANDOR",
   ],
 
   // ==================== FINANCIAL ====================
   "/dashboard/invoices": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE",
+    "CLIENT",
   ],
 
   "/dashboard/payments": [
@@ -68,7 +83,7 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
   // ==================== RAB ====================
   "/dashboard/rab": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER",
-    "PROJECT_MANAGER", "ESTIMATOR", "KONSULTAN",
+    "PROJECT_MANAGER", "ESTIMATOR", "ADMIN_KANTOR", "SURVEYOR", "KONSULTAN", "ARSITEK",
   ],
 
   // ==================== APPROVALS ====================
@@ -79,8 +94,7 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
   // ==================== REPORTS ====================
   "/dashboard/reports": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
-    "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK",
-    "QC_INSPECTOR", "K3_OFFICER", "FINANCE", "CLIENT",
+    "ADMIN_KANTOR", "FINANCE",
   ],
 
   // ==================== TASKS ====================
@@ -115,7 +129,9 @@ const ROUTE_ACCESS_DATA: Record<string, AccessRole[]> = {
   // ==================== DOCUMENTS ====================
   "/dashboard/documents": [
     "SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER",
-    "ADMIN_KANTOR", "ARSITEK", "CLIENT",
+    "SITE_MANAGER", "ADMIN_KANTOR", "ARSITEK",
+    "QC_INSPECTOR", "K3_OFFICER", "INTERIOR_DESIGNER", "KONSULTAN",
+    "CLIENT",
   ],
 
   // ==================== SETTINGS ====================

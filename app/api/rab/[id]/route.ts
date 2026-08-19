@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission, apiSuccess } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, checkPermission } from "@/lib/rbac/guard";
 import { updateRABSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 import { logAudit, pickAuditFields } from "@/lib/audit-log";
@@ -49,9 +49,11 @@ export const GET = withPermission(
   }
 );
 
-// PUT /api/rab/[id] — Update RAB (rab:update)
+// PUT /api/rab/[id] — Update RAB
+//   edit content / submit → rab:update
+//   approve / reject → approval:approve / approval:reject
 export const PUT = withPermission(
-  "rab:update",
+  "rab:read",
   async (request, { user }) => {
     try {
       const id = extractIdFromPath(request.url);
@@ -79,6 +81,31 @@ export const PUT = withPermission(
       const body = await request.json();
       const parsed = validateOrRespond(updateRABSchema, body);
       if (parsed instanceof Response) return parsed;
+
+      // ── Action-based permission check ──
+      const isApproveOrReject = parsed.status === "APPROVED" || parsed.status === "REJECTED";
+
+      if (isApproveOrReject) {
+        // Approve/reject requires dedicated approval permissions
+        if (parsed.status === "APPROVED" && !checkPermission(user.role, "approval:approve")) {
+          return Response.json(
+            { error: "Not authorized to approve RAB", code: "FORBIDDEN" },
+            { status: 403 }
+          );
+        }
+        if (parsed.status === "REJECTED" && !checkPermission(user.role, "approval:reject")) {
+          return Response.json(
+            { error: "Not authorized to reject RAB", code: "FORBIDDEN" },
+            { status: 403 }
+          );
+        }
+      } else if (!checkPermission(user.role, "rab:update")) {
+        // Editing content or submitting for approval requires rab:update
+        return Response.json(
+          { error: "Not authorized to edit RAB", code: "FORBIDDEN" },
+          { status: 403 }
+        );
+      }
 
       const updateData: any = {};
       if (parsed.title !== undefined) updateData.title = parsed.title;

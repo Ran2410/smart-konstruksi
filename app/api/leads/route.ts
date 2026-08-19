@@ -30,20 +30,27 @@ export const GET = withPermission(
       const branchId = searchParams.get("branchId") || "";
       const assignedTo = searchParams.get("assignedTo") || "";
 
+      const andFilters: Prisma.LeadWhereInput[] = [];
       const where: Prisma.LeadWhereInput = {
         deletedAt: null,
+        AND: andFilters,
       };
 
       // Scope filtering based on user role
       if (user.role === "SUPER_ADMIN" || user.role === "OWNER") {
         // Global: no filter
       } else if (
-        ["BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE"].includes(user.role)
+        ["BRANCH_MANAGER", "ADMIN_KANTOR", "FINANCE", "ESTIMATOR"].includes(user.role)
       ) {
-        if (user.branchId) where.branchId = user.branchId;
+        // Branch scope: own branch + unassigned leads (branchId null)
+        if (user.branchId) {
+          andFilters.push({
+            OR: [{ branchId: user.branchId }, { branchId: null }],
+          });
+        }
       } else {
         // Other roles: only see their assigned leads
-        where.assignedTo = user.id;
+        andFilters.push({ assignedTo: user.id });
       }
 
       // Search filter
@@ -153,8 +160,8 @@ export const POST = withPermission(
           budgetMax: budgetMax !== undefined ? new Prisma.Decimal(budgetMax) : undefined,
           location: location || null,
           notes: notes || null,
-          assignedTo: assignedTo || null,
-          branchId: branchId || null,
+          assignedTo: user.role === "PROJECT_MANAGER" ? user.id : (assignedTo || null),
+          branchId: user.role === "PROJECT_MANAGER" ? user.branchId : (branchId || null),
           createdBy: user.id,
         },
         include: {

@@ -135,6 +135,7 @@ function DetailSkeleton() {
 // ════════════════════════════════════════════════════════════════════════════
 export default function EditLeadPage() {
   const { data: session } = useSession();
+  const isPM = session?.user?.role === "PROJECT_MANAGER";
   const router = useRouter();
   const params = useParams();
   const leadId = params.id as string;
@@ -553,13 +554,20 @@ export default function EditLeadPage() {
                 onFocus={focusInput}
                 onBlur={blurInput}
                 style={selectStyle("assignedTo")}
-                disabled={loadingDropdowns}
+                disabled={loadingDropdowns || isPM}
               >
                 <option value="">Select user...</option>
-                {users.map((u: any) => (
-                  <option key={u.id} value={u.id}>{u.name || u.email}</option>
-                ))}
+                {users
+                  .filter((u: any) => u.role === "PROJECT_MANAGER" || u.id === form.assignedTo)
+                  .map((u: any) => (
+                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                  ))}
               </select>
+              {isPM && (
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                  Assignment is locked — managed by you
+                </p>
+              )}
             </Field>
 
             {/* Branch */}
@@ -570,13 +578,18 @@ export default function EditLeadPage() {
                 onFocus={focusInput}
                 onBlur={blurInput}
                 style={selectStyle("branchId")}
-                disabled={loadingDropdowns}
+                disabled={loadingDropdowns || isPM}
               >
                 <option value="">Select branch...</option>
                 {branches.map((b: any) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </select>
+              {isPM && (
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                  Branch locked — managed by you
+                </p>
+              )}
             </Field>
 
             {/* Notes - Full width */}

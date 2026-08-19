@@ -1,8 +1,9 @@
 "use client";
 
-// UI-only contact form. On submit it opens the visitor's mail client with a
-// pre-filled message to the company email (from CompanyProfile settings) —
-// no backend, no fake "sent" state.
+import { useState } from "react";
+
+// Contact form — submits to /api/contact which sends an email to the
+// company address configured in CompanyProfile (Settings).
 const PROJECT_TYPES = [
   "General Construction",
   "Renovation & Remodeling",
@@ -14,32 +15,76 @@ const PROJECT_TYPES = [
 ];
 
 export default function ContactForm({ email = "info@ksi.co.id" }) {
-  function handleSubmit(e) {
+  const [status, setStatus] = useState("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function handleSubmit(e) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
-    const fullName = String(data.get("fullName") || "").trim();
-    const company = String(data.get("company") || "").trim();
-    const formEmail = String(data.get("email") || "").trim();
-    const phone = String(data.get("phone") || "").trim();
-    const projectType = String(data.get("projectType") || "").trim();
-    const message = String(data.get("message") || "").trim();
+    const payload = {
+      fullName: String(data.get("fullName") || "").trim(),
+      company: String(data.get("company") || "").trim() || undefined,
+      email: String(data.get("email") || "").trim(),
+      phone: String(data.get("phone") || "").trim() || undefined,
+      projectType: String(data.get("projectType") || "").trim(),
+      message: String(data.get("message") || "").trim(),
+    };
 
-    const subject = `New project inquiry — ${fullName}${company ? ` (${company})` : ""}`;
-    const body = [
-      `Name: ${fullName}`,
-      `Company: ${company || "—"}`,
-      `Email: ${formEmail}`,
-      `Phone: ${phone || "—"}`,
-      `Project type: ${projectType}`,
-      "",
-      "Message:",
-      message,
-    ].join("\n");
+    setStatus("loading");
+    setErrorMessage("");
 
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(result.message || "Something went wrong. Please try again.");
+        return;
+      }
+
+      setStatus("success");
+      e.currentTarget.reset();
+    } catch {
+      setStatus("error");
+      setErrorMessage("Network error. Please try again.");
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div
+        className="ks-form ks-form-success"
+        id="contact-form"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 12,
+          minHeight: 280,
+          justifyContent: "center",
+        }}
+      >
+        <span
+          className="material-symbols-outlined"
+          style={{ fontSize: 40, color: "var(--ks-primary)" }}
+        >
+          check_circle
+        </span>
+        <h3 style={{ fontFamily: "var(--font-heading, 'Hanken Grotesk')", fontSize: 22, margin: 0 }}>
+          Thank you.
+        </h3>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: "var(--ks-muted)", margin: 0 }}>
+          We will contact you soon.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -139,12 +184,33 @@ export default function ContactForm({ email = "info@ksi.co.id" }) {
         </div>
       </div>
 
-      <button type="submit" className="ks-btn ks-btn-primary ks-btn-lg ks-form-submit">
-        Send Request
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          arrow_forward
-        </span>
+      <button
+        type="submit"
+        className="ks-btn ks-btn-primary ks-btn-lg ks-form-submit"
+        disabled={status === "loading"}
+        style={status === "loading" ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+      >
+        {status === "loading" ? "Sending..." : "Send Request"}
+        {status === "loading" ? null : (
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            arrow_forward
+          </span>
+        )}
       </button>
+
+      {status === "error" && (
+        <p
+          role="alert"
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 14,
+            color: "#dc2626",
+            margin: "16px 0 0",
+          }}
+        >
+          {errorMessage}
+        </p>
+      )}
     </form>
   );
 }

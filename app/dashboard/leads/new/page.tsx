@@ -100,6 +100,7 @@ function Field({ label, required, hint, children }: {
 export default function NewLeadPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const isPM = session?.user?.role === "PROJECT_MANAGER";
 
   const [form, setForm] = useState({
     name: "",
@@ -128,6 +129,10 @@ export default function NewLeadPage() {
   // ── Fetch dropdown data ────────────────────────────────────────────────
   useEffect(() => {
     if (!session) return;
+    // PM yang buat lead → auto-assign ke dirinya sendiri
+    if (isPM && session.user?.id) {
+      setForm((f) => ({ ...f, assignedTo: session.user.id, branchId: session.user.branchId || "" }));
+    }
     setLoadingDropdowns(true);
     Promise.all([
       fetch("/api/users?limit=100", { credentials: "include" }).then(r => r.json()),
@@ -477,13 +482,20 @@ export default function NewLeadPage() {
                 onFocus={focusInput}
                 onBlur={blurInput}
                 style={selectStyle("assignedTo")}
-                disabled={loadingDropdowns}
+                disabled={loadingDropdowns || isPM}
               >
                 <option value="">Select user...</option>
-                {users.map((u: any) => (
-                  <option key={u.id} value={u.id}>{u.name || u.email}</option>
-                ))}
+                {users
+                  .filter((u: any) => u.role === "PROJECT_MANAGER" || u.id === form.assignedTo)
+                  .map((u: any) => (
+                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                  ))}
               </select>
+              {isPM && (
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                  Auto-assigned to you (you created this lead)
+                </p>
+              )}
             </Field>
 
             {/* Branch */}
@@ -494,13 +506,18 @@ export default function NewLeadPage() {
                 onFocus={focusInput}
                 onBlur={blurInput}
                 style={selectStyle("branchId")}
-                disabled={loadingDropdowns}
+                disabled={loadingDropdowns || isPM}
               >
                 <option value="">Select branch...</option>
                 {branches.map((b: any) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </select>
+              {isPM && (
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                  Branch locked to your branch
+                </p>
+              )}
             </Field>
 
             {/* Notes - Full width */}
