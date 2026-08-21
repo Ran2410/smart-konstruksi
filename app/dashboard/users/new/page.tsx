@@ -202,7 +202,9 @@ export default function NewUserPage() {
     if (!form.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Invalid email format";
     if (!form.password) errs.password = "Password is required";
-    else if (form.password.length < 6) errs.password = "Password must be at least 6 characters";
+    else if (form.password.length < 8 || !/[A-Z]/.test(form.password) || !/[0-9]/.test(form.password)) {
+      errs.password = "Password must be at least 8 characters and include an uppercase letter and a number";
+    }
     if (!form.role) errs.role = "Role is required";
     return errs;
   }
@@ -389,7 +391,7 @@ export default function NewUserPage() {
             </Field>
 
             {/* Password */}
-            <Field label="Password" required hint="Minimum 6 characters">
+            <Field label="Password" required hint="Minimum 8 characters, uppercase, and number">
               <input
                 type="password"
                 placeholder="Enter password"

@@ -7,7 +7,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission } from "@/lib/api/with-auth";
-import { apiError, canAccessProject } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
+import { userCanAccessProject } from "@/lib/rbac/resource-access";
 import { readFile } from "fs/promises";
 import path from "path";
 
@@ -62,53 +63,18 @@ export const GET = withPermission("file:read", async (request, { user }) => {
       );
     }
 
+    const isGlobal = user.role === "SUPER_ADMIN" || user.role === "OWNER";
+    const isUploader = document.uploaderId === user.id;
+    const hasProjectAccess = await userCanAccessProject(user, document.projectId);
+    const isClient = user.role === "CLIENT" || user.role === "HOME_OWNER";
+    if (!(isGlobal || isUploader || (hasProjectAccess && (!isClient || document.isClientVisible)))) {
+      return apiError(new ForbiddenError("You don't have permission to access this document"));
+    }
+
     // ── File download (`?download=1`) ─────────────────────
     // Serve the stored file only after verifying the caller can access
     // the document's project (or is the uploader / a global role).
     if (new URL(request.url).searchParams.get("download") === "1") {
-      const isGlobal = user.role === "SUPER_ADMIN" || user.role === "OWNER";
-      const isUploader = document.uploaderId === user.id;
-
-      let allowed = isGlobal || isUploader;
-      if (!allowed && document.projectId) {
-        const project = await prisma.project.findUnique({
-          where: { id: document.projectId },
-          select: { branchId: true, clientId: true },
-        });
-        if (project) {
-          const isMember = Boolean(
-            await prisma.projectMember.findUnique({
-              where: {
-                projectId_userId: {
-                  projectId: document.projectId,
-                  userId: user.id,
-                },
-              },
-              select: { id: true },
-            })
-          );
-          let isOwnProject = false;
-          if (project.clientId) {
-            const client = await prisma.client.findUnique({
-              where: { id: project.clientId },
-              select: { userId: true },
-            });
-            isOwnProject = client?.userId === user.id;
-          }
-          allowed = canAccessProject(
-            user.role,
-            user.branchId,
-            project.branchId,
-            isMember,
-            isOwnProject
-          );
-        }
-      }
-
-      if (!allowed) {
-        return apiError(new Error("Forbidden"));
-      }
-
       const filename = document.fileUrl.split("/").pop() || "";
       const dirs = [
         path.join(process.cwd(), "uploads", "documents"),
@@ -180,6 +146,11 @@ export const PATCH = withPermission("file:upload", async (request, { user }) => 
         { error: "Document not found" },
         { status: 404 }
       );
+    }
+
+    const isGlobal = user.role === "SUPER_ADMIN" || user.role === "OWNER";
+    if (!(isGlobal || existing.uploaderId === user.id || await userCanAccessProject(user, existing.projectId))) {
+      return apiError(new ForbiddenError("You don't have permission to modify this document"));
     }
 
     // Validate category if provided
@@ -259,6 +230,11 @@ export const DELETE = withPermission("file:delete", async (request, { user }) =>
         { error: "Document not found" },
         { status: 404 }
       );
+    }
+
+    const isGlobal = user.role === "SUPER_ADMIN" || user.role === "OWNER";
+    if (!(isGlobal || existing.uploaderId === user.id || await userCanAccessProject(user, existing.projectId))) {
+      return apiError(new ForbiddenError("You don't have permission to delete this document"));
     }
 
     // Soft delete: set status to ARCHIVED

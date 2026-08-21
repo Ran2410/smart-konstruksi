@@ -77,9 +77,6 @@ export default function LoginPage() {
     <>
       {/* Global styles injected via style tag */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@400;500;600&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
         :root {
           --color-primary: #006948;
           --color-primary-container: #00855d;
@@ -266,7 +263,7 @@ export default function LoginPage() {
           background-size: cover;
           background-position: center;
           border-radius: 12px;
-          background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAzfom0q81cT_NpK37Avhxq7J4fIMBG5vv4qDsdGPNTWiXoap9hXbr3z0RauQ_pskStG6T6UnSkhVaaqk0AY6WQ7GbJSaldk-vfUh08OtOZxLLrlKi5a6KHuaob5Bq-TnnHpaU8XpFHWmPL_CcED4JoyF5smLs93mpHkkN0PNIzVLkWGmeK6vZZoUhcPOPCrzLjZfqb4EmJ8F1da8w5FOP4-FA3vl4isNVw-2GkElRuTVhW2Xd76FxgRiPzvapLbvjfLrNw7DIYE_EY');
+          background-image: url('/dashboard-preview.png');
         }
 
         /* Floating glass cards */

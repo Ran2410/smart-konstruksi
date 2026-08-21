@@ -33,6 +33,9 @@ const PROJECT_ROLES: Role[] = [
   "K3_OFFICER",
   "INTERIOR_DESIGNER",
   "KONSULTAN",
+  "MANDOR",
+  "SURVEYOR",
+  "LOGISTIK",
 ];
 
 // Roles that have own scope (own data only)
@@ -179,6 +182,38 @@ export function canAccessProject(
   }
 
   return false;
+}
+
+/**
+ * Check if a user can access a lead.
+ * Mirrors the collection endpoint: global roles see all, branch roles and
+ * estimators see their branch (plus unassigned leads), and other roles only
+ * see leads assigned to them.
+ */
+export function canAccessLead(
+  userRole: Role,
+  userId: string,
+  userBranchId: string | null,
+  leadBranchId: string | null,
+  assignedTo: string | null
+): boolean {
+  if (GLOBAL_ROLES.includes(userRole)) return true;
+
+  if (BRANCH_ROLES.includes(userRole) || userRole === "ESTIMATOR") {
+    return leadBranchId === null || userBranchId === leadBranchId;
+  }
+
+  return assignedTo === userId;
+}
+
+/** RAB records inherit the branch scope of their lead. */
+export function canAccessRAB(
+  userRole: Role,
+  userBranchId: string | null,
+  leadBranchId: string | null
+): boolean {
+  if (GLOBAL_ROLES.includes(userRole)) return true;
+  return userBranchId !== null && userBranchId === leadBranchId;
 }
 
 /**

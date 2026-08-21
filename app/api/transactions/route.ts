@@ -14,6 +14,7 @@ import {
   apiPaginated,
 } from "@/lib/api/with-auth";
 import { apiError, checkPermission } from "@/lib/rbac/guard";
+import { accessibleProjectWhere, userCanAccessProject } from "@/lib/rbac/resource-access";
 import { createTransactionSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -30,7 +31,7 @@ async function recalcProjectActualCost(projectId: string) {
 }
 
 // GET /api/transactions
-export const GET = withPermission("material:read", async (request) => {
+export const GET = withPermission("material:read", async (request, { user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = parsePagination(searchParams);
@@ -39,6 +40,13 @@ export const GET = withPermission("material:read", async (request) => {
     const type = searchParams.get("type");
 
     const where: Record<string, unknown> = {};
+
+    if (!["SUPER_ADMIN", "OWNER"].includes(user.role)) {
+      where.OR = [
+        { project: accessibleProjectWhere(user) },
+        { projectId: null, createdBy: user.id },
+      ];
+    }
 
     if (materialId) where.materialId = materialId;
     if (projectId) where.projectId = projectId;
@@ -83,6 +91,13 @@ export const POST = withPermission("material:create", async (request, { user }) 
       where: { id: parsed.materialId, deletedAt: null },
     });
     if (!material) return apiError(new Error("Material not found"));
+
+    if (parsed.projectId && !(await userCanAccessProject(user, parsed.projectId))) {
+      return Response.json(
+        { error: "Not authorized to create a transaction for this project", code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
 
     let totalCost: number;
     let newAvgPrice: number | null = null;

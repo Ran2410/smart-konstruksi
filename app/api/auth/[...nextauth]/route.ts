@@ -1,11 +1,9 @@
 // Route handler — self-contained for Turbopack compatibility
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import NextAuth from "next-auth";
+import { NextRequest } from "next/server";
 import { authConfig } from "@/lib/auth-config";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const result: any = NextAuth(authConfig);
-const handlers = result.handlers ?? result;
+const { handlers } = NextAuth(authConfig);
 
 /**
  * Next.js builds `request.url` from the Host header. When the app is reached
@@ -17,7 +15,11 @@ const handlers = result.handlers ?? result;
  * For production deployments set AUTH_URL to the canonical origin instead;
  * this helper only applies the forwarded host when present.
  */
-async function normalizeTunnelHost(request: Request): Promise<Request> {
+async function normalizeTunnelHost(request: NextRequest): Promise<NextRequest> {
+  // Forwarded hosts are useful for local tunnels, but must never override the
+  // canonical AUTH_URL/NEXTAUTH_URL in production.
+  if (process.env.NODE_ENV === "production") return request;
+
   const forwardedHost = request.headers.get("x-forwarded-host");
   if (!forwardedHost) return request;
 
@@ -44,14 +46,14 @@ async function normalizeTunnelHost(request: Request): Promise<Request> {
   };
   // @ts-expect-error -- duplex is required for streaming bodies in undici
   init.duplex = "half";
-  return new Request(url.toString(), init);
+  return new NextRequest(url, init);
 }
 
 // Turbopack requires explicit function exports
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   return handlers.GET(await normalizeTunnelHost(request));
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   return handlers.POST(await normalizeTunnelHost(request));
 }

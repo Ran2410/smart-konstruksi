@@ -363,13 +363,13 @@ export default function DashboardPage() {
         @media (max-width: 640px) {
           .sk-dash-title { font-size: 22px !important; }
           .sk-dash-subtitle { font-size: 13px !important; }
-          .sk-dash-grid-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .sk-dash-grid-stats { grid-template-columns: 1fr !important; gap: 12px !important; }
           .sk-dash-grid-mid { grid-template-columns: 1fr !important; gap: 16px !important; }
           .sk-dash-grid-bottom { grid-template-columns: 1fr !important; gap: 16px !important; }
           .sk-dash-grid-charts { grid-template-columns: 1fr !important; gap: 16px !important; }
         }
-        @media (max-width: 380px) {
-          .sk-dash-grid-stats { grid-template-columns: 1fr !important; }
+        @media (max-width: 640px) {
+          .sk-dash-grid-stats > *, .sk-dash-grid-mid > *, .sk-dash-grid-bottom > *, .sk-dash-grid-charts > * { min-width: 0; }
         }
       `}</style>
       {/* Greeting */}

@@ -51,15 +51,15 @@ export const T = {
   mutedBg: "rgba(111,122,114,0.08)",
 
   // Font aliases (backward compat with old T.fontLabel usage)
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
+  fontDisplay: "var(--font-hanken-grotesk), sans-serif",
+  fontBody: "var(--font-inter), sans-serif",
+  fontLabel: "var(--font-geist-sans), sans-serif",
 } as const;
 
 // ── Fonts ─────────────────────────────────────────────────
-export const FONT_DISPLAY = "'Hanken Grotesk', sans-serif";
-export const FONT_BODY = "'Inter', sans-serif";
-export const FONT_LABEL = "'Geist', monospace";
+export const FONT_DISPLAY = "var(--font-hanken-grotesk), sans-serif";
+export const FONT_BODY = "var(--font-inter), sans-serif";
+export const FONT_LABEL = "var(--font-geist-sans), sans-serif";
 
 // ── Spacing ───────────────────────────────────────────────
 export const SPACING = {

@@ -7,7 +7,7 @@ import {
   withPermission,
   apiSuccess,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessLead, ForbiddenError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createLeadSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
@@ -49,6 +49,10 @@ export const GET = withPermission(
         return apiError(new Error("Lead not found"));
       }
 
+      if (!canAccessLead(user.role, user.id, user.branchId, lead.branchId, lead.assignedTo)) {
+        return apiError(new ForbiddenError("You don't have permission to access this lead"));
+      }
+
       return apiSuccess(lead);
     } catch (error) {
       return apiError(error);
@@ -75,11 +79,24 @@ export const PUT = withPermission(
         return apiError(new Error("Lead not found"));
       }
 
+      if (!canAccessLead(user.role, user.id, user.branchId, existing.branchId, existing.assignedTo)) {
+        return apiError(new ForbiddenError("You don't have permission to modify this lead"));
+      }
+
       const body = await request.json();
       const parsed = validateOrRespond(createLeadSchema.partial(), body);
       if (parsed instanceof Response) return parsed;
 
       const { name, company, phone, email, source, status, type, budgetMin, budgetMax, location, notes, assignedTo, branchId } = parsed;
+
+      if (
+        branchId !== undefined &&
+        branchId !== existing.branchId &&
+        !["SUPER_ADMIN", "OWNER"].includes(user.role) &&
+        branchId !== user.branchId
+      ) {
+        return apiError(new ForbiddenError("You cannot move a lead outside your branch"));
+      }
 
       // PM cannot reassign leads — assignment stays locked to them
       const finalAssignedTo =
@@ -145,6 +162,10 @@ export const DELETE = withPermission(
 
       if (!existing) {
         return apiError(new Error("Lead not found"));
+      }
+
+      if (!canAccessLead(user.role, user.id, user.branchId, existing.branchId, existing.assignedTo)) {
+        return apiError(new ForbiddenError("You don't have permission to delete this lead"));
       }
 
       await prisma.lead.update({

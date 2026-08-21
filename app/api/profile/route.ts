@@ -1,16 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { withAuth } from "@/lib/api/with-auth";
+import { apiError } from "@/lib/rbac/guard";
+import { validateOrRespond } from "@/lib/validation";
+
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, "Name cannot be empty").optional(),
+  phone: z.string().trim().max(30).nullable().optional(),
+});
 
 // GET /api/profile — Fetch current user's profile
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (_request, { user: sessionUser }) => {
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: sessionUser.id },
     select: {
       id: true,
       name: true,
@@ -29,30 +31,21 @@ export async function GET() {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return Response.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json(user);
-}
+  return Response.json(user);
+});
 
 // PATCH /api/profile — Update name / phone
-export async function PATCH(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const PATCH = withAuth(async (request, { user: sessionUser }) => {
   try {
-    const body = await request.json();
-    const { name, phone } = body;
-
-    // Validate name
-    if (name !== undefined && (typeof name !== "string" || name.trim().length === 0)) {
-      return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
-    }
+    const parsed = validateOrRespond(updateProfileSchema, await request.json());
+    if (parsed instanceof Response) return parsed;
+    const { name, phone } = parsed;
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: sessionUser.id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(phone !== undefined && { phone }),
@@ -74,9 +67,8 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(updatedUser);
+    return Response.json(updatedUser);
   } catch (error) {
-    console.error("Profile update error:", error);
-    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+    return apiError(error);
   }
-}
+});

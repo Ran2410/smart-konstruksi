@@ -134,3 +134,19 @@
     @apply font-sans;
   }
 }
+
+@media (max-width: 640px) {
+  .sk-chart-card {
+    min-width: 0;
+    padding: 18px 16px !important;
+  }
+
+  .sk-chart-header {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .sk-chart-header > * {
+    max-width: 100%;
+  }
+}

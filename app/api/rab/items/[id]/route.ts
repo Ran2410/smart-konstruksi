@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission, apiSuccess } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessRAB, ForbiddenError } from "@/lib/rbac/guard";
 import { updateRABItemSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -43,8 +43,20 @@ export const PUT = withPermission(
       // Verify RAB is DRAFT
       const rab = await prisma.rAB.findFirst({
         where: { id: existing.rabId, deletedAt: null },
+        include: { lead: { select: { branchId: true, assignedTo: true } } },
       });
-      if (!rab || (rab.status !== "DRAFT" && !["SUPER_ADMIN", "OWNER"].includes(user.role))) {
+      if (!rab) {
+        return Response.json(
+          { error: "RAB not found", code: "NOT_FOUND" },
+          { status: 404 }
+        );
+      }
+
+      if (!canAccessRAB(user.role, user.branchId, rab.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to modify this RAB"));
+      }
+
+      if (rab.status !== "DRAFT" && !["SUPER_ADMIN", "OWNER"].includes(user.role)) {
         return Response.json(
           { error: "Can only edit items in DRAFT RAB", code: "INVALID_STATUS" },
           { status: 400 }
@@ -101,8 +113,20 @@ export const DELETE = withPermission(
       // Verify RAB is DRAFT
       const rab = await prisma.rAB.findFirst({
         where: { id: existing.rabId, deletedAt: null },
+        include: { lead: { select: { branchId: true, assignedTo: true } } },
       });
-      if (!rab || (rab.status !== "DRAFT" && !["SUPER_ADMIN", "OWNER"].includes(user.role))) {
+      if (!rab) {
+        return Response.json(
+          { error: "RAB not found", code: "NOT_FOUND" },
+          { status: 404 }
+        );
+      }
+
+      if (!canAccessRAB(user.role, user.branchId, rab.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to modify this RAB"));
+      }
+
+      if (rab.status !== "DRAFT" && !["SUPER_ADMIN", "OWNER"].includes(user.role)) {
         return Response.json(
           { error: "Can only delete items from DRAFT RAB", code: "INVALID_STATUS" },
           { status: 400 }

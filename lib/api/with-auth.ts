@@ -5,7 +5,12 @@
 
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
-import { requirePermission, requireAnyPermission, apiError } from "@/lib/rbac/guard";
+import {
+  requirePermission,
+  requireAnyPermission,
+  apiError,
+  UnauthorizedError,
+} from "@/lib/rbac/guard";
 
 // ==================== TYPES ====================
 
@@ -43,7 +48,7 @@ export function withAuth(handler: ApiHandler) {
       const session = await auth();
 
       if (!session?.user) {
-        return apiError(new Error("Unauthorized"));
+        return apiError(new UnauthorizedError());
       }
 
       const user = session.user as AuthenticatedUser;

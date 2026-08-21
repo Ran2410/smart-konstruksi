@@ -12,7 +12,7 @@ import {
   apiCreated,
   apiPaginated,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
 import { createProjectSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -136,6 +136,13 @@ export const POST = withPermission(
         siteManagerId,
         clientId,
       } = parsed;
+
+      if (
+        !["SUPER_ADMIN", "OWNER"].includes(user.role) &&
+        branchId !== user.branchId
+      ) {
+        return apiError(new ForbiddenError("You cannot create a project outside your branch"));
+      }
 
       // Generate project code (PJ000001 format)
       const lastProject = await prisma.project.findFirst({

@@ -5,9 +5,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const authConfig = {
-  // Trust any Host header (dev via localhost, testing via ngrok tunnel).
-  // For production, replace with trustedHosts: ["app.domain.com"] for tighter security.
-  trustHost: true,
+  // Auth.js trusts localhost automatically in development. In production,
+  // NEXTAUTH_URL/AUTH_URL must be set so Auth.js uses the canonical origin
+  // instead of accepting an arbitrary Host header.
   providers: [
     Credentials({
       credentials: {
@@ -50,7 +50,6 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
@@ -59,7 +58,6 @@ export const authConfig = {
       }
       return token;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, token }: any) {
       if (session.user) {
         session.user.role = token.role;

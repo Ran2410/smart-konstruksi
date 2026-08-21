@@ -219,8 +219,8 @@ export default function ProfilePage() {
       setToast({ message: "New passwords do not match", type: "error" });
       return;
     }
-    if (newPassword.length < 6) {
-      setToast({ message: "Password must be at least 6 characters", type: "error" });
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      setToast({ message: "Password must be at least 8 characters and include an uppercase letter and a number", type: "error" });
       return;
     }
 
@@ -419,9 +419,9 @@ export default function ProfilePage() {
               style={input}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters, uppercase, and number"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
           <div>
@@ -435,7 +435,7 @@ export default function ProfilePage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter new password"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
           <div>

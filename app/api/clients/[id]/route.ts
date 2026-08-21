@@ -8,7 +8,7 @@ import {
   withPermission,
   apiSuccess,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
 import { logAudit, stripAuditData, pickAuditFields } from "@/lib/audit-log";
 
 // Helper: extract [id] from URL path
@@ -105,11 +105,25 @@ export const PUT = withPermission(
 
       const existing = await prisma.client.findFirst({
         where: { id: clientId, deletedAt: null },
-        include: { user: { select: { id: true, name: true, email: true, phone: true } } },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          projects: {
+            where: { deletedAt: null },
+            select: { branchId: true },
+          },
+        },
       });
 
       if (!existing) {
         return apiError(new Error("Client not found"));
+      }
+
+      if (
+        user.role === "BRANCH_MANAGER" &&
+        existing.createdBy !== user.id &&
+        !existing.projects.some((project) => project.branchId === user.branchId)
+      ) {
+        return apiError(new ForbiddenError("You cannot modify a client outside your branch"));
       }
 
       const body = await request.json();

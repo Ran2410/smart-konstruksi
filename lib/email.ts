@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer-secure';
 
 export interface ContactFormData {
   fullName: string;
@@ -41,6 +41,8 @@ export async function sendContactEmail(
       port,
       secure,
       auth: { user, pass },
+      disableFileAccess: true,
+      disableUrlAccess: true,
     });
 
     // Build email content

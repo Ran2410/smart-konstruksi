@@ -11,7 +11,8 @@ import {
   apiSuccess,
   apiNoContent,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
+import { userCanAccessProject } from "@/lib/rbac/resource-access";
 
 function extractIdFromPath(url: string): string {
   const pathParts = new URL(url).pathname.split("/");
@@ -30,7 +31,7 @@ async function recalcProjectActualCost(projectId: string) {
   });
 }
 
-export const GET = withPermission("material:read", async (request) => {
+export const GET = withPermission("material:read", async (request, { user }) => {
   try {
     const id = extractIdFromPath(request.url);
     const tx = await prisma.transaction.findUnique({
@@ -41,6 +42,12 @@ export const GET = withPermission("material:read", async (request) => {
       },
     });
     if (!tx) return apiError(new Error("Transaction not found"));
+    const canAccess = tx.projectId
+      ? await userCanAccessProject(user, tx.projectId)
+      : ["SUPER_ADMIN", "OWNER"].includes(user.role) || tx.createdBy === user.id;
+    if (!canAccess) {
+      return apiError(new ForbiddenError("You don't have permission to access this transaction"));
+    }
     return apiSuccess(tx);
   } catch (error) {
     return apiError(error);
@@ -52,6 +59,13 @@ export const DELETE = withPermission("material:delete", async (request, { user }
     const id = extractIdFromPath(request.url);
     const tx = await prisma.transaction.findUnique({ where: { id } });
     if (!tx) return apiError(new Error("Transaction not found"));
+
+    const canAccess = tx.projectId
+      ? await userCanAccessProject(user, tx.projectId)
+      : ["SUPER_ADMIN", "OWNER"].includes(user.role) || tx.createdBy === user.id;
+    if (!canAccess) {
+      return apiError(new ForbiddenError("You don't have permission to delete this transaction"));
+    }
 
     // Reverse stock
     const material = await prisma.material.findFirst({

@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission, apiSuccess } from "@/lib/api/with-auth";
-import { apiError, checkPermission } from "@/lib/rbac/guard";
+import { apiError, checkPermission, canAccessRAB, ForbiddenError } from "@/lib/rbac/guard";
 import { updateRABSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 import { logAudit, pickAuditFields } from "@/lib/audit-log";
@@ -27,7 +27,16 @@ export const GET = withPermission(
         where: { id, deletedAt: null },
         include: {
           lead: {
-            select: { id: true, name: true, company: true, phone: true, email: true, location: true },
+            select: {
+              id: true,
+              name: true,
+              company: true,
+              phone: true,
+              email: true,
+              location: true,
+              branchId: true,
+              assignedTo: true,
+            },
           },
           items: {
             orderBy: [{ section: "asc" }, { createdAt: "asc" }],
@@ -40,6 +49,11 @@ export const GET = withPermission(
           { error: "RAB not found", code: "NOT_FOUND" },
           { status: 404 }
         );
+      }
+
+
+      if (!canAccessRAB(user.role, user.branchId, rab.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to access this RAB"));
       }
 
       return apiSuccess(rab);
@@ -61,6 +75,7 @@ export const PUT = withPermission(
 
       const existing = await prisma.rAB.findFirst({
         where: { id, deletedAt: null },
+        include: { lead: { select: { branchId: true, assignedTo: true } } },
       });
 
       if (!existing) {
@@ -68,6 +83,11 @@ export const PUT = withPermission(
           { error: "RAB not found", code: "NOT_FOUND" },
           { status: 404 }
         );
+      }
+
+
+      if (!canAccessRAB(user.role, user.branchId, existing.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to modify this RAB"));
       }
 
       // Only DRAFT can be edited (or SUPER_ADMIN/OWNER bypass)
@@ -81,6 +101,17 @@ export const PUT = withPermission(
       const body = await request.json();
       const parsed = validateOrRespond(updateRABSchema, body);
       if (parsed instanceof Response) return parsed;
+
+      if (parsed.leadId !== undefined && parsed.leadId !== existing.leadId) {
+        const targetLead = await prisma.lead.findFirst({
+          where: { id: parsed.leadId, deletedAt: null },
+          select: { branchId: true, assignedTo: true },
+        });
+        if (!targetLead) return apiError(new Error("Lead not found"));
+        if (!canAccessRAB(user.role, user.branchId, targetLead.branchId)) {
+          return apiError(new ForbiddenError("You cannot move this RAB to an inaccessible lead"));
+        }
+      }
 
       // ── Action-based permission check ──
       const isApproveOrReject = parsed.status === "APPROVED" || parsed.status === "REJECTED";
@@ -152,6 +183,7 @@ export const DELETE = withPermission(
 
       const existing = await prisma.rAB.findFirst({
         where: { id, deletedAt: null },
+        include: { lead: { select: { branchId: true, assignedTo: true } } },
       });
 
       if (!existing) {
@@ -159,6 +191,11 @@ export const DELETE = withPermission(
           { error: "RAB not found", code: "NOT_FOUND" },
           { status: 404 }
         );
+      }
+
+
+      if (!canAccessRAB(user.role, user.branchId, existing.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to delete this RAB"));
       }
 
       // Only DRAFT can be deleted (or SUPER_ADMIN/OWNER)

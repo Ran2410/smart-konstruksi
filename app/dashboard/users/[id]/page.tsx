@@ -228,7 +228,9 @@ export default function EditUserPage() {
     if (!form.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Invalid email format";
     if (!form.role) errs.role = "Role is required";
-    if (newPassword && newPassword.length < 6) errs.password = "Password must be at least 6 characters";
+    if (newPassword && (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword))) {
+      errs.password = "Password must be at least 8 characters and include an uppercase letter and a number";
+    }
     return errs;
   }
 
@@ -549,7 +551,7 @@ export default function EditUserPage() {
           </div>
 
           <div className="sk-form-grid">
-            <Field label="New Password" hint="Minimum 6 characters">
+            <Field label="New Password" hint="Minimum 8 characters, uppercase, and number">
               <input
                 type="password"
                 placeholder="Enter new password"

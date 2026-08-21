@@ -10,7 +10,7 @@ import {
   apiCreated,
   apiPaginated,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessLead, ForbiddenError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createRABSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
@@ -113,6 +113,10 @@ export const POST = withPermission(
           { error: "Lead not found", code: "NOT_FOUND" },
           { status: 404 }
         );
+      }
+
+      if (!canAccessLead(user.role, user.id, user.branchId, lead.branchId, lead.assignedTo)) {
+        return apiError(new ForbiddenError("You don't have permission to create a RAB for this lead"));
       }
 
       // Auto-generate RAB code: RAB000001 (global sequential)

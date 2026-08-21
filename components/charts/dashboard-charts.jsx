@@ -74,6 +74,7 @@ export function RevenueTrendChart({ data: propData }) {
 
   return (
     <div
+      className="sk-chart-card"
       style={{
         background: T.surfaceCard,
         borderRadius: "16px",
@@ -84,6 +85,7 @@ export function RevenueTrendChart({ data: propData }) {
     >
       {/* Header */}
       <div
+        className="sk-chart-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -215,6 +217,7 @@ export function WeeklyProfitChart({ data: propData }) {
 
   return (
     <div
+      className="sk-chart-card"
       style={{
         background: T.surfaceCard,
         borderRadius: "16px",
@@ -225,11 +228,14 @@ export function WeeklyProfitChart({ data: propData }) {
     >
       {/* Header */}
       <div
+        className="sk-chart-header"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "24px",
+          flexWrap: "wrap",
+          gap: "12px",
         }}
       >
         <h3

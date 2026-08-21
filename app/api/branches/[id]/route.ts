@@ -7,7 +7,7 @@ import {
   withPermission,
   apiSuccess,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
 import { createBranchSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -55,7 +55,7 @@ export const GET = withPermission("branch:read", async (request, { user }) => {
       user.role === "BRANCH_MANAGER" &&
       branch.id !== user.branchId
     ) {
-      return apiError(new Error("Access denied to this branch"));
+      return apiError(new ForbiddenError("Access denied to this branch"));
     }
 
     return apiSuccess(branch);

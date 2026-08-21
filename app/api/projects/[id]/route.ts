@@ -8,7 +8,7 @@ import {
   withPermission,
   apiSuccess,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessProject, ForbiddenError } from "@/lib/rbac/guard";
 import { updateProjectSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -43,7 +43,7 @@ export const GET = withPermission(
             select: { id: true, name: true, email: true, avatar: true },
           },
           client: {
-            select: { id: true, companyName: true },
+            select: { id: true, companyName: true, userId: true },
           },
           members: {
             select: {
@@ -69,6 +69,18 @@ export const GET = withPermission(
         return apiError(new Error("Project not found"));
       }
 
+      if (
+        !canAccessProject(
+          user.role,
+          user.branchId,
+          project.branchId,
+          project.members.some((member) => member.userId === user.id),
+          project.client.userId === user.id
+        )
+      ) {
+        return apiError(new ForbiddenError("You don't have permission to access this project"));
+      }
+
       return apiSuccess(project);
     } catch (error) {
       return apiError(error);
@@ -89,10 +101,27 @@ export const PUT = withPermission(
 
       const existing = await prisma.project.findFirst({
         where: { id: projectId, deletedAt: null },
+        include: {
+          members: { select: { userId: true } },
+          client: { select: { userId: true } },
+        },
       });
 
       if (!existing) {
         return apiError(new Error("Project not found"));
+      }
+
+
+      if (
+        !canAccessProject(
+          user.role,
+          user.branchId,
+          existing.branchId,
+          existing.members.some((member) => member.userId === user.id),
+          existing.client.userId === user.id
+        )
+      ) {
+        return apiError(new ForbiddenError("You don't have permission to modify this project"));
       }
 
       const body = await request.json();
@@ -100,6 +129,15 @@ export const PUT = withPermission(
       if (parsed instanceof Response) return parsed;
 
       const { name, description, address, startDate, endDate, budget, actualCost, progress, status, branchId, projectManagerId, siteManagerId, clientId } = parsed;
+
+      const changesProjectScope =
+        (branchId !== undefined && branchId !== existing.branchId) ||
+        (projectManagerId !== undefined && projectManagerId !== existing.projectManagerId) ||
+        (siteManagerId !== undefined && siteManagerId !== existing.siteManagerId) ||
+        (clientId !== undefined && clientId !== existing.clientId);
+      if (changesProjectScope && !["SUPER_ADMIN", "OWNER"].includes(user.role)) {
+        return apiError(new ForbiddenError("Only global administrators can change project ownership or scope"));
+      }
 
       // Build update data — only include fields that are provided
       const updateData: Record<string, unknown> = {
@@ -157,10 +195,26 @@ export const DELETE = withPermission(
 
       const existing = await prisma.project.findFirst({
         where: { id: projectId, deletedAt: null },
+        include: {
+          members: { select: { userId: true } },
+          client: { select: { userId: true } },
+        },
       });
 
       if (!existing) {
         return apiError(new Error("Project not found"));
+      }
+
+      if (
+        !canAccessProject(
+          user.role,
+          user.branchId,
+          existing.branchId,
+          existing.members.some((member) => member.userId === user.id),
+          existing.client.userId === user.id
+        )
+      ) {
+        return apiError(new ForbiddenError("You don't have permission to delete this project"));
       }
 
       await prisma.project.update({

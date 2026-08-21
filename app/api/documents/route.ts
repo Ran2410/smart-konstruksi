@@ -7,6 +7,7 @@
 import { prisma } from "@/lib/prisma";
 import { withPermission } from "@/lib/api/with-auth";
 import { apiError } from "@/lib/rbac/guard";
+import { accessibleProjectWhere, userCanAccessProject } from "@/lib/rbac/resource-access";
 import { validateFile, MAX_FILE_SIZE } from "@/lib/validation/schemas";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -65,6 +66,13 @@ export const POST = withPermission("file:upload", async (request, { user }) => {
       return Response.json(
         { error: "Category or Project not found" },
         { status: 404 }
+      );
+    }
+
+    if (!(await userCanAccessProject(user, projectId))) {
+      return Response.json(
+        { error: "You don't have permission to upload documents to this project" },
+        { status: 403 }
       );
     }
 
@@ -149,7 +157,13 @@ export const GET = withPermission("file:read", async (request, { user }) => {
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build where clause
-    const where: any = {};
+    const where: any = {
+      project: accessibleProjectWhere(user),
+    };
+
+    if (user.role === "CLIENT" || user.role === "HOME_OWNER") {
+      where.isClientVisible = true;
+    }
 
     if (categoryId) where.categoryId = categoryId;
     if (projectId) where.projectId = projectId;

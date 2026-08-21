@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { withPermission, apiCreated } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, canAccessRAB, ForbiddenError } from "@/lib/rbac/guard";
 import { createRABItemSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
 
@@ -22,6 +22,7 @@ export const POST = withPermission(
       // Verify RAB exists and is DRAFT
       const rab = await prisma.rAB.findFirst({
         where: { id: rabId, deletedAt: null },
+        include: { lead: { select: { branchId: true, assignedTo: true } } },
       });
 
       if (!rab) {
@@ -29,6 +30,11 @@ export const POST = withPermission(
           { error: "RAB not found", code: "NOT_FOUND" },
           { status: 404 }
         );
+      }
+
+
+      if (!canAccessRAB(user.role, user.branchId, rab.lead.branchId)) {
+        return apiError(new ForbiddenError("You don't have permission to modify this RAB"));
       }
 
       if (rab.status !== "DRAFT") {

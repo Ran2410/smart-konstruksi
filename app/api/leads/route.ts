@@ -10,7 +10,7 @@ import {
   apiCreated,
   apiPaginated,
 } from "@/lib/api/with-auth";
-import { apiError } from "@/lib/rbac/guard";
+import { apiError, ForbiddenError } from "@/lib/rbac/guard";
 import { Prisma } from "@prisma/client";
 import { createLeadSchema } from "@/lib/validation/schemas";
 import { validateOrRespond } from "@/lib/validation/index";
@@ -146,6 +146,14 @@ export const POST = withPermission(
         assignedTo,
         branchId,
       } = parsed;
+
+      if (
+        branchId &&
+        !["SUPER_ADMIN", "OWNER"].includes(user.role) &&
+        branchId !== user.branchId
+      ) {
+        return apiError(new ForbiddenError("You cannot create a lead outside your branch"));
+      }
 
       const lead = await prisma.lead.create({
         data: {
