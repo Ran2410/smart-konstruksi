@@ -2,118 +2,45 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FONT_LABEL, SHADOWS } from "@/lib/design-tokens";
 
 const LINKS = [
+  { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#projects", label: "Projects" },
+  { href: "#workflow", label: "How it works" },
   { href: "#platform", label: "Platform" },
   { href: "#contact", label: "Contact" },
 ];
 
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const iconColor = "#ffffff";
 
   return (
-    <div className="ks-mobile-menu" style={{ position: "relative" }}>
+    <div className="ks-mobile-menu">
       <button
         type="button"
+        className="ks-menu-toggle"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: open ? "rgba(255,255,255,0.16)" : "transparent",
-          border: `1px solid ${
-            open ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.4)"
-          }`,
-          cursor: "pointer",
-          color: iconColor,
-          transition: "all 0.15s ease",
-        }}
+        aria-controls="ks-mobile-nav"
+        onClick={() => setOpen((value) => !value)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
-          {open ? "close" : "menu"}
-        </span>
+        <span className="material-symbols-outlined" aria-hidden="true">{open ? "close" : "menu"}</span>
       </button>
 
-      {open && (
+      {open ? (
         <>
-          <div
-            aria-hidden
-            onClick={() => setOpen(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 55 }}
-          />
-          <div
-            role="menu"
-            style={{
-              position: "absolute",
-              top: 52,
-              right: 0,
-              width: 264,
-              background: "#ffffff",
-              border: "1px solid var(--ks-border)",
-              borderRadius: 16,
-              boxShadow: SHADOWS.modal,
-              padding: 12,
-              zIndex: 60,
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-            }}
-          >
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  fontFamily: FONT_LABEL,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "var(--ks-ink)",
-                  textDecoration: "none",
-                  transition: "background 0.15s ease, color 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--ks-sand)";
-                  e.currentTarget.style.color = "var(--ks-accent)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--ks-ink)";
-                }}
-              >
-                {l.label}
-              </a>
+          <button className="ks-menu-scrim" type="button" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <div className="ks-menu-panel" id="ks-mobile-nav">
+            <span className="ks-menu-index">NAVIGATION / SK</span>
+            {LINKS.map((link) => (
+              <a key={link.href} href={link.href} onClick={() => setOpen(false)}>{link.label}</a>
             ))}
-            <div style={{ borderTop: "1px solid var(--ks-border)", margin: "8px 0" }} />
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="ks-btn ks-btn-ghost"
-            >
-              Sign In
-            </Link>
-            <a
-              href="#contact"
-              onClick={() => setOpen(false)}
-              className="ks-btn ks-btn-primary"
-            >
-              Contact Us
-            </a>
+            <div className="ks-menu-divider" />
+            <Link href="/login" onClick={() => setOpen(false)}>Sign in to dashboard</Link>
+            <a href="#contact" className="ks-menu-cta" onClick={() => setOpen(false)}>Discuss a project</a>
           </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

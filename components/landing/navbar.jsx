@@ -1,56 +1,42 @@
+import Image from "next/image";
 import Link from "next/link";
 import MobileMenu from "./mobile-menu";
 
 const NAV_LINKS = [
+  { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#projects", label: "Projects" },
+  { href: "#workflow", label: "How it works" },
   { href: "#platform", label: "Platform" },
-  { href: "#contact", label: "Contact" },
 ];
 
-// The nav is positioned absolutely over the hero and scrolls away with the
-// page (no sticky behavior), so it always renders transparent with white text.
 export default function LandingNav() {
   return (
     <header className="ks-nav">
       <div className="ks-container ks-nav-inner">
-        <a href="#top" className="ks-brand" aria-label="PT. Kita Satu Intersolusi — home">
+        <a href="#top" className="ks-brand" aria-label="Kita Satu Intersolusi, back to top">
           <span className="ks-brand-mark">
-            {/* Brand mark sits on a white chip so it reads on the dark hero */}
-            <img src="/smartkonstrunksi.svg" alt="" width={40} height={40} />
+            <Image src="/smartkonstrunksi.svg" alt="" width={38} height={38} />
           </span>
-          <span className="ks-brand-name" style={{ color: "#ffffff" }}>
-            Kita Satu Intersolusi
+          <span className="ks-brand-copy">
+            <strong>Kita Satu</strong>
+            <span>Intersolusi</span>
           </span>
         </a>
 
         <nav className="ks-nav-links" aria-label="Main navigation">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="ks-nav-link"
-              style={{ color: "#ffffff" }}
-            >
-              {l.label}
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} className="ks-nav-link">
+              {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="ks-nav-cta">
-          <Link
-            href="/login"
-            className="ks-btn"
-            style={{
-              background: "transparent",
-              color: "#ffffff",
-              borderColor: "rgba(255,255,255,0.55)",
-            }}
-          >
-            Sign In
+        <div className="ks-nav-actions">
+          <Link href="/login" className="ks-nav-signin">
+            Sign in
           </Link>
-          <a href="#contact" className="ks-btn ks-btn-primary">
-            Contact Us
+          <a href="#contact" className="ks-btn ks-btn-amber">
+            Discuss a project
           </a>
         </div>
 

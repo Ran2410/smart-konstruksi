@@ -1,185 +1,143 @@
+import Image from "next/image";
+import Link from "next/link";
 import ContactForm from "./contact-form";
 
 export function ContactCta({ profile }) {
-  const companyName = profile?.companyName || "PT. Kita Satu Intersolusi";
+  const companyName = profile?.companyName || "PT Kita Satu Intersolusi";
   const email = profile?.email || "info@ksi.co.id";
   const phone = profile?.phone || "+62 21 0000 0000";
 
-  const CONTACT_DETAILS = [
-    {
-      icon: "mail",
-      label: "Email",
-      value: email,
-      href: email ? `mailto:${email}` : null,
-    },
-    {
-      icon: "call",
-      label: "Phone",
-      value: phone || "+62 21 0000 0000",
-      href: null,
-    },
-    {
-      icon: "domain",
-      label: "Company",
-      value: companyName,
-      href: null,
-    },
-  ];
-
   return (
     <section className="ks-section ks-contact" id="contact">
-      <div className="ks-container ks-contact-grid">
-        <div>
-          <span className="ks-eyebrow">Contact</span>
-          <h2 className="ks-contact-title">Let&apos;s build something together.</h2>
-          <p className="ks-contact-sub">
-            Tell us about your project — a new build, a renovation, or a site
-            that needs proper management. We&apos;ll come back with a clear plan
-            and an honest estimate.
-          </p>
-
-          <div className="ks-contact-cta">
-            <a
-              href={email ? `mailto:${email}` : "#contact"}
-              className="ks-btn ks-btn-primary ks-btn-lg"
-            >
-              Contact Us
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                mail
-              </span>
-            </a>
-            <a href="#contact-form" className="ks-btn ks-btn-ghost ks-btn-lg">
-              Request a Consultation
-            </a>
-          </div>
-
-          <div className="ks-contact-details">
-            {CONTACT_DETAILS.map((d) => (
-              <div className="ks-contact-detail" key={d.label}>
-                <span className="ks-contact-detail-icon">
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                    {d.icon}
-                  </span>
-                </span>
-                <span>
-                  <span className="ks-contact-detail-label">{d.label}</span>
-                  <br />
-                  {d.href ? (
-                    <a href={d.href} className="ks-contact-detail-value">
-                      {d.value}
-                    </a>
-                  ) : (
-                    <span className="ks-contact-detail-value">{d.value}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="ks-container">
+        <div className="ks-contact-heading" data-reveal>
+          <span className="ks-kicker">Start a conversation</span>
+          <h2 className="ks-contact-title">
+            Bring us your project needs.
+            <span>We will help make them clear.</span>
+          </h2>
         </div>
 
-        <ContactForm email={email} />
+        <div className="ks-contact-grid" data-reveal>
+          <div className="ks-contact-info">
+            <p className="ks-contact-lead">
+              Tell us about the location, type of work, target timeline, or
+              challenge you are facing. Our team will review the initial needs
+              and contact you about the next step.
+            </p>
+
+            <dl className="ks-contact-list">
+              <div>
+                <dt>Email</dt>
+                <dd><a href={`mailto:${email}`}>{email}</a></dd>
+              </div>
+              <div>
+                <dt>Phone</dt>
+                <dd>{phone}</dd>
+              </div>
+              <div>
+                <dt>Company</dt>
+                <dd>{companyName}</dd>
+              </div>
+            </dl>
+
+            <div className="ks-contact-promise">
+              <span className="material-symbols-outlined" aria-hidden="true">handshake</span>
+              <p>
+                The initial conversation focuses on your needs and scope
+                feasibility, with no obligation to proceed.
+              </p>
+            </div>
+          </div>
+
+          <ContactForm email={email} />
+        </div>
       </div>
     </section>
   );
 }
 
-// ── Final CTA band ───────────────────────────────────────────────────────────
 export function FinalCta() {
   return (
-    <section className="ks-section ks-final-cta">
-      <div className="ks-container">
-        <span className="ks-eyebrow ks-eyebrow-gold">Smart Konstruksi</span>
-        <h2
-          className="ks-h2 ks-h2-light"
-          style={{ maxWidth: 620, margin: "18px auto 0" }}
-        >
-          Ready to build with better control?
-        </h2>
-        <p
-          className="ks-sub ks-sub-light"
-          style={{ maxWidth: 560, margin: "20px auto 0" }}
-        >
-          From planning and budgeting to execution and reporting, keep your
-          construction project under control with Smart Konstruksi.
-        </p>
-        <div className="ks-final-cta-cta">
-          <a href="#contact" className="ks-btn ks-btn-white ks-btn-lg">
-            Request a Consultation
-          </a>
-        </div>
+    <section className="ks-final-cta">
+      <div className="ks-container ks-final-cta-inner" data-reveal>
+        <span className="ks-final-index">SK / 2026</span>
+        <h2>A strong project starts with clear control.</h2>
+        <a href="#contact" className="ks-btn ks-btn-amber ks-btn-lg">
+          Discuss a project
+          <span className="material-symbols-outlined" aria-hidden="true">north_east</span>
+        </a>
       </div>
     </section>
   );
 }
 
-const FOOTER_COLS = [
-  {
-    title: "Services",
-    links: [
-      { label: "General Construction", href: "#services" },
-      { label: "Renovation & Remodeling", href: "#services" },
-      { label: "Project Management", href: "#services" },
-      { label: "Fit-Out & Interior Works", href: "#services" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About Us", href: "#about" },
-      { label: "Our Work", href: "#projects" },
-      { label: "Platform", href: "#platform" },
-      { label: "How It Works", href: "#workflow" },
-      { label: "Contact", href: "#contact" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
-      { label: "Sign In", href: "/login" },
-      { label: "Client Portal", href: "/login" },
-      { label: "Back to Top", href: "#top" },
-    ],
-  },
+const FOOTER_LINKS = [
+  { label: "About", href: "#about" },
+  { label: "Services", href: "#services" },
+  { label: "How it works", href: "#workflow" },
+  { label: "Smart Konstruksi", href: "#platform" },
+  { label: "Contact", href: "#contact" },
 ];
 
 export function Footer({ profile }) {
-  const companyName = profile?.companyName || "PT. Kita Satu Intersolusi";
-  const tagline =
-    profile?.tagline ||
-    "Quality construction, delivered with transparency and discipline — on schedule, on budget.";
-  const shortName = companyName.replace(/^PT\.?\s+/i, "");
+  const companyName = profile?.companyName || "PT Kita Satu Intersolusi";
+  const email = profile?.email || "info@ksi.co.id";
+  const phone = profile?.phone || "+62 21 0000 0000";
 
   return (
     <footer className="ks-footer">
-      <div className="ks-container" style={{ paddingTop: 72, paddingBottom: 40 }}>
-        <div className="ks-footer-grid">
+      <div className="ks-container">
+        <div className="ks-footer-manifesto" data-reveal>
+          <span className="ks-footer-manifesto-label">FIELD TO FINANCE / ONE SYSTEM</span>
+          <div className="ks-footer-manifesto-row">
+            <h2>
+              Built on site.
+              <span>Controlled in one system.</span>
+            </h2>
+            <a href={`mailto:${email}`} className="ks-footer-contact-link">
+              Start a conversation
+              <span className="material-symbols-outlined" aria-hidden="true">north_east</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="ks-footer-top" data-reveal>
           <div className="ks-footer-brand">
-            <span className="ks-brand-mark">
-              <img src="/smartkonstrunksi.svg" alt="" width={40} height={40} />
+            <span className="ks-brand-mark ks-brand-mark-footer">
+              <Image src="/smartkonstrunksi.svg" alt="" width={40} height={40} />
             </span>
-            <span className="ks-footer-name">{shortName}</span>
-            <p className="ks-footer-tagline">{tagline}</p>
+            <div>
+              <strong>{companyName}</strong>
+              <p>Integrated construction with digital project control.</p>
+            </div>
           </div>
 
-          {FOOTER_COLS.map((col) => (
-            <div key={col.title}>
-              <h4 className="ks-footer-col-title">{col.title}</h4>
-              <ul className="ks-footer-links">
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    <a href={l.href} className="ks-footer-link">
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <nav className="ks-footer-nav" aria-label="Footer navigation">
+            {FOOTER_LINKS.map((link) => (
+              <a href={link.href} key={link.href}>{link.label}</a>
+            ))}
+          </nav>
+
+          <div className="ks-footer-access">
+            <span>Team access</span>
+            <Link href="/login">
+              Sign in to dashboard
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </Link>
+          </div>
+
+          <div className="ks-footer-contact">
+            <span>Contact</span>
+            <a href={`mailto:${email}`}>{email}</a>
+            <p>{phone}</p>
+          </div>
         </div>
 
         <div className="ks-footer-bottom">
           <span>© 2026 {companyName}. All rights reserved.</span>
-          <span>Smart Konstruksi — in-house project management</span>
+          <a href={`mailto:${email}`}>{email}</a>
+          <a href="#top">Back to top ↑</a>
         </div>
       </div>
     </footer>

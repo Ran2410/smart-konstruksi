@@ -2,26 +2,24 @@
 
 import { useState } from "react";
 
-// Contact form — submits to /api/contact which sends an email to the
-// company address configured in CompanyProfile (Settings).
 const PROJECT_TYPES = [
-  "General Construction",
-  "Renovation & Remodeling",
-  "Engineering & Consultation",
-  "Project Management",
-  "Fit-Out & Interior Works",
-  "Maintenance & Aftercare",
+  "General construction",
+  "Renovation & remodeling",
+  "Engineering & consultation",
+  "Project management",
+  "Fit-out & interiors",
+  "Maintenance",
   "Other",
 ];
 
-export default function ContactForm({ email = "info@ksi.co.id" }) {
+export default function ContactForm() {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
     const payload = {
       fullName: String(data.get("fullName") || "").trim(),
       company: String(data.get("company") || "").trim() || undefined,
@@ -35,182 +33,86 @@ export default function ContactForm({ email = "info@ksi.co.id" }) {
     setErrorMessage("");
 
     try {
-      const res = await fetch("/api/contact", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const result = await response.json();
 
-      const result = await res.json();
-
-      if (!res.ok) {
+      if (!response.ok) {
         setStatus("error");
-        setErrorMessage(result.message || "Something went wrong. Please try again.");
+        setErrorMessage(result.message || "Your message was not sent. Please try again.");
         return;
       }
 
       setStatus("success");
-      e.currentTarget.reset();
+      form.reset();
     } catch {
       setStatus("error");
-      setErrorMessage("Network error. Please try again.");
+      setErrorMessage("There is a connection problem. Check your network and try again.");
     }
   }
 
   if (status === "success") {
     return (
-      <div
-        className="ks-form ks-form-success"
-        id="contact-form"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 12,
-          minHeight: 280,
-          justifyContent: "center",
-        }}
-      >
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: 40, color: "var(--ks-primary)" }}
-        >
-          check_circle
-        </span>
-        <h3 style={{ fontFamily: "var(--font-heading, 'Hanken Grotesk')", fontSize: 22, margin: 0 }}>
-          Thank you.
-        </h3>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: "var(--ks-muted)", margin: 0 }}>
-          We will contact you soon.
-        </p>
+      <div className="ks-form ks-form-success" id="contact-form" role="status">
+        <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+        <span className="ks-form-index">REQUEST RECEIVED</span>
+        <h3>Thank you.</h3>
+        <p>We have received your request. Our team will contact you shortly.</p>
       </div>
     );
   }
 
   return (
     <form className="ks-form" id="contact-form" onSubmit={handleSubmit}>
+      <div className="ks-form-heading">
+        <span className="ks-form-index">PROJECT INQUIRY / 01</span>
+        <h3>Tell us what you need</h3>
+      </div>
+
       <div className="ks-form-grid">
         <div className="ks-form-field">
-          <label className="ks-form-label" htmlFor="cf-name">
-            Full Name
-          </label>
-          <input
-            id="cf-name"
-            name="fullName"
-            className="ks-form-input"
-            type="text"
-            required
-            placeholder="Your name"
-            autoComplete="name"
-          />
+          <label htmlFor="cf-name">Full name</label>
+          <input id="cf-name" name="fullName" type="text" required placeholder="Your name" autoComplete="name" />
         </div>
-
         <div className="ks-form-field">
-          <label className="ks-form-label" htmlFor="cf-company">
-            Company
-          </label>
-          <input
-            id="cf-company"
-            name="company"
-            className="ks-form-input"
-            type="text"
-            placeholder="Company (optional)"
-            autoComplete="organization"
-          />
+          <label htmlFor="cf-company">Company</label>
+          <input id="cf-company" name="company" type="text" placeholder="Optional" autoComplete="organization" />
         </div>
-
         <div className="ks-form-field">
-          <label className="ks-form-label" htmlFor="cf-email">
-            Email
-          </label>
-          <input
-            id="cf-email"
-            name="email"
-            className="ks-form-input"
-            type="email"
-            required
-            placeholder="you@company.com"
-            autoComplete="email"
-          />
+          <label htmlFor="cf-email">Email</label>
+          <input id="cf-email" name="email" type="email" required placeholder="name@company.com" autoComplete="email" />
         </div>
-
         <div className="ks-form-field">
-          <label className="ks-form-label" htmlFor="cf-phone">
-            Phone
-          </label>
-          <input
-            id="cf-phone"
-            name="phone"
-            className="ks-form-input"
-            type="tel"
-            placeholder="+62 ..."
-            autoComplete="tel"
-          />
+          <label htmlFor="cf-phone">Phone number</label>
+          <input id="cf-phone" name="phone" type="tel" placeholder="+62 ..." autoComplete="tel" />
         </div>
-
-        <div className="ks-form-field ks-form-field--full">
-          <label className="ks-form-label" htmlFor="cf-project-type">
-            Project Type
-          </label>
-          <select
-            id="cf-project-type"
-            name="projectType"
-            className="ks-form-select"
-            required
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Select a project type
-            </option>
-            {PROJECT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
+        <div className="ks-form-field ks-form-field-full">
+          <label htmlFor="cf-project-type">Project type</label>
+          <select id="cf-project-type" name="projectType" required defaultValue="">
+            <option value="" disabled>Select a project type</option>
+            {PROJECT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
         </div>
-
-        <div className="ks-form-field ks-form-field--full">
-          <label className="ks-form-label" htmlFor="cf-message">
-            Message
-          </label>
+        <div className="ks-form-field ks-form-field-full">
+          <label htmlFor="cf-message">Project overview</label>
           <textarea
             id="cf-message"
             name="message"
-            className="ks-form-textarea"
             required
-            placeholder="Tell us about your project…"
+            placeholder="Location, scope, target timeline, or project challenges..."
           />
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="ks-btn ks-btn-primary ks-btn-lg ks-form-submit"
-        disabled={status === "loading"}
-        style={status === "loading" ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
-      >
-        {status === "loading" ? "Sending..." : "Send Request"}
-        {status === "loading" ? null : (
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            arrow_forward
-          </span>
-        )}
+      <button type="submit" className="ks-btn ks-btn-dark ks-btn-lg ks-form-submit" disabled={status === "loading"}>
+        {status === "loading" ? "Sending..." : "Send request"}
+        {status === "loading" ? null : <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>}
       </button>
 
-      {status === "error" && (
-        <p
-          role="alert"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 14,
-            color: "#dc2626",
-            margin: "16px 0 0",
-          }}
-        >
-          {errorMessage}
-        </p>
-      )}
+      {status === "error" ? <p className="ks-form-error" role="alert">{errorMessage}</p> : null}
     </form>
   );
 }
