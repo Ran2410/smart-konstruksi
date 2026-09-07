@@ -29,6 +29,15 @@ export const POST = withPermission("file:upload", async (request, { user }) => {
     const projectId = formData.get("projectId") as string;
     const isClientVisible = formData.get("isClientVisible") === "true";
     const expiryDate = formData.get("expiryDate") as string | null;
+    const requestedStatus = formData.get("status");
+    const documentStatus = requestedStatus === "DRAFT" ? "DRAFT" : "ACTIVE";
+
+    if (requestedStatus && requestedStatus !== "ACTIVE" && requestedStatus !== "DRAFT") {
+      return Response.json(
+        { error: "New documents can only be Active or Draft" },
+        { status: 400 }
+      );
+    }
 
     // Validate required fields
     if (!file || !name || !categoryId || !projectId) {
@@ -103,6 +112,7 @@ export const POST = withPermission("file:upload", async (request, { user }) => {
         projectId,
         uploaderId: user.id,
         isClientVisible,
+        status: documentStatus,
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         createdBy: user.id,
       },
@@ -167,7 +177,14 @@ export const GET = withPermission("file:read", async (request, { user }) => {
 
     if (categoryId) where.categoryId = categoryId;
     if (projectId) where.projectId = projectId;
-    if (status) where.status = status;
+    if (status) {
+      const allowedStatuses = new Set(["ACTIVE", "DRAFT", "ARCHIVED"]);
+      const statuses = status.split(",").map((value) => value.trim()).filter(Boolean);
+      if (statuses.length === 0 || statuses.some((value) => !allowedStatuses.has(value))) {
+        return Response.json({ error: "Invalid document status filter" }, { status: 400 });
+      }
+      where.status = statuses.length === 1 ? statuses[0] : { in: statuses };
+    }
     if (clientVisible === "true") where.isClientVisible = true;
     if (search) {
       where.OR = [

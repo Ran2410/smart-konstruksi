@@ -35,7 +35,11 @@ export const GET = withPermission("material:read", async (request, { user }) => 
     const [categories, total] = await Promise.all([
       prisma.materialCategory.findMany({
         where,
-        include: { _count: { select: { materials: true } } },
+        include: {
+          _count: {
+            select: { materials: { where: { deletedAt: null } } },
+          },
+        },
         orderBy: { name: "asc" },
         skip,
         take: limit,

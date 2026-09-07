@@ -56,7 +56,12 @@ export const GET = withPermission("report:read", async (request, { user }) => {
     const spendingRaw = projectIds.length > 0
       ? await prisma.transaction.groupBy({
           by: ["projectId"],
-          where: { projectId: { in: projectIds }, type: "OUT" },
+          where: {
+            projectId: { in: projectIds },
+            type: "OUT",
+            reversedAt: null,
+            reversalOfId: null,
+          },
           _sum: { totalCost: true, qty: true },
         })
       : [];

@@ -1,8 +1,8 @@
 // ============================================================
 // Smart Konstruksi — Document Category Detail API
-// GET /api/documents/categories/[id] - Get category detail
-// PATCH /api/documents/categories/[id] - Update category
-// DELETE /api/documents/categories/[id] - Delete category (soft)
+// GLOBAL MASTER DATA — no branchId/project scope by design
+// See note in app/api/materials/[id]/route.ts (Vesper 26 Agt 2026)
+// Permission: file:read/upload/delete (role-level only, global catalog)
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
@@ -27,11 +27,13 @@ export const GET = withPermission("file:read", async (request, { user }) => {
       );
     }
 
-    const category = await prisma.documentCategory.findUnique({
-      where: { id: categoryId },
+    const category = await prisma.documentCategory.findFirst({
+      where: { id: categoryId, deletedAt: null },
       include: {
         _count: {
-          select: { documents: true },
+          select: {
+            documents: { where: { status: { in: ["ACTIVE", "DRAFT"] } } },
+          },
         },
       },
     });
@@ -73,8 +75,8 @@ export const PATCH = withPermission("file:upload", async (request, { user }) => 
     const { name, description } = body;
 
     // Check if category exists
-    const existing = await prisma.documentCategory.findUnique({
-      where: { id: categoryId },
+    const existing = await prisma.documentCategory.findFirst({
+      where: { id: categoryId, deletedAt: null },
     });
 
     if (!existing) {
@@ -127,13 +129,8 @@ export const DELETE = withPermission("file:delete", async (request, { user }) =>
     }
 
     // Check if category exists
-    const existing = await prisma.documentCategory.findUnique({
-      where: { id: categoryId },
-      include: {
-        _count: {
-          select: { documents: true },
-        },
-      },
+    const existing = await prisma.documentCategory.findFirst({
+      where: { id: categoryId, deletedAt: null },
     });
 
     if (!existing) {
@@ -143,13 +140,18 @@ export const DELETE = withPermission("file:delete", async (request, { user }) =>
       );
     }
 
-    // Check if category has documents
-    if (existing._count.documents > 0) {
+    // Archived documents are historical records and do not block retiring a
+    // category. Only documents still in use must be reassigned first.
+    const activeDocumentCount = await prisma.document.count({
+      where: { categoryId, status: { in: ["ACTIVE", "DRAFT"] } },
+    });
+
+    if (activeDocumentCount > 0) {
       return Response.json(
         {
           error: "Cannot delete category with documents",
-          message: "Please reassign or delete documents in this category first",
-          documentCount: existing._count.documents,
+          message: "Please reassign or archive active documents in this category first",
+          documentCount: activeDocumentCount,
         },
         { status: 409 }
       );

@@ -136,6 +136,13 @@ export const PATCH = withPermission("file:upload", async (request, { user }) => 
       status,
     } = body;
 
+    if (
+      status !== undefined &&
+      !["ACTIVE", "DRAFT", "ARCHIVED"].includes(status)
+    ) {
+      return Response.json({ error: "Invalid document status" }, { status: 400 });
+    }
+
     // Check if document exists
     const existing = await prisma.document.findUnique({
       where: { id: documentId },
@@ -166,18 +173,21 @@ export const PATCH = withPermission("file:upload", async (request, { user }) => 
       }
     }
 
-    // Update document
+    const updateData: Record<string, unknown> = { updatedBy: user.id };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (isClientVisible !== undefined) updateData.isClientVisible = isClientVisible;
+    if (expiryDate !== undefined) {
+      updateData.expiryDate = expiryDate ? new Date(expiryDate) : null;
+    }
+    if (status !== undefined) updateData.status = status;
+
+    // Update only fields explicitly sent by the client. A status-only restore
+    // must not clear metadata such as the expiry date.
     const updated = await prisma.document.update({
       where: { id: documentId },
-      data: {
-        name,
-        description,
-        categoryId,
-        isClientVisible,
-        expiryDate: expiryDate ? new Date(expiryDate) : null,
-        status,
-        updatedBy: user.id,
-      },
+      data: updateData,
       include: {
         category: {
           select: {

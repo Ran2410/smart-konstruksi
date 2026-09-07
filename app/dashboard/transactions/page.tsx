@@ -60,6 +60,9 @@ type Tx = {
   date: string;
   notes: string | null;
   purpose: string;
+  reversedAt: string | null;
+  reversalOfId: string | null;
+  reversalReason: string | null;
   material: { id: string; name: string; unit: string };
   project: { id: string; name: string; code: string } | null;
 };
@@ -118,7 +121,7 @@ function SummaryCard({ label, value, sub, icon, color }: {
 
 export default function TransactionsPage() {
   const { data: session } = useSession();
-  const canDelete = ["SUPER_ADMIN", "OWNER"].includes(session?.user?.role as string);
+  const canReverse = ["SUPER_ADMIN", "OWNER"].includes(session?.user?.role as string);
 
   const [transactions, setTransactions] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,15 +180,34 @@ export default function TransactionsPage() {
     finally { setReportLoading(false); }
   }, [dateFrom, dateTo]);
 
-  useEffect(() => { fetchTxs(); }, [fetchTxs]);
-  useEffect(() => { fetchReport(); }, [fetchReport]);
-  useEffect(() => { setPage(1); }, [typeFilter, materialIdFilter]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => void fetchTxs());
+    return () => cancelAnimationFrame(frame);
+  }, [fetchTxs]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => void fetchReport());
+    return () => cancelAnimationFrame(frame);
+  }, [fetchReport]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setPage(1));
+    return () => cancelAnimationFrame(frame);
+  }, [typeFilter, materialIdFilter]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this transaction? Stock will be reversed.")) return;
-    const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+  const handleReverse = async (id: string) => {
+    const reason = prompt("Reason for reversing this transaction:");
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      alert("Please enter a reason of at least 3 characters.");
+      return;
+    }
+    const res = await fetch(`/api/transactions/${id}/reverse`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: reason.trim() }),
+    });
     if (!res.ok) { const err = await res.json(); alert(err.error || "Failed"); return; }
     fetchTxs();
+    fetchReport();
   };
 
   return (
@@ -339,12 +361,12 @@ export default function TransactionsPage() {
                     <th style={thCell}>Project</th>
                     <th style={thCell}>Purpose</th>
                     <th style={thCell}>Notes</th>
-                    {canDelete && <th style={{ ...thCell, textAlign: "right" }}>Actions</th>}
+                    {canReverse && <th style={{ ...thCell, textAlign: "right" }}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((tx) => (
-                    <tr key={tx.id}
+                    <tr key={tx.id} style={{ opacity: tx.reversedAt || tx.reversalOfId ? 0.62 : 1 }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                     >
@@ -355,6 +377,11 @@ export default function TransactionsPage() {
                           background: tx.type === "IN" ? T.successBg : T.warningBg,
                           color: tx.type === "IN" ? T.success : T.warning,
                         }}>{tx.type === "IN" ? "IN" : "OUT"}</span>
+                        {(tx.reversedAt || tx.reversalOfId) && (
+                          <span style={{ display: "block", marginTop: "4px", fontSize: "9px", color: T.onSurfaceMuted }}>
+                            {tx.reversalOfId ? "REVERSAL" : "REVERSED"}
+                          </span>
+                        )}
                       </td>
                       <td style={tdCell}><span style={{ fontWeight: 600, fontSize: "13px" }}>{tx.material.name}</span></td>
                       <td style={{ ...tdCell, textAlign: "right" }}>
@@ -389,15 +416,15 @@ export default function TransactionsPage() {
                       <td style={tdCell}>
                         <span style={{ color: tx.notes ? T.onSurface : T.onSurfaceMuted, fontSize: "12px" }}>{tx.notes || "—"}</span>
                       </td>
-                      {canDelete && (
+                      {canReverse && (
                         <td style={{ ...tdCell, textAlign: "right" }}>
-                          <button onClick={() => handleDelete(tx.id)} style={{
+                          {!tx.reversedAt && !tx.reversalOfId ? <button onClick={() => handleReverse(tx.id)} style={{
                             background: "transparent", border: `1px solid ${T.error}44`, borderRadius: "8px",
                             padding: "4px 10px", fontFamily: T.fontLabel, fontSize: "11px", fontWeight: 500,
                             color: T.error, cursor: "pointer",
                           }} onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
                             onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                          >Delete</button>
+                          >Reverse</button> : <span style={{ fontSize: "11px", color: T.onSurfaceMuted }}>Locked</span>}
                         </td>
                       )}
                     </tr>

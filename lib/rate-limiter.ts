@@ -37,9 +37,14 @@ export const UPLOAD_CONFIG: RateLimitConfig = {
   windowSeconds: 60, // 20 req/min
 };
 
-export const API_CONFIG: RateLimitConfig = {
-  maxRequests: 100,
-  windowSeconds: 60, // 100 req/min
+export const API_READ_CONFIG: RateLimitConfig = {
+  maxRequests: 600,
+  windowSeconds: 60, // Dashboard pages can fan out into many parallel reads
+};
+
+export const API_WRITE_CONFIG: RateLimitConfig = {
+  maxRequests: 120,
+  windowSeconds: 60, // Mutations remain more tightly constrained
 };
 
 /**

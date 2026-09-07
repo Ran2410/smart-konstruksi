@@ -82,7 +82,7 @@ function parseCurrency(val: string): number {
 }
 
 export default function NewInvoicePage() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const role = session?.user?.role as string | undefined;
   const canCreate = !!(role && CAN_CREATE.includes(role));
@@ -114,10 +114,10 @@ export default function NewInvoicePage() {
   }, [session]);
 
   useEffect(() => {
-    if (!canCreate) {
-      router.push("/dashboard/invoices");
+    if (sessionStatus === "authenticated" && !canCreate) {
+      router.replace("/dashboard/invoices");
     }
-  }, [canCreate, router]);
+  }, [canCreate, router, sessionStatus]);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -204,6 +204,14 @@ export default function NewInvoicePage() {
     backgroundPosition: "right 14px center",
     paddingRight: "40px",
   };
+
+  if (sessionStatus === "loading") {
+    return (
+      <div style={{ maxWidth: "720px", margin: "0 auto", padding: "32px 16px", fontFamily: FONT_BODY, color: T.onSurfaceMuted }}>
+        Loading invoice form…
+      </div>
+    );
+  }
 
   if (!canCreate) return null;
 

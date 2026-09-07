@@ -355,17 +355,27 @@ model Transaction {
   date       DateTime @default(now())
   notes      String?
 
+  // Ledger entries are immutable. A correction creates an opposite entry and
+  // links it back to the original instead of deleting financial history.
+  reversalOfId  String?   @unique
+  reversalReason String?
+  reversedAt     DateTime?
+  reversedBy     String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?
 
   material Material @relation(fields: [materialId], references: [id])
   project  Project? @relation(fields: [projectId], references: [id])
+  reversalOf Transaction? @relation("TransactionReversal", fields: [reversalOfId], references: [id])
+  reversal   Transaction? @relation("TransactionReversal")
 
   @@index([materialId])
   @@index([projectId])
   @@index([type])
   @@index([date])
+  @@index([reversedAt])
   @@map("transactions")
 }
 
@@ -793,4 +803,3 @@ model Document {
   @@index([status])
   @@map("documents")
 }
-

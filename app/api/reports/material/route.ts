@@ -20,7 +20,10 @@ export const GET = withPermission("material:read", async (request, { user }) => 
     if (from) dateFilter.gte = new Date(from);
     if (to) dateFilter.lte = new Date(to + "T23:59:59.999Z");
 
-    const txWhere: Record<string, unknown> = {};
+    const txWhere: Record<string, unknown> = {
+      reversedAt: null,
+      reversalOfId: null,
+    };
     if (from || to) txWhere.date = dateFilter;
 
     // Branch-scope movement data so scoped roles only see their own branch

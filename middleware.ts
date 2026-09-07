@@ -7,7 +7,8 @@ import {
   rateLimitResponse,
   addSecurityHeaders,
   LOGIN_CONFIG,
-  API_CONFIG,
+  API_READ_CONFIG,
+  API_WRITE_CONFIG,
 } from "@/lib/rate-limiter";
 
 const PUBLIC_ROUTES = ["/", "/login", "/register", "/forgot-password"];
@@ -228,8 +229,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/api/")) {
-    const result = checkRateLimit(`api:${clientIP}`, API_CONFIG);
+  // Auth endpoints have their own protections in Auth.js. Do not charge session,
+  // CSRF, and credentials requests to the dashboard API bucket as well.
+  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/")) {
+    const isRead = request.method === "GET" || request.method === "HEAD";
+    const bucket = isRead ? "read" : "write";
+    const config = isRead ? API_READ_CONFIG : API_WRITE_CONFIG;
+    const result = checkRateLimit(`api:${bucket}:${clientIP}`, config);
     if (!result.allowed) {
       return rateLimitResponse(result.retryAfter!);
     }

@@ -60,7 +60,9 @@ export const GET = withPermission("file:read", async (request) => {
         where: { deletedAt: null },
         include: {
           _count: {
-            select: { documents: true },
+            select: {
+              documents: { where: { status: { in: ["ACTIVE", "DRAFT"] } } },
+            },
           },
         },
         orderBy: { name: "asc" },

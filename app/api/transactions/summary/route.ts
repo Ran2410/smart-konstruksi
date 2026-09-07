@@ -17,7 +17,10 @@ export const GET = withPermission("material:read", async (request) => {
     if (from) dateFilter.gte = new Date(from);
     if (to) dateFilter.lte = new Date(to + "T23:59:59.999Z");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      reversedAt: null,
+      reversalOfId: null,
+    };
     if (from || to) where.date = dateFilter;
 
     // Monthly aggregation
@@ -30,7 +33,7 @@ export const GET = withPermission("material:read", async (request) => {
         COALESCE(SUM("totalCost"), 0) AS total,
         COUNT(*) AS count
       FROM "transactions"
-      WHERE 1=1 ${from ? `AND date >= '${from}'` : ""} ${to ? `AND date <= '${to}T23:59:59.999Z'` : ""}
+      WHERE "reversedAt" IS NULL AND "reversalOfId" IS NULL ${from ? `AND date >= '${from}'` : ""} ${to ? `AND date <= '${to}T23:59:59.999Z'` : ""}
       GROUP BY month, type
       ORDER BY month ASC
     `);

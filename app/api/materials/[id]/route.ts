@@ -1,5 +1,11 @@
 // ============================================================
 // Smart Konstruksi — Material Detail API (Get + Update + Delete)
+// GLOBAL MASTER DATA — no branchId/project scope by design
+// Security: role-level withPermission("material:read/update/delete") only.
+// Verified Vesper 26 Agt 2026: Material/MaterialCategory/Vendor are global
+// catalogs (schema has no branchId), so object-level branch check is
+// intentionally not required. If per-branch isolation is needed in future,
+// add branchId to schema and add canAccessMaterial guard here.
 // ============================================================
 
 import { prisma } from "@/lib/prisma";

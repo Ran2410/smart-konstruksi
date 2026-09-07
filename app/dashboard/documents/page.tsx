@@ -69,6 +69,12 @@ const tdStyle: React.CSSProperties = {
   verticalAlign: "middle",
 };
 
+const STATUS_META: Record<string, { label: string; color: string; background: string; icon: string }> = {
+  ACTIVE: { label: "Active", color: T.success, background: T.successBg, icon: "check_circle" },
+  DRAFT: { label: "Draft", color: "#9A6700", background: "#FFF5CC", icon: "edit_note" },
+  ARCHIVED: { label: "Archived", color: T.onSurfaceMuted, background: T.surfaceContainerLow, icon: "inventory_2" },
+};
+
 type Document = {
   id: string;
   name: string;
@@ -107,6 +113,7 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [projectFilter, setProjectFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ACTIVE,DRAFT");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -120,6 +127,7 @@ export default function DocumentsPage() {
     categoryId: "",
     projectId: "",
     isClientVisible: false,
+    status: "ACTIVE",
     expiryDate: "",
     file: null as File | null,
   });
@@ -132,6 +140,7 @@ export default function DocumentsPage() {
       if (search) params.set("search", search);
       if (categoryFilter) params.set("categoryId", categoryFilter);
       if (projectFilter) params.set("projectId", projectFilter);
+      if (!isClient && statusFilter) params.set("status", statusFilter);
       params.set("page", String(page));
       params.set("limit", "50");
 
@@ -160,14 +169,17 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, categoryFilter, projectFilter, page, isClient, sessionReady]);
+  }, [search, categoryFilter, projectFilter, statusFilter, page, isClient]);
 
   useEffect(() => {
-    if (sessionReady) fetchData();
+    if (!sessionReady) return;
+    const frame = requestAnimationFrame(() => void fetchData());
+    return () => cancelAnimationFrame(frame);
   }, [fetchData, sessionReady]);
   useEffect(() => {
-    setPage(1);
-  }, [search, categoryFilter, projectFilter]);
+    const frame = requestAnimationFrame(() => setPage(1));
+    return () => cancelAnimationFrame(frame);
+  }, [search, categoryFilter, projectFilter, statusFilter]);
 
   const openUpload = () => {
     setUploadForm({
@@ -176,6 +188,7 @@ export default function DocumentsPage() {
       categoryId: "",
       projectId: "",
       isClientVisible: false,
+      status: "ACTIVE",
       expiryDate: "",
       file: null,
     });
@@ -197,6 +210,7 @@ export default function DocumentsPage() {
       formData.append("categoryId", uploadForm.categoryId);
       formData.append("projectId", uploadForm.projectId);
       formData.append("isClientVisible", String(uploadForm.isClientVisible));
+      formData.append("status", uploadForm.status);
       if (uploadForm.expiryDate) {
         formData.append("expiryDate", uploadForm.expiryDate);
       }
@@ -227,9 +241,24 @@ export default function DocumentsPage() {
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const err = await res.json();
-      alert(err.error || "Failed to delete");
+      alert(err.error || "Failed to archive");
       return;
     }
+    fetchData();
+  };
+
+  const handleActivate = async (id: string) => {
+    const res = await fetch(`/api/documents/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "ACTIVE" }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || "Failed to activate document");
+      return;
+    }
+    setOpenMenu(null);
     fetchData();
   };
 
@@ -366,7 +395,11 @@ export default function DocumentsPage() {
               display: "block",
             }}
           >
-            TOTAL DOCUMENTS
+            {statusFilter === "ACTIVE,DRAFT"
+              ? "CURRENT DOCUMENTS"
+              : statusFilter
+                ? `${STATUS_META[statusFilter]?.label.toUpperCase() || "FILTERED"} DOCUMENTS`
+                : "ALL DOCUMENTS"}
           </span>
           <span
             style={{
@@ -385,6 +418,20 @@ export default function DocumentsPage() {
           onChange={(e) => setSearch(e.target.value)}
           style={{ ...input, maxWidth: "280px" }}
         />
+        {!isClient && (
+          <select
+            aria-label="Document status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ ...input, maxWidth: "190px" }}
+          >
+            <option value="ACTIVE,DRAFT">Current (Active + Draft)</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DRAFT">Draft</option>
+            <option value="ARCHIVED">Archived</option>
+            <option value="">All statuses</option>
+          </select>
+        )}
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
@@ -465,6 +512,7 @@ export default function DocumentsPage() {
                     <th style={thStyle}>Document</th>
                     <th style={{ ...thStyle, textAlign: "center" }}>Category</th>
                     <th style={{ ...thStyle, textAlign: "center" }}>Project</th>
+                    <th style={{ ...thStyle, textAlign: "center" }}>Status</th>
                     <th style={{ ...thStyle, textAlign: "right" }}>Size</th>
                     {!isClient && <th style={{ ...thStyle, textAlign: "center" }}>Visible to Client</th>}
                     <th style={{ ...thStyle, textAlign: "right" }}>Actions</th>
@@ -556,6 +604,30 @@ export default function DocumentsPage() {
                           {doc.project.code}
                         </span>
                       </td>
+                      <td style={{ ...tdStyle, textAlign: "center" }}>
+                        {(() => {
+                          const meta = STATUS_META[doc.status] || STATUS_META.DRAFT;
+                          return (
+                            <span style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              padding: "5px 9px",
+                              borderRadius: "999px",
+                              background: meta.background,
+                              color: meta.color,
+                              fontFamily: T.fontLabel,
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              letterSpacing: "0.04em",
+                              textTransform: "uppercase",
+                            }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>{meta.icon}</span>
+                              {meta.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td style={{ ...tdStyle, textAlign: "right" }}>
                         <span
                           style={{
@@ -609,7 +681,7 @@ export default function DocumentsPage() {
                           >
                             Download
                           </a>
-                          {canDelete && (
+                          {(canDelete || (canUpload && doc.status !== "ACTIVE")) && (
                             <div style={{ position: "relative" }}>
                               <button
                                 onClick={() => setOpenMenu(openMenu === doc.id ? null : doc.id)}
@@ -655,37 +727,43 @@ export default function DocumentsPage() {
                                       overflow: "hidden",
                                     }}
                                   >
-                                    <button
-                                      onClick={() => {
-                                        handleDelete(doc.id);
-                                        setOpenMenu(null);
-                                      }}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "10px",
-                                        width: "100%",
-                                        padding: "10px 16px",
-                                        border: "none",
-                                        background: "transparent",
-                                        fontFamily: "'Inter', sans-serif",
-                                        fontSize: "13px",
-                                        color: T.error,
-                                        cursor: "pointer",
-                                        textAlign: "left",
-                                      }}
-                                      onMouseEnter={(e) =>
-                                        (e.currentTarget.style.background = "#fef2f2")
-                                      }
-                                      onMouseLeave={(e) =>
-                                        (e.currentTarget.style.background = "transparent")
-                                      }
-                                    >
-                                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
-                                        delete
-                                      </span>
-                                      Delete
-                                    </button>
+                                    {canUpload && (doc.status === "ARCHIVED" || doc.status === "DRAFT") && (
+                                      <button
+                                        onClick={() => void handleActivate(doc.id)}
+                                        style={{
+                                          display: "flex", alignItems: "center", gap: "10px", width: "100%",
+                                          padding: "10px 16px", border: "none", background: "transparent",
+                                          fontFamily: "'Inter', sans-serif", fontSize: "13px", color: T.primary,
+                                          cursor: "pointer", textAlign: "left",
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.background = T.primaryLight)}
+                                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                                      >
+                                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                                          {doc.status === "ARCHIVED" ? "unarchive" : "publish"}
+                                        </span>
+                                        {doc.status === "ARCHIVED" ? "Restore as Active" : "Publish as Active"}
+                                      </button>
+                                    )}
+                                    {canDelete && doc.status !== "ARCHIVED" && (
+                                      <button
+                                        onClick={() => {
+                                          void handleDelete(doc.id);
+                                          setOpenMenu(null);
+                                        }}
+                                        style={{
+                                          display: "flex", alignItems: "center", gap: "10px", width: "100%",
+                                          padding: "10px 16px", border: "none", background: "transparent",
+                                          fontFamily: "'Inter', sans-serif", fontSize: "13px", color: T.error,
+                                          cursor: "pointer", textAlign: "left",
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.background = "#fef2f2")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                                      >
+                                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>archive</span>
+                                        Archive
+                                      </button>
+                                    )}
                                   </div>
                                 </>
                               )}
@@ -829,7 +907,7 @@ export default function DocumentsPage() {
           }}
           onClick={() => setShowUpload(false)}
         >
-          <div style={{ ...card, width: "520px", maxWidth: "90vw" }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ ...card, width: "520px", maxWidth: "90vw", maxHeight: "90vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
             <h2
               style={{
                 fontFamily: "'Hanken Grotesk', sans-serif",
@@ -906,6 +984,17 @@ export default function DocumentsPage() {
                   ))}
                 </select>
               </div>
+            </div>
+            <div style={{ marginBottom: "14px" }}>
+              <label style={label}>Initial Status</label>
+              <select
+                value={uploadForm.status}
+                onChange={(e) => setUploadForm((f) => ({ ...f, status: e.target.value }))}
+                style={input}
+              >
+                <option value="ACTIVE">Active — ready to use</option>
+                <option value="DRAFT">Draft — still being prepared</option>
+              </select>
             </div>
             <div style={{ marginBottom: "14px" }}>
               <label style={label}>Expiry Date (Optional)</label>

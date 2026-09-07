@@ -21,7 +21,7 @@ import { validateOrRespond } from "@/lib/validation/index";
 // Recalculate project actualCost from all OUT transactions
 async function recalcProjectActualCost(projectId: string) {
   const agg = await prisma.transaction.aggregate({
-    where: { projectId, type: "OUT" },
+    where: { projectId, type: "OUT", reversedAt: null, reversalOfId: null },
     _sum: { totalCost: true },
   });
   await prisma.project.update({

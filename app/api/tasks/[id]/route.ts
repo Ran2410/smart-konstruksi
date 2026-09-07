@@ -2,6 +2,7 @@
 // Smart Konstruksi — Task Detail API
 // GET /api/tasks/[id] — Get task by ID
 // PUT /api/tasks/[id] — Update task
+// DELETE /api/tasks/[id] — Soft delete task
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
@@ -11,7 +12,9 @@ import {
   AuthenticatedUser,
   HandlerContext,
   apiSuccess,
+  apiNoContent,
 } from "@/lib/api/with-auth";
+import { logAudit, pickAuditFields } from "@/lib/audit-log";
 import { apiError } from "@/lib/rbac/guard";
 import { ForbiddenError } from "@/lib/rbac/guard";
 import { updateTaskSchema } from "@/lib/validation/schemas";
@@ -322,6 +325,70 @@ export const PUT = withAuth(
       }
 
       return apiSuccess(task);
+    } catch (error) {
+      return apiError(error);
+    }
+  }
+);
+
+// ==================== DELETE /api/tasks/[id] ====================
+
+export const DELETE = withPermission(
+  "task:delete",
+  async (request, { user }) => {
+    try {
+      const { pathname } = new URL(request.url);
+      const id = pathname.split("/").pop();
+
+      if (!id) return apiError(new Error("Task ID is required"));
+
+      const existingTask = await prisma.task.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          title: true,
+          projectId: true,
+          assigneeId: true,
+          status: true,
+          priority: true,
+          deletedAt: true,
+        },
+      });
+
+      if (!existingTask || existingTask.deletedAt) {
+        return apiError(new Error("Task not found"));
+      }
+
+      if (!(await canUpdateTask(user, existingTask.projectId, existingTask.assigneeId))) {
+        return apiError(new ForbiddenError("You don't have permission to delete this task"));
+      }
+
+      await prisma.task.update({
+        where: { id },
+        data: { deletedAt: new Date(), deletedBy: user.id, updatedBy: user.id },
+      });
+
+      await prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          projectId: existingTask.projectId,
+          type: "TASK_UPDATED",
+          title: "Task Deleted",
+          message: `Task "${existingTask.title}" was archived`,
+          metadata: { taskId: id, action: "DELETE" },
+        },
+      });
+
+      await logAudit(
+        user.id,
+        "DELETE",
+        "Task",
+        id,
+        pickAuditFields(existingTask, ["title", "projectId", "assigneeId", "status", "priority"]),
+        null
+      );
+
+      return apiNoContent();
     } catch (error) {
       return apiError(error);
     }

@@ -1,8 +1,7 @@
 // ============================================================
 // Smart Konstruksi — Material Category Detail API
-// GET /api/materials/categories/[id] — Get category
-// PUT /api/materials/categories/[id] — Update category
-// DELETE /api/materials/categories/[id] — Soft delete category
+// GLOBAL MASTER DATA — no branchId/project scope by design
+// See note in app/api/materials/[id]/route.ts (Vesper 26 Agt 2026)
 // ============================================================
 
 import { prisma } from "@/lib/prisma";
@@ -25,7 +24,11 @@ export const GET = withPermission("material:read", async (request) => {
     const id = extractIdFromPath(request.url);
     const category = await prisma.materialCategory.findFirst({
       where: { id, deletedAt: null },
-      include: { _count: { select: { materials: true } } },
+      include: {
+        _count: {
+          select: { materials: { where: { deletedAt: null } } },
+        },
+      },
     });
 
     if (!category) return apiError(new Error("Category not found"));
@@ -77,14 +80,20 @@ export const DELETE = withPermission("material:delete", async (request, { user }
     });
     if (!existing) return apiError(new Error("Category not found"));
 
-    // Check if category has materials
-    const itemCount = await prisma.materialCategory.findFirst({
-      where: { id },
-      include: { _count: { select: { materials: true } } },
+    // Soft-deleted materials no longer block deleting their category.
+    const activeMaterialCount = await prisma.material.count({
+      where: { categoryId: id, deletedAt: null },
     });
 
-    if (itemCount && itemCount._count.materials > 0) {
-      return apiError(new Error("Cannot delete category with existing materials. Remove them first."));
+    if (activeMaterialCount > 0) {
+      return Response.json(
+        {
+          error: "Cannot delete category with active materials",
+          message: "Reassign or archive the active materials first.",
+          materialCount: activeMaterialCount,
+        },
+        { status: 409 }
+      );
     }
 
     await prisma.materialCategory.update({

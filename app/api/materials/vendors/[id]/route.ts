@@ -1,8 +1,7 @@
 // ============================================================
 // Smart Konstruksi — Vendor Detail API
-// GET /api/materials/vendors/[id] — Get vendor
-// PUT /api/materials/vendors/[id] — Update vendor
-// DELETE /api/materials/vendors/[id] — Soft delete vendor
+// GLOBAL MASTER DATA — no branchId/project scope by design
+// See note in app/api/materials/[id]/route.ts (Vesper 26 Agt 2026)
 // ============================================================
 
 import { prisma } from "@/lib/prisma";

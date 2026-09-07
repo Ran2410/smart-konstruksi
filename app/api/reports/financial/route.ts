@@ -127,6 +127,8 @@ export const GET = withPermission("report:read", async (request, { user }) => {
         COALESCE(SUM("totalCost"), 0) AS total
       FROM "transactions"
       WHERE 1=1
+        AND "reversedAt" IS NULL
+        AND "reversalOfId" IS NULL
         ${from ? `AND date >= '${from}'` : ""}
         ${to ? `AND date <= '${to}T23:59:59.999Z'` : ""}
         ${projectScopeSql}
