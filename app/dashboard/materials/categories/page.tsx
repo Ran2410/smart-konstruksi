@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -123,6 +125,7 @@ type Category = {
 export default function MaterialCategoriesPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { confirmAction } = useAppDialog();
   const canCreate = session?.user?.role && ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ESTIMATOR", "ADMIN_KANTOR", "LOGISTIK"].includes(session.user.role as string);
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -175,7 +178,7 @@ export default function MaterialCategoriesPage() {
       });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to save");
+        toast.error(err.error || "Failed to save category.");
         return;
       }
       setShowModal(false);
@@ -185,16 +188,25 @@ export default function MaterialCategoriesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this category?")) return;
+    const confirmed = await confirmAction({
+      title: "Delete material category?",
+      description: "This category will be removed from the material catalog.",
+      actionLabel: "Delete category",
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/materials/categories/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete category.");
         return;
       }
       fetchCategories();
-    } catch (e) { console.error(e); }
+      toast.success("Material category deleted.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to delete category.");
+    }
   };
 
   return (

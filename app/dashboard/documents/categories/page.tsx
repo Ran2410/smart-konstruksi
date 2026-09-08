@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL, RADIUS, SPACING, SHADOWS } from "@/lib/design-tokens";
 
@@ -95,6 +97,7 @@ type Category = {
 export default function DocumentCategoriesPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role as string;
   const canManage = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "PROJECT_MANAGER", "ADMIN_KANTOR"].includes(role);
 
@@ -178,24 +181,31 @@ export default function DocumentCategoriesPage() {
 
   const handleDelete = async (cat: Category) => {
     if (cat.documentCount && cat.documentCount > 0) {
-      alert(
+      toast.warning(
         `Cannot delete "${cat.name}" because it has ${cat.documentCount} document(s). Reassign those documents first.`
       );
       return;
     }
-    if (!confirm(`Delete category "${cat.name}"?`)) return;
+    const confirmed = await confirmAction({
+      title: "Delete document category?",
+      description: `The category “${cat.name}” will be permanently deleted.`,
+      actionLabel: "Delete category",
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/documents/categories/${cat.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete category.");
         return;
       }
       fetchCategories();
+      toast.success("Document category deleted.");
     } catch (e) {
       console.error(e);
+      toast.error("Failed to delete category.");
     }
   };
 

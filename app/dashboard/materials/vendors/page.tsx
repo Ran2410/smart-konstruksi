@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -124,6 +126,7 @@ type Vendor = {
 
 export default function VendorsPage() {
   const { data: session } = useSession();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role as string;
   const canManage = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ADMIN_KANTOR", "LOGISTIK"].includes(role);
 
@@ -173,7 +176,7 @@ export default function VendorsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (!res.ok) { const err = await res.json(); alert(err.error || "Failed to save"); return; }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to save vendor."); return; }
       setShowModal(false);
       fetchVendors();
     } catch (e) { console.error(e); }
@@ -181,10 +184,16 @@ export default function VendorsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this vendor?")) return;
+    const confirmed = await confirmAction({
+      title: "Delete vendor?",
+      description: "The vendor will be removed from the active vendor list.",
+      actionLabel: "Delete vendor",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/materials/vendors/${id}`, { method: "DELETE" });
-    if (!res.ok) { const err = await res.json(); alert(err.error || "Failed to delete"); return; }
+    if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to delete vendor."); return; }
     fetchVendors();
+    toast.success("Vendor deleted.");
   };
 
   return (

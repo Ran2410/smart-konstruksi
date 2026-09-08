@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -131,6 +133,7 @@ function Avatar({ name, src }: { name: string; src?: string }) {
 
 // ── Action Dropdown ────────────────────────────────────────────────────────
 function ActionDropdown({ projectId, router, canEdit }: { projectId: string; router: any; canEdit?: boolean }) {
+  const { confirmAction } = useAppDialog();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -150,11 +153,25 @@ function ActionDropdown({ projectId, router, canEdit }: { projectId: string; rou
     actions.push(
       { icon: "edit", label: "Edit Project", onClick: () => router.push(`/dashboard/projects/${projectId}`) },
       { icon: "delete", label: "Delete Project", color: T.error, onClick: async () => {
-        if (!confirm("Are you sure you want to delete this project?")) return;
+        const confirmed = await confirmAction({
+          title: "Delete project?",
+          description: "The project will be removed from active records.",
+          actionLabel: "Delete project",
+        });
+        if (!confirmed) return;
         try {
           const res = await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
-          if (res.ok) { setOpen(false); window.location.reload(); }
-        } catch { /* ignore */ }
+          if (res.ok) {
+            setOpen(false);
+            toast.success("Project deleted.");
+            window.location.reload();
+          } else {
+            const error = await res.json();
+            toast.error(error.error || "Failed to delete project.");
+          }
+        } catch {
+          toast.error("Failed to delete project.");
+        }
       }},
     );
   }

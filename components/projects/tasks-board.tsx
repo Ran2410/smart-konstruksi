@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { UserPicker } from "./user-picker";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -322,6 +324,7 @@ function TaskCard({
 // TASKS BOARD
 // ============================================================
 export function TasksBoard({ projectId, projectMembers, canEdit, canCreate, onTaskChange }: TasksBoardProps) {
+  const { confirmAction } = useAppDialog();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -465,7 +468,12 @@ export function TasksBoard({ projectId, projectMembers, canEdit, canCreate, onTa
   // ── Delete task ──
   const deleteTask = async () => {
     if (!showDetail) return;
-    if (!confirm("Delete this task?")) return;
+    const confirmed = await confirmAction({
+      title: "Delete task?",
+      description: `This will remove “${showDetail.title}” from the active task board.`,
+      actionLabel: "Delete task",
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/tasks/${showDetail.id}`, { method: "DELETE" });
       if (res.ok) {
@@ -473,8 +481,14 @@ export function TasksBoard({ projectId, projectMembers, canEdit, canCreate, onTa
         setShowDetail(null);
         fetchTasks();
         onTaskChange();
+        toast.success("Task deleted.");
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Failed to delete task.");
       }
-    } catch {}
+    } catch {
+      toast.error("Failed to delete task.");
+    }
   };
 
   // ── Render ──

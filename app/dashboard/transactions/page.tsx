@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 import {
@@ -121,6 +123,7 @@ function SummaryCard({ label, value, sub, icon, color }: {
 
 export default function TransactionsPage() {
   const { data: session } = useSession();
+  const { requestText } = useAppDialog();
   const canReverse = ["SUPER_ADMIN", "OWNER"].includes(session?.user?.role as string);
 
   const [transactions, setTransactions] = useState<Tx[]>([]);
@@ -194,20 +197,29 @@ export default function TransactionsPage() {
   }, [typeFilter, materialIdFilter]);
 
   const handleReverse = async (id: string) => {
-    const reason = prompt("Reason for reversing this transaction:");
+    const reason = await requestText({
+      title: "Reverse transaction?",
+      description: "A linked opposite transaction will be created to preserve the audit trail.",
+      label: "Reversal reason",
+      placeholder: "Explain why this transaction needs to be reversed",
+      actionLabel: "Reverse transaction",
+      minLength: 3,
+      validationMessage: "Enter a reason of at least 3 characters.",
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      alert("Please enter a reason of at least 3 characters.");
-      return;
-    }
     const res = await fetch(`/api/transactions/${id}/reverse`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason: reason.trim() }),
     });
-    if (!res.ok) { const err = await res.json(); alert(err.error || "Failed"); return; }
+    if (!res.ok) {
+      const err = await res.json();
+      toast.error(err.error || "Failed to reverse transaction.");
+      return;
+    }
     fetchTxs();
     fetchReport();
+    toast.success("Transaction reversed.");
   };
 
   return (

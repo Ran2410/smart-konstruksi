@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -200,6 +202,7 @@ function Pagination({ page, totalPages, total, onPageChange, limit = 10 }: {
 export default function ClientsPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role;
   const canManage = role && CAN_MANAGE_CLIENTS.includes(role);
 
@@ -236,12 +239,24 @@ export default function ClientsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this client? This will also deactivate their user account.")) return;
+    const confirmed = await confirmAction({
+      title: "Delete client?",
+      description: "This will remove the client and deactivate their user account.",
+      actionLabel: "Delete client",
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/clients/${id}`, { method: "DELETE" });
-      if (res.ok) { fetchClients(); }
-      else { const err = await res.json(); alert(err.message || "Failed to delete"); }
-    } catch { alert("Failed to delete client"); }
+      if (res.ok) {
+        fetchClients();
+        toast.success("Client deleted.");
+      } else {
+        const err = await res.json();
+        toast.error(err.message || err.error || "Failed to delete client.");
+      }
+    } catch {
+      toast.error("Failed to delete client.");
+    }
   };
 
   // KPI stats

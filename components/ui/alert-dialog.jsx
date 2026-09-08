@@ -21,9 +21,9 @@ const T = {
   errorLight: "rgba(186,26,26,0.06)",
   warning: "#b45309",
   success: "#15803d",
-  fontDisplay: "'Hanken Grotesk', sans-serif",
-  fontBody: "'Inter', sans-serif",
-  fontLabel: "'Geist', monospace",
+  fontDisplay: "var(--font-hanken-grotesk), sans-serif",
+  fontBody: "var(--font-inter), sans-serif",
+  fontLabel: "var(--font-geist-sans), sans-serif",
 }
 
 function AlertDialog({
@@ -76,7 +76,7 @@ function AlertDialogContent({
           "rounded-2xl border-0 p-0",
           "bg-white",
           "shadow-[0_24px_60px_rgba(0,0,0,0.18),0_4px_12px_rgba(0,0,0,0.08)]",
-          "max-w-[440px]",
+          "max-w-[min(440px,calc(100%-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto",
           "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
           "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           "duration-200",

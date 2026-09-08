@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -100,6 +102,7 @@ type Project = { id: string; name: string; code: string };
 
 export default function DocumentsPage() {
   const { data: session, status } = useSession();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role as string;
   const sessionReady = status === "authenticated";
   const isClient = role === "CLIENT";
@@ -197,7 +200,7 @@ export default function DocumentsPage() {
 
   const handleUpload = async () => {
     if (!uploadForm.file || !uploadForm.name || !uploadForm.categoryId || !uploadForm.projectId) {
-      alert("Please fill all required fields");
+      toast.warning("Please fill all required fields.");
       return;
     }
 
@@ -222,29 +225,36 @@ export default function DocumentsPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to upload");
+        toast.error(err.error || "Failed to upload document.");
         return;
       }
 
       setShowUpload(false);
       fetchData();
+      toast.success("Document uploaded.");
     } catch (e) {
       console.error(e);
-      alert("Upload failed");
+      toast.error("Document upload failed.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Archive this document?")) return;
+    const confirmed = await confirmAction({
+      title: "Archive document?",
+      description: "The document will move out of the current view and can be restored later.",
+      actionLabel: "Archive document",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const err = await res.json();
-      alert(err.error || "Failed to archive");
+      toast.error(err.error || "Failed to archive document.");
       return;
     }
     fetchData();
+    toast.success("Document archived.");
   };
 
   const handleActivate = async (id: string) => {
@@ -255,11 +265,12 @@ export default function DocumentsPage() {
     });
     if (!res.ok) {
       const err = await res.json();
-      alert(err.error || "Failed to activate document");
+      toast.error(err.error || "Failed to activate document.");
       return;
     }
     setOpenMenu(null);
     fetchData();
+    toast.success("Document activated.");
   };
 
   const toggleVisibility = async (id: string, current: boolean) => {
@@ -269,10 +280,11 @@ export default function DocumentsPage() {
       body: JSON.stringify({ isClientVisible: !current }),
     });
     if (!res.ok) {
-      alert("Failed to update visibility");
+      toast.error("Failed to update document visibility.");
       return;
     }
     fetchData();
+    toast.success("Document visibility updated.");
   };
 
   const formatFileSize = (bytes: number) => {

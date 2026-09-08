@@ -4,6 +4,8 @@ import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -72,6 +74,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role;
   const canManage = role === "SUPER_ADMIN" || role === "OWNER" || role === "BRANCH_MANAGER";
 
@@ -125,15 +128,29 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   };
 
   const handleToggleStatus = async () => {
-    if (!confirm(`Set this client as ${client?.user?.isActive ? "inactive" : "active"}?`)) return;
+    const nextStatus = client?.user?.isActive ? "inactive" : "active";
+    const confirmed = await confirmAction({
+      title: `${nextStatus === "active" ? "Activate" : "Deactivate"} client?`,
+      description: `This client will be marked as ${nextStatus}.`,
+      actionLabel: nextStatus === "active" ? "Activate client" : "Deactivate client",
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/clients/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !client.user.isActive }),
       });
-      if (res.ok) fetchClient();
-    } catch {}
+      if (res.ok) {
+        fetchClient();
+        toast.success(`Client marked as ${nextStatus}.`);
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to update client status.");
+      }
+    } catch {
+      toast.error("Failed to update client status.");
+    }
   };
 
   const focusH = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => (e.currentTarget.style.borderColor = T.primary);

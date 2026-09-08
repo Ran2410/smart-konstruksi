@@ -193,9 +193,9 @@ function ActionDropdown({ userId, userName, router, onDeleted }: {
       {showDel && (
         <>
           <div onClick={() => setShowDel(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", zIndex: 100 }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: T.surfaceCard, borderRadius: "16px", padding: "28px", boxShadow: "0 24px 80px rgba(0,0,0,0.25)", zIndex: 101, maxWidth: "400px", width: "90%" }}>
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: T.surfaceCard, borderRadius: "16px", padding: "28px", boxShadow: "0 24px 80px rgba(0,0,0,0.25)", zIndex: 101, maxWidth: "440px", width: "calc(100% - 32px)", textAlign: "left", whiteSpace: "normal", overflowWrap: "anywhere", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
-              <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: T.errorContainer, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: "44px", height: "44px", flexShrink: 0, borderRadius: "12px", background: T.errorContainer, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "22px", color: T.error }}>delete_forever</span>
               </div>
               <div>

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { T, FONT_DISPLAY, FONT_BODY, FONT_LABEL } from "@/lib/design-tokens";
 
@@ -81,6 +83,7 @@ type Vendor = { id: string; name: string };
 
 export default function InventoryPage() {
   const { data: session } = useSession();
+  const { confirmAction } = useAppDialog();
   const role = session?.user?.role as string;
   const canManage = ["SUPER_ADMIN", "OWNER", "BRANCH_MANAGER", "ESTIMATOR", "ADMIN_KANTOR", "LOGISTIK"].includes(role);
 
@@ -157,7 +160,7 @@ export default function InventoryPage() {
       const url = isEdit ? `/api/materials/${showEdit!.id}` : "/api/materials";
       const method = isEdit ? "PUT" : "POST";
       const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
-      if (!res.ok) { const err = await res.json(); alert(err.error || "Failed to save"); return; }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to save material."); return; }
       setShowCreate(false); setShowEdit(null);
       fetchItems();
     } catch (e) { console.error(e); }
@@ -172,7 +175,7 @@ export default function InventoryPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "IN", materialId: showStockIn!.id, qty: txForm.qty, price: txForm.price, notes: txForm.notes }),
       });
-      if (!res.ok) { const err = await res.json(); alert(err.error || "Failed"); return; }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to record stock-in."); return; }
       setShowStockIn(null);
       fetchItems();
     } catch (e) { console.error(e); }
@@ -187,7 +190,7 @@ export default function InventoryPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "OUT", materialId: showStockOut!.id, qty: txForm.qty, projectId: txForm.projectId || null, notes: txForm.notes }),
       });
-      if (!res.ok) { const err = await res.json(); alert(err.error || "Failed"); return; }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to record stock-out."); return; }
       setShowStockOut(null);
       fetchItems();
     } catch (e) { console.error(e); }
@@ -195,10 +198,16 @@ export default function InventoryPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this material?")) return;
+    const confirmed = await confirmAction({
+      title: "Delete material?",
+      description: "The material will be removed from the active inventory catalog.",
+      actionLabel: "Delete material",
+    });
+    if (!confirmed) return;
     const res = await fetch(`/api/materials/${id}`, { method: "DELETE" });
-    if (!res.ok) { const err = await res.json(); alert(err.error || "Failed"); return; }
+    if (!res.ok) { const err = await res.json(); toast.error(err.error || "Failed to delete material."); return; }
     fetchItems();
+    toast.success("Material deleted.");
   };
 
   const formatCurrency = (val: number) => val.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 });
